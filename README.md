@@ -4,7 +4,7 @@
 
 28 章中文 FPGA / Verilog 教程：硬件架构、数字逻辑、Verilog 语言、FSM、仿真、通信接口、RAM、流水线、CDC、时序分析、EDA 工具、总线、处理器、HLS 和综合项目。
 
-**当前重构范围：01—05。** 其他 23 篇仅迁入规范路径，原文保留，后续逐章技术审计。Pages 链接需仓库启用 GitHub Actions 发布源并部署成功后才能访问。
+**当前重构范围：01—10。** 11—28 篇仍保留原版正文，后续逐章技术审计。Pages 链接需仓库启用 GitHub Actions 发布源并部署成功后才能访问。
 
 ## 五阶段学习路径
 1. 01—05：数字硬件、时钟和 Verilog 逻辑基础
@@ -41,3 +41,9 @@ iverilog -g2012 -Wall -s tb_alu4 -o /tmp/alu4.vvp examples/rtl/alu4.v examples/t
 
 ## 内容审查与依据
 写作采用 [Olah-style-posts](https://github.com/1998x-stack/Olah-style-posts) 的渐进解释方法，新图解独立绘制。技术资料优先采用 [AMD UG474](https://docs.amd.com/r/en-US/ug474_7Series_CLB)、[Altera Quartus 设计推荐](https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation) 与 [Icarus Verilog](https://steveicarus.github.io/iverilog/) 官方文档。有关迁移原则详见 [docs/migration.md](docs/migration.md)。
+
+## 第二批可运行实验（06—10）
+
+`bash scripts/run_rtl_tests.sh` 运行八组自检，包括模 N 计数器、消抖、重叠 101 FSM、UART 8N1 TX/RX 回环、SPI Mode 0 回环与 I²C 单 bit 等待 SCL 释放/超时（不是完整 I²C 主机）。
+
+教学简化与工程边界详见各章。I²C 的 24LC256 写周期应按 [Microchip Datasheet](https://www.microchip.com/content/dam/mchp/documents/MPD/ProductDocuments/DataSheets/24AA256-24LC256-24FC256-Data-Sheet-20001203W.pdf) 执行 ACK polling，而不是把地址 NACK 误写成 SCL stretching。

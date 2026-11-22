@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-five-2026-11",
+  "scope": "first-ten-2026-11",
   "checks": [
     {
       "chapters": [
@@ -53,11 +53,61 @@
       "claim": "7 Series devices include wide multiplexer resources; LUT mapping depends on design and tools.",
       "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Multiplexers",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "06"
+      ],
+      "claim": "Local generated clocks need suitable routing/constraints; clock enables are preferable when staying in a single domain.",
+      "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Avoiding-Local-Clocks",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "06"
+      ],
+      "claim": "Reset startup synchronization and controlled release require design-specific care.",
+      "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Controlling-and-Synchronizing-Device-Startup",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "07",
+        "08"
+      ],
+      "claim": "Functional HDL simulation and testbench use iverilog plus vvp; verification must establish actual assertions.",
+      "source": "https://steveicarus.github.io/iverilog/usage/simulation.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "09"
+      ],
+      "claim": "SPI CPOL/CPHA define idle level and leading/trailing capture edges.",
+      "source": "https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "10"
+      ],
+      "claim": "NXP UM10204 Rev 7 defines START/STOP, ninth ACK, clock stretching and bus clear.",
+      "source": "https://www.nxp.com/docs/en/user-guide/UM10204.pdf?locale=de",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "10"
+      ],
+      "claim": "24LC256 does not ACK while internal write cycle is in progress; ACK polling determines readiness rather than assuming clock stretch.",
+      "source": "https://www.microchip.com/content/dam/mchp/documents/MPD/ProductDocuments/DataSheets/24AA256-24LC256-24FC256-Data-Sheet-20001203W.pdf",
+      "status": "supported"
     }
   ],
   "limitations": [
     "Code simulation does not establish board-level timing.",
     "Proposed FPGA logic and timing figures are conceptual; no hardware measurements are claimed.",
-    "No synthesis resource usage, power or Fmax benchmark is asserted."
+    "No synthesis resource usage, power or Fmax benchmark is asserted.",
+    "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP."
   ]
 }

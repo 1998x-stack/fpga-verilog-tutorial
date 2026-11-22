@@ -21,7 +21,7 @@
 - `index.html` 是 GitHub Pages 唯一门户。
 - `chapters/01.html` 到 `chapters/28.html` 为规范章节；根目录同名路径是兼容跳转，**不得删除**。
 - `assets/css/site.css` 维护首页，`assets/css/article.css` 维护重写文章，`assets/svg/` 保存全部独立图，`assets/js/` 为渐进增强交互。
-- `chapters/theme.css` 是 06–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
+- `chapters/theme.css` 是 11–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
 - `data/` 存储课程目录、证据账本；`examples/rtl/` 与 `examples/tb/` 放可综合样例及自检 testbench；`scripts/` 与 `.github/workflows/` 是验收和发布入口。
 
 ## 每一篇完成定义
@@ -33,3 +33,10 @@
 6. 通过 `python3 scripts/check_site.py`、相应 iverilog testbench、GitHub Actions；
 7. 如果使用浏览器验收，应记录实际截图和未覆盖场景；对未执行测试如实说明；
 8. 维护首页、README、旧链接的兼容性。
+
+## 第二阶段协议模块的最小交付边界
+- `uart_tx.v`/`uart_rx.v` 只实现 8N1、整数 bit divider、单字节，无 FIFO/校验/硬件流控。
+- `spi_master_mode0.v` 只支持 CPOL=0、CPHA=0；禁止称为四模式 SPI Master。
+- `i2c_bit_cell.v` 仅为单个 bit 的 data/SCL 时序单元，无 START/STOP/ACK/多主仲裁；示例顶层需明确开漏输出与管脚上拉。
+- 将 24LC256 的内部写周期忙碌与一般 I²C stretching 分开：官方数据手册的 ACK polling 是 NACK 检测，不得编造该器件将 SCL 长时间拉低。
+- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—10。

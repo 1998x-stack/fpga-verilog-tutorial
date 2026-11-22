@@ -14,12 +14,8 @@ jobs:
         run: python3 scripts/check_site.py
       - name: Install Icarus Verilog
         run: sudo apt-get update && sudo apt-get install -y iverilog
-      - name: Exhaustive RTL self-checks
-        run: |
-          iverilog -g2012 -Wall -s tb_mux4 -o /tmp/mux4.vvp examples/rtl/mux4.v examples/tb/tb_mux4.v
-          vvp /tmp/mux4.vvp
-          iverilog -g2012 -Wall -s tb_alu4 -o /tmp/alu4.vvp examples/rtl/alu4.v examples/tb/tb_alu4.v
-          vvp /tmp/alu4.vvp
+      - name: Self-checking Verilog regression (8 testbenches)
+        run: bash scripts/run_rtl_tests.sh
   browser:
     runs-on: ubuntu-latest
     steps:
