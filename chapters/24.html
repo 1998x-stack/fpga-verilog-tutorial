@@ -21,10 +21,13 @@ make flash CONFIRM_FLASH=YES</code></pre>
 <p>Makefile 依次调用 Yosys <code>synth_ice40</code>、<code>nextpnr-ice40 --hx1k --package tq144</code>、<code>icepack</code>。下载步骤与 bitstream 生成分离，避免在没有确认目标板时误烧录。</p>
 <p>上游 nextpnr 项目给出了 iCEstick 示例及相同 PCF 引脚表；该示例是板级 pin mapping 的来源，不是对本仓库构建结果或硬件运行的证明。<a href="https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky">YosysHQ/nextpnr · iCE40 blinky example</a>。</p></section><section id="simulation" aria-labelledby="simulation-title"><h2 id="simulation-title">05 / Verilator：编译型仿真与 lint 的优势和边界</h2>
 <p>Verilator 会把 Verilog/SystemVerilog 设计转换成优化后的 C++/SystemC 模型，并可生成可执行仿真器。它适合快速迭代、lint、覆盖率和大规模回归；Icarus 则适合许多 event-driven Verilog 测试。两者的仿真语义和支持范围并不完全相同。</p>
-<pre><code>verilator --lint-only -Wall --top-module blink blink.v
-verilator --binary --timing --trace -Wall \
-  --top-module tb blink.v blink_tb.sv
-./obj_dir/Vtb</code></pre>
+<pre><code>verilator --lint-only -Wall --top-module rv32i_imm_gen \
+  examples/rtl/rv32i_frontend_units.v
+verilator --binary --timing --trace \
+  --top-module tb_rv32i_frontend_units \
+  examples/rtl/rv32i_frontend_units.v \
+  examples/tb/tb_rv32i_frontend_units.v
+./obj_dir/Vtb_rv32i_frontend_units</code></pre>
 <p>不要照搬“Verilator 一定比某商业模拟器快 10–100 倍”的结论：速度取决于设计规模、testbench、编译选项、线程数、波形开销和比较对象。Verilator 对 X/Z、SDF timing annotation 和 mixed-signal 的支持也不能等同于完整四态事件模拟器。应按验证需求组合工具，而不是寻找一个万能替代品。</p></section><section id="release" aria-labelledby="release-title"><h2 id="release-title">06 / 开源与商业工具混合使用：以验证边界为准</h2>
 <p>合理的混合工作流可以是：用 Icarus/Verilator 做快速 RTL 回归，用 Yosys/nextpnr 对明确支持的低成本 FPGA 进行原型实现；对于需要厂商专用硬核 IP、复杂 PLL/SerDes、器件签核或完整 timing/power 分析的设计，再用厂商工具完成最终实现与 sign-off。</p>
 <p>本仓库的 iCEstick Makefile 是可运行的工具命令入口；CI 只做该示例的静态契约检查，没有在 GitHub Actions 中安装完整 IceStorm/nextpnr 工具链，也没有生成 bitstream 或连接板卡。不要把静态检查写成“开源实现通过”。</p>
