@@ -21,7 +21,7 @@
 - `index.html` 是 GitHub Pages 唯一门户。
 - `chapters/01.html` 到 `chapters/28.html` 为规范章节；根目录同名路径是兼容跳转，**不得删除**。
 - `assets/css/site.css` 维护首页，`assets/css/article.css` 维护重写文章，`assets/svg/` 保存全部独立图，`assets/js/` 为渐进增强交互。
-- `chapters/theme.css` 是 16–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
+- `chapters/theme.css` 是 21–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
 - `data/` 存储课程目录、证据账本；`examples/rtl/` 与 `examples/tb/` 放可综合样例及自检 testbench；`scripts/` 与 `.github/workflows/` 是验收和发布入口。
 
 ## 每一篇完成定义
@@ -39,7 +39,7 @@
 - `spi_master_mode0.v` 只支持 CPOL=0、CPHA=0；禁止称为四模式 SPI Master。
 - `i2c_bit_cell.v` 仅为单个 bit 的 data/SCL 时序单元，无 START/STOP/ACK/多主仲裁；示例顶层需明确开漏输出与管脚上拉。
 - 将 24LC256 的内部写周期忙碌与一般 I²C stretching 分开：官方数据手册的 ACK polling 是 NACK 检测，不得编造该器件将 SCL 长时间拉低。
-- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—15。
+- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—20。
 
 ## 第三批存储、CDC、时序、工具链边界
 - `ram_sp_read_first.v` 明确单时钟、同一端口 READ_FIRST 语义；跨端口、跨时钟碰撞必须依据器件原语 datasheet，不得从此例推论。
@@ -48,4 +48,14 @@
 - CDC：2FF 用于慢变化单 bit 电平，toggle 事件握手用于接受后应答；任意多 bit 总线不可逐位同步替代协议。Gray 总线需 max-delay/bus-skew 约束并检查与异步分组例外的优先级。
 - STA 示例 `sta_budget.py` 的所有数字是数学演示。真实 WNS/TNS/时序收敛需具体 FPGA part、工具版本、XDC 和实现报告。
 - Vivado：非工程模式须指定真实 `FPGA_PART`、`BOARD_XDC`，不可硬编码虚构引脚、禁止跳过 DRC。GitHub Pages 的成功与 FPGA bitstream 无关。
-- CI：`bash scripts/run_rtl_tests.sh`（12 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—15。
+- CI：`bash scripts/run_rtl_tests.sh`（13 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—15。
+
+## 第四批工程工具、IP、AXI 与软核边界
+- Quartus：QSF/QPF 属于工程输入，SDC 是独立时序模型；不能用一份通用时钟周期替代板级 I/O 延迟和 pin/IOSTANDARD。项目脚本必须要求真实 `FPGA_FAMILY` 与完整 `FPGA_DEVICE`，不允许猜测开发板型号。
+- Questa：当前 Altera 仿真器按官方版本称为 Questa-Altera FPGA Edition；Starter Edition 免费但需要 no-cost license。CI 不安装受许可模拟器时，只能报告 Icarus 结果，不得声称 Questa 通过。
+- IP：保留可重建的 IP 配置、接口定义、VLNV/版本和依赖；生成的 output products/cache 与源配置分开。Platform Designer 的 Avalon 与 AXI 连接需遵循接口时钟、复位、数据宽度和协议桥约束。
+- AXI4-Lite：`axi4lite_regs.v` 仅为 32-bit、单 outstanding 教学 subordinate；AW/W 独立缓存，B/R response 在 READY 前保持稳定，WSTRB 做 byte-enable。不可宣传为完整 AXI4 burst / 多 ID / DMA / CDC 互连。
+- Softcore：本章以 MicroBlaze V（RISC-V）为例，必须与 classic MicroBlaze 区分。地址宏来自生成的 `xparameters.h`，固件 ABI 与 RV32/RV64 配置一致；不能把示例 base address 当成板级固定地址。
+- 工程可复现：提交 QSF/SDC/XPR/XCI/QSYS 等真实输入（按实际 flow 选择），忽略可再生数据库与缓存；build manifest 记录 SHA-256、part、工具版本和 Git revision，但不自动保证 bitstream 字节级重现。
+- 本批不虚构 Quartus Fitter、TimeQuest、Questa、Vivado bitstream、LUT/FF/Fmax 或板级测试结果。GitHub Actions 的 RTL/静态/浏览器通过只能证明对应检查范围。
+- CI：13 组 Icarus RTL 回归、`python3 -m unittest discover -s tests -v`、Quartus/Vivado 静态脚本检查、首页及 01—20 Playwright。
