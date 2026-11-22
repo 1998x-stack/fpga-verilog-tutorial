@@ -14,10 +14,12 @@ jobs:
         run: python3 scripts/check_site.py
       - name: Install Icarus Verilog
         run: sudo apt-get update && sudo apt-get install -y iverilog
-      - name: Self-checking Verilog regression (12 testbenches)
+      - name: Self-checking Verilog regression (13 testbenches)
         run: bash scripts/run_rtl_tests.sh
-      - name: Model-only STA budget arithmetic
-        run: python3 -m unittest discover -s tests -p 'test_sta_budget.py' -v
+      - name: Python unit tests (STA budget and build manifest)
+        run: python3 -m unittest discover -s tests -v
+      - name: Quartus project template contract (no Quartus installed)
+        run: python3 scripts/check_quartus_example.py
       - name: Vivado Tcl source contract (no Vivado installed)
         run: python3 scripts/check_vivado_example.py
   browser:

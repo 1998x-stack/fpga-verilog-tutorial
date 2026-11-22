@@ -18,3 +18,17 @@ qa/screens/
 __pycache__/
 .pytest_cache/
 .DS_Store
+
+# Quartus-generated databases, IP cache and simulation artifacts
+db/
+incremental_db/
+output_files/
+ip_user_files/
+.ip_cache/
+work/
+simulation/
+*.wlf
+*.fst
+*.sof
+*.pof
+*.jic
