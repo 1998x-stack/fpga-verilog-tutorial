@@ -1,0 +1,36 @@
+name: Content + RTL checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Static HTML, SVG and link checks
+        run: python3 scripts/check_site.py
+      - name: Install Icarus Verilog
+        run: sudo apt-get update && sudo apt-get install -y iverilog
+      - name: Exhaustive RTL self-checks
+        run: |
+          iverilog -g2012 -Wall -s tb_mux4 -o /tmp/mux4.vvp examples/rtl/mux4.v examples/tb/tb_mux4.v
+          vvp /tmp/mux4.vvp
+          iverilog -g2012 -Wall -s tb_alu4 -o /tmp/alu4.vvp examples/rtl/alu4.v examples/tb/tb_alu4.v
+          vvp /tmp/alu4.vvp
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install playwright
+      - run: python3 -m playwright install --with-deps chromium
+      - name: Desktop/mobile Playwright acceptance
+        run: python3 scripts/browser_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: chapter-browser-screenshots
+          path: qa/screens/
+          if-no-files-found: ignore
