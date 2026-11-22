@@ -1,0 +1,12 @@
+# TEMPLATE ONLY — cannot be used to configure an FPGA as-is.
+# Replace these comment examples with verified official board pin mapping.
+# Source: the exact board schematic and FPGA package/pinout.
+# Clock assumed 100 MHz only if your hardware actually provides it.
+create_clock -name sys_clk -period 10.000 [get_ports clk]
+# set_property PACKAGE_PIN <actual_clk_pin> [get_ports clk]
+# set_property IOSTANDARD <actual_standard> [get_ports clk]
+# set_property PACKAGE_PIN <actual_reset_pin> [get_ports rst_n]
+# set_property IOSTANDARD <actual_standard> [get_ports rst_n]
+# set_property PACKAGE_PIN <actual_led_pin> [get_ports led]
+# set_property IOSTANDARD <actual_standard> [get_ports led]
+# Carefully verify active-low reset and output polarity before programming.
