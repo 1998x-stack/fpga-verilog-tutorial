@@ -76,7 +76,7 @@ python3 scripts/browser_check.py               # 需要 Playwright + Chromium
 
 - **16 Quartus / TimeQuest：** `examples/quartus/` 提供通用计数器 RTL、50 MHz 教学 SDC 和 Tcl 项目生成脚本。必须传入真实 `FPGA_FAMILY` / `FPGA_DEVICE`；示例没有板卡 pin map，不可直接下载。
 - **17 Questa：** `sim/questa/run.do` 编译并仿真第 19 章 AXI4-Lite 外设。当前 Altera 模拟器为 Questa-Altera FPGA Edition；Starter Edition 免费，但仿真需要 no-cost license。公共 CI 使用 Icarus，不声称运行了 Questa。
-- **18 工程组织：** `examples/project-template/` 说明哪些 QSF/SDC/XPR/IP 配置属于输入、哪些数据库属于生成物；`scripts/build_manifest.py` 为输入计算 SHA-256，记录器件、工具和提交。
+- **18 IP Core / Platform Designer：** 解释 Avalon、AXI、AXI-Lite、AXI-Stream 接口契约，IP Packager 的 VLNV、clock/reset、地址块和版本依赖；同时给出工程目录、Git 忽略边界与 `scripts/build_manifest.py` SHA-256 输入清单。
 - **19 AXI4-Lite：** `axi4lite_regs.v` 是 32-bit、单 outstanding 的教学 subordinate；AW/W 独立握手，支持 WSTRB、B/R 背压、只读寄存器与 SLVERR；自检覆盖不同通道到达顺序。
 - **20 MicroBlaze V：** 以 2026.1 文档中的 RISC-V MicroBlaze V 为主线，提供 SoC 集成契约与 MMIO C 示例。IP Integrator、XSA、Vitis 和真实地址映射需要在目标板工具环境完成。
 

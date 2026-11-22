@@ -265,6 +265,22 @@
       "claim": "Nios V has its own Platform Designer and software developer workflow; it should not be conflated with MicroBlaze V.",
       "source": "https://docs.altera.com/r/docs/743810/current",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "Platform Designer supports Avalon MM/Streaming, AXI, AXI-Lite, AXI-Stream and APB interfaces and generates interconnect to bridge protocol differences.",
+      "source": "https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "Vivado IP Packager documents AXI signal inference, clock/reset interfaces, constraints, dependencies, and IP version/revision management.",
+      "source": "https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -278,6 +294,7 @@
     "Chapter 17 Questa run.do is provided but public CI runs Icarus; no Questa license or simulation run is claimed.",
     "Chapter 19 AXI4-Lite subordinate is 32-bit and single-outstanding; it is not a full AXI4 interconnect or DMA.",
     "Chapter 20 MicroBlaze V block design is a system contract and firmware example; no board-specific XSA, ELF, bitstream or hardware run is claimed.",
-    "Build Manifest hashes input files but does not guarantee identical bitstreams across tool versions, seeds or machine environments."
+    "Build Manifest hashes input files but does not guarantee identical bitstreams across tool versions, seeds or machine environments.",
+    "Chapter 18 explains IP packaging and system integration contracts but does not claim that the sample AXI peripheral has been packaged into a vendor-specific IP archive."
   ]
-}\n
+}
