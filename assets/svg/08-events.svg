@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 490" role="img" aria-labelledby="08eventst 08eventsd"><title id="08eventst">时钟上升沿和 NBA 更新的测试台采样</title><desc id="08eventsd">DUT 在上升沿计算 RHS，NBA 稍后写寄存器，测试台在下一个下降沿检查稳定值，避免与 DUT 同时更新产生竞态。</desc><rect width="960" height="490" fill="#fffdf9"/>
+<text x="42" y="48" text-anchor="start" font-family="system-ui,'PingFang SC',sans-serif" font-weight="750" font-size="23" fill="#203035">在明确采样点检查稳定结果</text>
+<path d="M126 122H914" fill="none" stroke="#c9d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M126 240H914" fill="none" stroke="#c9d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M126 354H914" fill="none" stroke="#c9d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<text x="46" y="127" text-anchor="start" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="19" fill="#203035">CLK</text><text x="46" y="243" text-anchor="start" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="19" fill="#203035">DUT Q</text><text x="46" y="357" text-anchor="start" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="19" fill="#203035">检查</text>
+<path d="M130 122H286V67H417V122H664V67H793V122H907" fill="none" stroke="#7461ba" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M130 240H288V189H665V240H907" fill="none" stroke="#147f80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M130 354H411V303H454V354H789V303H827V354H907" fill="none" stroke="#c86d4f" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M286 63V394" fill="none" stroke="#7461ba" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/><path d="M664 63V394" fill="none" stroke="#7461ba" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<path d="M411 294V394" fill="none" stroke="#c86d4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/><path d="M789 294V394" fill="none" stroke="#c86d4f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<text x="282" y="421" text-anchor="middle" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="16" fill="#7461ba">上升沿：DUT 排队更新</text>
+<text x="730" y="421" text-anchor="middle" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="16" fill="#c86d4f">下降沿：检查稳定值</text>
+<text x="41" y="473" text-anchor="start" font-family="system-ui,'PingFang SC',sans-serif" font-weight="500" font-size="16" fill="#53676d">实际调度还有更多事件区域；图仅示意避免 race 的基础测试策略。</text>
+</svg>
