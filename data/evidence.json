@@ -849,8 +849,8 @@
       ],
       "claim": "In AMD AXI4-Stream Video, TUSER[0] marks SOF and TLAST marks EOL, not frame end.",
       "kind": "vendor_documentation",
-      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
-      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
+      "source": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
+      "source_url": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
       "locator": "Chapter 28 · #signals — AXI4-Stream Video SOF/EOL semantics",
       "status": "verified",
       "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
@@ -875,8 +875,8 @@
       ],
       "claim": "AMD PG278 system guidance sizes frame-buffer bandwidth using frame rate, image height and line stride.",
       "kind": "vendor_documentation",
-      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
-      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
       "locator": "Chapter 28 · #buffer — Stride-based frame-buffer bandwidth",
       "status": "verified",
       "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
@@ -901,8 +901,8 @@
       ],
       "claim": "For frame-buffer IP, per-direction transfer bandwidth scales with fps × height × stride; active-pixel-only byte rate undercounts padded lines.",
       "kind": "vendor_documentation",
-      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
-      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
       "locator": "Chapter 28 · #buffer — Stride-based frame-buffer bandwidth",
       "status": "verified",
       "notes": "Rechecked against AMD PG278 3.1 System Considerations on 2026-11-23."
@@ -914,8 +914,8 @@
       ],
       "claim": "Active-pixel byte rate and stride-based DMA byte rate differ when line padding is present; active-pixel rate is a lower-bound calculation.",
       "kind": "derived",
-      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
-      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/System-Considerations",
       "locator": "Chapter 28 · #buffer — Active-pixel versus stride transfer equations",
       "status": "derived",
       "notes": "Derived by comparing active_line_bytes = width × bytes_per_pixel with stride_bytes; frame-buffer transfer estimate uses stride × height × fps."
