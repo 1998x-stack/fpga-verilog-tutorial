@@ -1,0 +1,28 @@
+# Keep project descriptors and source configuration under version control:
+# *.qpf, *.qsf, *.sdc, *.xpr, *.xci, *.qsys and custom IP source are inputs.
+# Regenerable compiler databases and caches:
+db/
+incremental_db/
+output_files/
+.ip_cache/
+ip_user_files/
+.Xil/
+*.cache/
+*.runs/
+*.sim/
+*.hw/
+work/
+simulation/
+# Local logs / waveforms:
+*.jou
+*.log
+*.wlf
+*.vcd
+*.fst
+transcript
+# Programming images are release artifacts, not routine source inputs:
+*.sof
+*.pof
+*.jic
+*.bit
+*.bin

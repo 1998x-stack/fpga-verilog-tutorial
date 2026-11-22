@@ -1,0 +1,25 @@
+# Copy and fill from the exact board manual and installed EDA release.
+project:
+  name: fpga_project
+  revision: rev_a
+  top: top
+target:
+  vendor: "<AMD or Altera>"
+  family: "<exact device family>"
+  part: "<full part including package and speed grade>"
+  board_revision: "<board PCB revision>"
+toolchain:
+  name: "<Vivado or Quartus Prime>"
+  version: "<exact installed version>"
+  simulator: "<Questa / Vivado Simulator / other>"
+constraints:
+  timing: "constraints/top.sdc or constraints/top.xdc"
+  io: "constraints/board-specific assignments"
+ip:
+  - name: "<IP VLNV or component name>"
+    version: "<exact version>"
+    configuration: "ip/<component configuration>"
+build:
+  command: "<checked-in reproducible build command>"
+  seed: "<tool seed or not applicable>"
+  reports: "reports/<build-id>/"
