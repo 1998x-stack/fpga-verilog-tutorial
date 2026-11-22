@@ -1,343 +1,64 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第8章 Testbench编写与仿真验证</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🔧 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
-            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
-            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
-            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
-            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
-            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
-            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
-            <li><a href="08.html" class="active">第8章 Testbench编写与仿真验证</a></li>
-            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
-            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
-            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
-            <li><a href="12.html">第12章 流水线设计技术</a></li>
-            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
-            <li><a href="14.html">第14章 时序约束与分析基础</a></li>
-            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
-            <li><a href="16.html">第16章 Quartus Prime与ModelSim</a></li>
-            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
-            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
-            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
-            <li><a href="20.html">第20章 软核处理器集成</a></li>
-            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
-            <li><a href="22.html">第22章 高速串行接口设计</a></li>
-            <li><a href="23.html">第23章 硬件调试方法论</a></li>
-            <li><a href="24.html">第24章 开源工具链实战</a></li>
-            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
-            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
-            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
-            <li><a href="28.html">第28章 综合项目：FPGA图像采集与处理系统</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第8章 Testbench编写与仿真验证</h2>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从刺激源、独立参考模型与 Scoreboard，到事件调度竞态、协议断言、超时和自动化回归。"><title>Testbench：让波形能够自动判定对错 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 08 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#motivation">01 / 波形“看着对”，为什么仍然需要自动检查？</a><a href="#clock">02 / 同一上升沿不能随意读 NBA 后的新值</a><a href="#oracles">03 / 自检验参考模型与边界用例</a><a href="#protocol">04 / 协议检查要有超时、保持条件与完整性</a><a href="#run">05 / 一条命令跑完整批 RTL 测试</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 08 · Verification</p><h1>Testbench：让波形能够自动判定对错</h1><p class="dek">从刺激源、独立参考模型与 Scoreboard，到事件调度竞态、协议断言、超时和自动化回归。</p></header>
+<section id="motivation"><h2>01 / 波形“看着对”，为什么仍然需要自动检查？</h2>
+<p class="intro">一个加法器能连续工作一千个周期，不代表 4'b1111 + 4'b0001 的溢出边界正确。单纯查看 VCD 波形很难保证每次回归都检查所有输入；testbench 应以明确的期望值来判定通过或失败。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/08-scoreboard.svg" loading="lazy" alt="激励驱动 DUT 与独立 reference model，监视器在约定采样点读取实际输出，scoreboard 比较预期与实际。" width="960" height="490"></div><figcaption>激励驱动 DUT 与独立 reference model，监视器在约定采样点读取实际输出，scoreboard 比较预期与实际。</figcaption></figure>
+<p>测试台（testbench）通常不参与综合，因而可使用 <code>initial</code>、<code>#delay</code>、<code>$display</code>、<code>$fatal</code>、<code>$dumpvars</code> 等仿真特有功能。被测模块（DUT）应尽可能使用标准可综合 RTL，避免将测试台便利语法误搬到硬件实现中。</p>
+<p>建议把测试分为：<strong>激励</strong>（输入组合与协议时序）、<strong>参考行为</strong>（与 DUT 实现独立）、<strong>采样点</strong>（避免仿真调度竞态）、<strong>判定</strong>（fail 时返回非零退出码）、<strong>覆盖与局限</strong>（哪些情况尚未检查）。</p></section>
+<section id="clock"><h2>02 / 同一上升沿不能随意读 NBA 后的新值</h2>
+<p>时钟过程里的非阻塞赋值先计算 RHS，随后在 NBA 队列提交寄存器新值。若 testbench 在 <code>@(posedge clk)</code> 立刻比较 <code>q</code>，它可能读到旧值，而不是 DUT 的错误。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/08-events.svg" loading="lazy" alt="测试台在下降沿施加输入或检查上一上升沿的稳定输出，避免与 DUT 在相同上升沿发生调度竞态。" width="960" height="490"></div><figcaption>测试台在下降沿施加输入或检查上一上升沿的稳定输出，避免与 DUT 在相同上升沿发生调度竞态。</figcaption></figure>
+<pre><code>reg clk = 0;
+always #5 clk = ~clk;
 
-        <p>前七章我们一直在写 Verilog 代码，但代码写完之后怎么知道它是对的？在软件世界里，你写下 <code>printf("Hello")</code>，编译运行，立刻能看到输出对不对。在 FPGA 的世界里，你把代码综合、布局布线、生成比特流、下载到芯片——整个过程可能耗时十几分钟，如果不对，你甚至不知道错在哪。这就是为什么在 FPGA 设计中，"先仿真再上板"是每一位工程师都必须遵守的铁律。</p>
+// 先在下降沿驱动数据
+@(negedge clk);
+din = 1'b1;
 
-        <p>但本章开头我还要泼一盆冷水：<strong>仿真通过不等于上板能工作</strong>。仿真器假设时钟沿是完美的零跳变时间，导线没有延迟，触发器理想的 setup/hold 永远不会被违反。而真实芯片里，亚稳态无处不在，时钟抖动客观存在，电源噪声耦合进信号路径——所有这些，仿真都不替你考虑。所以正确的态度是：仿真验证的是"逻辑功能是否正确"，它不能替代时序分析和硬件调试。把仿真当作第一道防线，而不是最后一道。</p>
-
-        <h3>8.1 为什么仿真——"仿真通过≠上板工作"的深层原因</h3>
-
-        <p>先弄清楚仿真和上板之间到底差了什么。主要有三个层面：</p>
-
-        <p><strong>第一，理想化时钟。</strong>仿真器中的时钟沿是瞬变的（0ps 跳变时间），而真实芯片中的时钟沿有有限的上升/下降时间（典型值几十到几百皮秒）。更关键的是，真实时钟有抖动（jitter）——每个周期的实际长度在统计意义上围绕标称值波动。如果你的设计恰好工作在时序的临界点上，仿真永远发现不了问题。</p>
-
-        <p><strong>第二，零延迟模型。</strong>RTL 级别的仿真使用的是"零延迟"或"单位延迟"模型——每个逻辑门的延迟被视为 0 或 1 个仿真时间单位。但在经过综合和布局布线后，实际的门延迟、线延迟、扇出延迟可能比 RTL 仿真大几个数量级。这意味着 RTL 仿真中看起来完美对齐的信号，在真实芯片中可能已经错位了。</p>
-
-        <p><strong>第三，无亚稳态。</strong>仿真器不模拟触发器的 metastability 行为。当你从一个时钟域向另一个时钟域传递信号时，RTL 仿真会完美地捕捉到每个沿——但在真实硬件中，一旦 setup/hold 被违反，触发器输出会在中间电压徘徊一段时间，下游逻辑读到不确定的值。这个问题我们会在第 13 章深入展开。</p>
-
-        <div class="warning">
-            <strong>仿真不万能，但仍然是必备工具：</strong>有一种常见的认知偏差——"既然仿真不完全准确，那就不如直接上板调试"。这是极其危险的想法。实际上，业界经验表明，一个结构良好的 Testbench 可以捕捉到 80-90% 的逻辑错误。剩下的 10-20% 才是时序、CDC、亚稳态等需要在真实硬件中才能暴露的问题。不做仿真直接上板调试，效率至少低 10 倍。
-        </div>
-
-        <h3>8.2 Testbench 基本结构</h3>
-
-        <p>一个典型的 Verilog Testbench 长什么样？它和设计代码（Design Under Test, DUT）有本质区别——<strong>Testbench 不需要可综合</strong>。这意味着你可以使用 <code>initial</code>、<code>$display</code>、<code>#delay</code> 等不可综合的语法。事实上，仿真提供的自由比可综合代码大得多。</p>
-
-        <p>标准的 Testbench 结构包含以下几个要素：</p>
-
-        <ul>
-            <li><strong><code>`timescale</code></strong>——定义仿真时间单位和精度，例如 <code>`timescale 1ns / 1ps</code> 表示时间单位 1ns，精度 1ps</li>
-            <li><strong>无端口的顶层 module</strong>——Testbench 本身不与外部通信，所以不需要端口列表</li>
-            <li><strong>信号声明</strong>——DUT 的输入用 <code>reg</code> 类型（在 initial/always 中被赋值），DUT 的输出用 <code>wire</code> 类型（被 DUT 驱动）</li>
-            <li><strong>DUT 例化</strong>——将 DUT 的端口连接到 Testbench 的信号</li>
-            <li><strong>激励生成</strong>——用 initial/always 块产生时钟、复位和测试数据</li>
-            <li><strong>波形导出</strong>——用 <code>$dumpfile</code> / <code>$dumpvars</code> 或 <code>vcddump</code> 将仿真结果写入 VCD 文件供波形查看</li>
-        </ul>
-
-        <p>来看一个最简化的模板：</p>
-
-        <pre><code>`timescale 1ns / 1ps
-
-module tb_uart_top();
-
-    // 信号声明
-    reg        clk;
-    reg        rst_n;
-    reg        tx_start;
-    reg  [7:0] tx_data;
-    wire       txd;
-    wire       tx_busy;
-
-    // DUT 例化
-    uart_top #(
-        .CLK_FREQ   (50_000_000),
-        .BAUD_RATE  (115_200)
-    ) dut (
-        .clk      (clk),
-        .rst_n    (rst_n),
-        .tx_start (tx_start),
-        .tx_data  (tx_data),
-        .txd      (txd),
-        .tx_busy  (tx_busy)
-    );
-
-    // 时钟生成
-    initial clk = 0;
-    always #10 clk = ~clk;   // 50MHz 时钟
-
-    // 复位和激励
-    initial begin
-        rst_n = 0;
-        #100;
-        rst_n = 1;
-        #200;
-        tx_start = 1;
-        tx_data  = 8'hAB;
-        #20;
-        tx_start = 0;
+// 经过上升沿寄存，下一下降沿检查
+@(negedge clk);
+if (q !== 1'b1) $fatal(1, "DFF mismatch");</code></pre>
+<p>本策略不是“下降沿检查才合法”：SystemVerilog clocking block、程序块与更细粒度的事件区机制都可以提供确定性驱动/采样约束。对于 Verilog-2005 教学示例，用明确不同的边沿通常更容易理解。</p></section>
+<section id="oracles"><h2>03 / 自检验参考模型与边界用例</h2>
+<p>以 4 位 ALU 为例，既要验证 1024 种 <code>16×16×4</code> 输入组合，又要确认加法 carry 是<strong>无符号</strong>进位，不是带符号 overflow。参考模型尽量使用独立、简洁的数学表达，以减少复制 DUT 错误的风险。</p>
+<pre><code>// 下面是 testbench 中的一段参考运算
+reg [4:0] expected_sum;
+reg [3:0] expected_result;
+reg expected_carry;
+expected_sum = {1'b0, a} + {1'b0, b};
+expected_carry = 1'b0;
+case (op)
+    2'd0: begin
+        expected_result = expected_sum[3:0];
+        expected_carry = expected_sum[4];
+    end
+    2'd1: expected_result = a &amp; b;
+    2'd2: expected_result = a ^ b;
+    2'd3: expected_result = ~a;
+endcase
+#1; // 只在 testbench 中等待组合输出稳定
+if (result !== expected_result || carry !== expected_carry)
+    $fatal(1, "ALU mismatch");</code></pre>
+<p>四态严格比较 <code>!==</code> 能捕获未预期的 X/Z，适合 testbench 判定。与此不同，<code>==</code> 的结果本身可能为 X；使用普通 if 的隐式转换可能掩盖未知值。也应检查复位时序、使能停滞、极限计数、非法协议输入等边界。</p></section>
+<section id="protocol"><h2>04 / 协议检查要有超时、保持条件与完整性</h2>
+<p>一个 UART TX 的 testbench 不该只判断“最终有字符串”；还需要核对 idle=1、start=0、八位 LSB-first、stop=1、每位时长、忙状态与完成标志。SPI 需同时验证 CPOL/CPHA 模式及数据建立保持；I²C 应检查第九个 ACK 时钟、SDA 在 SCL 高电平稳定等。</p>
+<p>异步验证需要独立 timeout，避免代码挂住却无法报告：</p>
+<pre><code>fork
+    begin : stimulus
+        // 驱动一帧后等待 DUT 给出结果
+        wait (done);
+    end
+    begin : watchdog
         #100000;
-        $finish;
+        $fatal(1, "timeout waiting for done");
     end
-
-    // 波形导出
-    initial begin
-        $dumpfile("tb_uart_top.vcd");
-        $dumpvars(0, tb_uart_top);
-    end
-
-endmodule</code></pre>
-
-        <h3>8.3 激励生成技术</h3>
-
-        <p>掌握了基本结构之后，下一步是学会灵活地生成各种激励信号。这里有几个常用技巧：</p>
-
-        <p><strong><code>initial</code> 块产生时钟和复位。</strong>上面的例子展示了用 <code>initial + always</code> 生成时钟。另一种常见写法是只用 <code>initial</code> 产生有限长度的时钟序列（比如仿真只需要 1000 个周期的情况）。复位信号通常用一个 <code>initial</code> 块模拟上电复位：先拉低一段时间，再释放。</p>
-
-        <p><strong><code>forever</code> 循环。</strong>在 <code>initial</code> 块中可以用 <code>forever</code> 来周期性地产生激励：</p>
-
-        <pre><code>initial begin
-    forever begin
-        @(posedge clk);
-        if (fifo_empty) continue;
-        rd_en = 1;
-        @(posedge clk);
-        rd_en = 0;
-        // 处理读出的数据
-    end
-end</code></pre>
-
-        <p><strong><code>repeat</code> 和 <code>$random</code> 随机测试。</strong>手动写一个个测试向量效率太低，对于复杂的模块应该使用随机激励：</p>
-
-        <pre><code>initial begin
-    repeat (1000) begin
-        @(posedge clk);
-        // 随机产生写请求
-        if ($random % 3 == 0) begin
-            wr_en   = 1;
-            wr_data = $random % 256;
-        end else begin
-            wr_en = 0;
-        end
-        // 随机产生读请求
-        rd_en = ($random % 5 == 0);
-    end
-end</code></pre>
-
-        <p><strong>用 <code>task</code> 封装复杂操作。</strong>当需要反复执行同一个操作序列时（比如一次 SPI 传输、一次 UART 字节发送），用 task 封装是最优雅的方式：</p>
-
-        <pre><code>task uart_send_byte(input [7:0] data);
-    integer i;
-    begin
-        txd = 0;              // 起始位
-        #(BIT_PERIOD);
-        for (i = 0; i < 8; i = i + 1) begin
-            txd = data[i];    // 数据位
-            #(BIT_PERIOD);
-        end
-        txd = 1;              // 停止位
-        #(BIT_PERIOD);
-    end
-endtask</code></pre>
-
-        <h3>8.4 结果检查方法</h3>
-
-        <p>生成激励之后，你还需要检查 DUT 的输出是否正确的。检查方式分为三种层次：</p>
-
-        <p><strong>层次一：<code>$display</code> / <code>$monitor</code> 文本输出。</strong>这是最原始但最直接的方法。<code>$display</code> 在每次调用时打印一行格式化的文本。<code>$monitor</code> 则会在参数列表中的任何信号变化时自动打印，特别适合监控关键状态的变化：</p>
-
-        <pre><code>initial begin
-    $monitor("Time=%0t, state=%h, rx_data=%h, rx_done=%b",
-             $time, dut.state, rx_data, rx_done);
-end</code></pre>
-
-        <p><strong>层次二：波形对比。</strong>将仿真结果导出为 VCD 文件，然后用 GTKWave 等工具打开查看。这是用得最多的方法——但我不推荐"只在波形上看"。时间长了你会发现，用肉眼在波形上检查几百个周期的信号容易遗漏，而且效率很低。</p>
-
-        <p><strong>层次三：自检验 Testbench（Self-Checking）。</strong>这是最推荐的方式。Testbench 内部会期望 DUT 的输出应该是什么，并自动对比。如果不符合预期，立即 <code>$error</code> 或 <code>$fatal</code> 报告：</p>
-
-        <pre><code>// Golden Model
-reg [7:0] expected;
-always @(posedge clk) begin
-    expected = golden_model(tx_data);
-end
-
-// 自动比对
-always @(posedge rx_done) begin
-    if (rx_data !== expected) begin
-        $error("Mismatch at time %0t: got %h, expected %h",
-               $time, rx_data, expected);
-    end else begin
-        $display("PASS: rx_data = %h", rx_data);
-    end
-end</code></pre>
-
-        <div class="tip">
-            <strong>自检验的最佳实践：</strong>在设计阶段就额外写一个"Golden Model"——它可以用纯行为级 Verilog 实现（不需要可综合），或者用 SystemVerilog，甚至用 DPI-C 调用 C 函数。将 DUT 的输出与 Golden Model 逐周期对比，这是工业级验证的标准方法。当所有测试都 PASS 时，才说明功能验证基本完成。
-        </div>
-
-        <h3>8.5 仿真工具生态</h3>
-
-        <p>FPGA 仿真工具种类繁多，各有侧重。选择一个趁手的工具对开发效率影响很大。下面是 2026 年主流仿真工具的对比：</p>
-
-        <table>
-            <tr><th>工具</th><th>速度</th><th>语言支持</th><th>授权</th><th>最适合</th></tr>
-            <tr><td><strong>Vivado xsim</strong></td><td>中等</td><td>Verilog-2001, SystemVerilog 部分</td><td>免费（随 Vivado）</td><td>Xilinx 工程的快速仿真，与 Vivado 深度集成</td></tr>
-            <tr><td><strong>ModelSim / QuestaSim</strong></td><td>快</td><td>全面 SystemVerilog, VHDL, UVM</td><td>基础版免费，Pro 版需授权</td><td>大中型工程，UVM 验证，混合语言项目</td></tr>
-            <tr><td><strong>Verilator</strong></td><td>极快（编译型）</td><td>SystemVerilog 可综合子集</td><td>开源（LGPL）</td><td>大规模仿真（SoC 级），需要 C++ 驱动，CI/CD 集成</td></tr>
-            <tr><td><strong>Icarus Verilog (iverilog)</strong></td><td>慢</td><td>Verilog-2005, 部分 SystemVerilog</td><td>开源（GPL）</td><td>学习、小型设计验证、开源工具链配套</td></tr>
-        </table>
-
-        <div class="highlight">
-            <strong>性能数据参考：</strong>Verilator 因为是编译型仿真器（将 Verilog 翻译为 C++，再编译为可执行文件），速度通常比事件驱动的仿真器（ModelSim/xsim）快 5-20 倍。对于千万门级 SoC 的回归测试，业界基本都用 Verilator。但代价是——Verilator 只支持可综合的 SystemVerilog 子集，不支持 <code>$random</code>、<code>#delay</code> 等行为级语法，所以 Testbench 需要用 C++ 或 SystemC 来写。
-        </div>
-
-        <h3>8.6 完整实战：UART 接收器 Testbench</h3>
-
-        <p>以一个 UART 接收器为例，我们写一个带随机测试的自检验 Testbench。假设 DUT 是一个标准的 UART RX 模块，输入是串行数据线 <code>rxd</code>，输出是并行数据 <code>rx_data</code> 和有效标志 <code>rx_done</code>。</p>
-
-        <pre><code>`timescale 1ns / 1ps
-
-module tb_uart_rx();
-
-    // 参数
-    parameter CLK_FREQ   = 50_000_000;
-    parameter BAUD_RATE  = 115_200;
-    localparam BIT_PERIOD = CLK_FREQ / BAUD_RATE;  // 434 个时钟周期
-
-    // 信号
-    reg        clk;
-    reg        rst_n;
-    reg        rxd;
-    wire [7:0] rx_data;
-    wire       rx_done;
-
-    // DUT
-    uart_rx #(
-        .CLK_FREQ  (CLK_FREQ),
-        .BAUD_RATE (BAUD_RATE)
-    ) dut (
-        .clk     (clk),
-        .rst_n   (rst_n),
-        .rxd     (rxd),
-        .rx_data (rx_data),
-        .rx_done (rx_done)
-    );
-
-    // 时钟
-    initial clk = 0;
-    always #10 clk = ~clk;
-
-    // 发送 UART 字节的 task
-    task uart_tx_byte(input [7:0] data);
-        integer i;
-        begin
-            rxd = 0;                    // 起始位
-            repeat(BIT_PERIOD) @(posedge clk);
-            for (i = 0; i < 8; i = i + 1) begin
-                rxd = data[i];          // 数据位（LSB first）
-                repeat(BIT_PERIOD) @(posedge clk);
-            end
-            rxd = 1;                    // 停止位
-            repeat(BIT_PERIOD) @(posedge clk);
-        end
-    endtask
-
-    // 随机字节检查
-    integer pass_cnt, fail_cnt;
-    reg [7:0] test_data;
-
-    initial begin
-        pass_cnt = 0; fail_cnt = 0;
-        rxd = 1; rst_n = 0;
-        repeat(10) @(posedge clk);
-        rst_n = 1;
-        repeat(100) @(posedge clk);
-
-        // 发送 100 个随机字节，逐一检查
-        repeat(100) begin
-            test_data = $random % 256;
-            uart_tx_byte(test_data);
-            @(posedge rx_done);
-            #1;  // 等一个 delta cycle 让 rx_data 稳定
-            if (rx_data === test_data) begin
-                pass_cnt = pass_cnt + 1;
-            end else begin
-                fail_cnt = fail_cnt + 1;
-                $error("FAIL: sent %h, got %h", test_data, rx_data);
-            end
-        end
-
-        $display("Test complete: %0d passed, %0d failed", pass_cnt, fail_cnt);
-        if (fail_cnt == 0)
-            $display("ALL TESTS PASSED!");
-        else
-            $fatal("SOME TESTS FAILED!");
-
-        $finish;
-    end
-
-endmodule</code></pre>
-
-        <h3>8.7 踩坑：仿真过了但上板失败——$random 不模拟亚稳态</h3>
-
-        <p>几年前我做了一个多通道 ADC 采集模块，FPGA 通过 SPI 接口读取外部 ADC 的转换结果。Testbench 做了详尽的随机测试——随机数据、随机间隔、随机时序偏移，跑了上千个周期的仿真，全部 PASS。自信满满地下载到板子上——结果每隔几十次采样就出现一次错误读数。</p>
-
-        <p>排查了两天才发现问题所在：我的 Testbench 用 <code>$random</code> 生成数据，在 SPI 的 SCK 上升沿发送给 FPGA。但真实 ADC 芯片的 SCK 和 MISO 之间存在传播延迟，而且时钟线上有抖动——这些在 RTL 仿真中都没有建模。真实硬件中，某些采样点恰好落在了 FPGA 内部触发器的 setup/hold 窗口内，导致 metastability 传播，产生错误数据。</p>
-
-        <p>教训是什么？<strong>在 Testbench 中故意施加时序不确定性</strong>——给输入信号加随机的 <code>#delay</code>（仿真中的散例化延迟），模拟真实世界中的抖动和 skew。另一个更重要的经验：仿真覆盖不了的问题，需要靠后端的时序约束来兜底。这两者在 FPGA 验证中是互补关系，不是替代关系。</p>
-
-        <p>下一章，我们开始进入通信接口的实战——从最常用的 UART 和 SPI 开始，把前几章学到的 FSM、时钟分频、移位寄存器的知识真正用起来。</p>
-
-        <div class="footer-nav">
-            <a href="07.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="09.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+join_any
+disable fork;</code></pre>
+<div class="callout warn">上面是验证环境中的伪独立时间上限：必须根据具体仿真 <code>timescale</code> 设定，不可把固定的 <code>#100000</code> 误当成硬件真实 100 ms。真实系统中的 timeout 应用硬件计数器实现。</div></section>
+<section id="run"><h2>05 / 一条命令跑完整批 RTL 测试</h2>
+<p>仓库增加统一的 <code>scripts/run_rtl_tests.sh</code>：选择 <code>iverilog -g2012 -Wall</code> 编译各个 top，再运行 <code>vvp</code>，任何一个测试非零退出即失败。可复现的测试包括模 N 计数、消抖、101 状态机、UART 回环、SPI Mode 0 移位，以及 I²C 单 bit 时钟拉伸与超时示例。</p>
+<pre><code>bash scripts/run_rtl_tests.sh
+python3 scripts/check_site.py
+# 需要 VCD 时可在 testbench 中添加：
+# $dumpfile("wave.vcd"); $dumpvars(0, tb_top);</code></pre>
+<p>RTL 仿真没有自动覆盖模拟输入边沿抖动、亚稳态、具体 FPGA 的最小/最大延迟、IO 上升沿或电源波动。布局布线后的 STA、约束检查与板级测量是不同的工程关卡，不能因 tests 全绿而跳过。</p>
+<details class="exercise"><summary>如果 testbench 只运行一次且“没有报错”，是否可以认为通过？</summary><p>不能。必须检查测试确实执行、覆盖关键断言、具备失败退出路径和 watchdog。一个根本未命中监视器的 testbench 也可能安静结束。</p></details></section><section id="references"><h2>权威资料</h2><ol class="source-list"><li><a href="https://steveicarus.github.io/iverilog/usage/simulation.html">Icarus：Simulation Using Icarus Verilog</a></li><li><a href="https://steveicarus.github.io/iverilog/usage/getting_started.html">Icarus：Getting Started</a></li><li><a href="https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Defining-Clock-Constraints">AMD UG949：Defining Clock Constraints</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="07.html">← 上一章</a><a href="../index.html">全部章节</a><a href="09.html">下一章 →</a></nav></article></main></div></body></html>
