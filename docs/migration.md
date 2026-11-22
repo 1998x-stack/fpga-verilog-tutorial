@@ -9,6 +9,6 @@
 | `/theme.css` | `/assets/css/legacy.css` | 原路径保留、旧章节复制到 `/chapters/theme.css` |
 | `/courses.json` | `/data/courses.json` | 原路径保留 |
 
-首先只重写 01—05。06—28 的 HTML 内容不改动，只在新路径复用 Git blob。其旧页目录链接在 `chapters/` 内继续相互指向，目录入口由 `chapters/index.html` 回到网站首页。
+目前已重写 01—10。11—28 的 HTML 内容不改动，只在新路径复用 Git blob。其旧页目录链接在 `chapters/` 内继续相互指向，目录入口由 `chapters/index.html` 回到网站首页。
 
 Pages：`main` 推送后由 `.github/workflows/pages.yml` 部署静态根目录，仓库 GitHub Pages 设置需要选用 GitHub Actions。不能把配置提交当作上线验证。
