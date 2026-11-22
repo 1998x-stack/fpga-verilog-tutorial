@@ -1,289 +1,61 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第28章 综合项目：FPGA图像采集与处理系统</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🔧 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
-            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
-            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
-            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
-            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
-            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
-            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
-            <li><a href="08.html">第8章 Testbench编写与仿真验证</a></li>
-            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
-            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
-            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
-            <li><a href="12.html">第12章 流水线设计技术</a></li>
-            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
-            <li><a href="14.html">第14章 时序约束与分析基础</a></li>
-            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
-            <li><a href="16.html">第16章 Quartus Prime与ModelSim</a></li>
-            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
-            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
-            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
-            <li><a href="20.html">第20章 软核处理器集成</a></li>
-            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
-            <li><a href="22.html">第22章 高速串行接口设计</a></li>
-            <li><a href="23.html">第23章 硬件调试方法论</a></li>
-            <li><a href="24.html">第24章 开源工具链实战</a></li>
-            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
-            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
-            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
-            <li><a href="28.html" class="active">第28章 综合项目：FPGA图像采集与处理系统</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第28章 综合项目：FPGA图像采集与处理系统</h2>
-
-        <p>欢迎来到本教程的最后一章。前 27 章我们学习了 Verilog 语法、数字电路设计、仿真验证、总线协议、时序分析、HLS、AI 辅助开发——现在是把这一切串起来的时候了。本章我们要亲手打造一个完整的嵌入式视觉系统：通过摄像头采集实时视频，在 FPGA 中进行图像处理，然后显示在显示器上。</p>
-
-        <p>这不是一个"玩具项目"。这个系统中融合了通信接口（DVP/SCCB）、存储子系统（DDR3）、数据流架构（AXI4-Stream）、图像算法管道（定点卷积）、时序控制（VGA/HDMI）、跨时钟域同步——覆盖了本书全部核心知识点。</p>
-
-        <h3>28.1 项目概述</h3>
-
-        <p>系统的数据流是这样走的：</p>
-
-        <p><strong>OV5640 摄像头 → DVP 8-bit 并行接口 → 帧缓存写入 DDR3（MIG IP 核）→ 图像处理流水线（灰度转换 + Sobel 边缘检测）→ 帧缓存读出 → VGA/HDMI 显示输出</strong></p>
-
-        <p>对应的硬件平台推荐：Xilinx Artix-7 (XC7A35T) 或 Zynq-7010 开发板（带 HDMI 输出 + 至少 256 MB DDR3 + OV5640 摄像头接口）。如果使用其他平台，需要相应调整 MIG 配置和显示时序参数。</p>
-
-        <div class="highlight">
-            <strong>系统性能目标（640x480@60fps）：</strong>像素时钟 25.175 MHz，每帧 307,200 像素，每像素 16 位（RGB565），每秒 18.4 MB 数据吞吐。Sobel 处理流水线要求在 1 个像素时钟周期内完成 3×3 卷积计算。DDR3 读写带宽要求（读 + 写同时进行）至少 36.8 MB/s——对于 533 MHz DDR3 的 64-bit 接口来说，绰绰有余。
-        </div>
-
-        <h3>28.2 系统架构设计</h3>
-
-        <p>顶层划分为四个功能模块，通过 AXI4-Stream 互联：</p>
-
-        <table>
-            <tr><th>模块</th><th>输入</th><th>输出</th><th>时钟域</th><th>资源估算</th></tr>
-            <tr><td>camera_capture</td><td>DVP 8-bit (PCLK, HSYNC, VSYNC, DATA[7:0])</td><td>AXI4-Stream (pixel_data, valid, ready, last)</td><td>PCLK (~24 MHz)</td><td>~120 LUT + ~80 FF + 2 BRAM (line buffer)</td></tr>
-            <tr><td>frame_buffer</td><td>AXI4-Stream (写入), AXI4 Read Master (读回)</td><td>AXI4-MM ↔ DDR3 (MIG IP 核)</td><td>clk_200MHz (MIG), pixel_clk</td><td>MIG IP 核 ~3 BRAM + 1500 LUT</td></tr>
-            <tr><td>image_processor</td><td>AXI4-Stream (RGB565)</td><td>AXI4-Stream (二值化边缘图)</td><td>pixel_clk</td><td>~350 LUT + ~200 FF + 3 BRAM (行缓存)</td></tr>
-            <tr><td>vga_display</td><td>AXI4-Stream (像素数据 + tlast)</td><td>VGA (R[3:0], G[3:0], B[3:0], HSYNC, VSYNC)</td><td>pixel_clk</td><td>~80 LUT + ~50 FF</td></tr>
-        </table>
-
-        <h3>28.3 摄像头采集模块</h3>
-
-        <p>OV5640 支持 DVP 8-bit 并行接口和 SCCB（类似 I2C）配置总线。上电后，我们需要通过 SCCB 写寄存器来配置输出格式为 RGB565、分辨率 640x480、帧率 60 fps。</p>
-
-        <table>
-            <tr><th>寄存器地址</th><th>值</th><th>功能</th></tr>
-            <tr><td>0x3103</td><td>0x03</td><td>系统时钟使能</td></tr>
-            <tr><td>0x3035</td><td>0x21</td><td>PLL 分频配置</td></tr>
-            <tr><td>0x3036</td><td>0x46</td><td>PLL 倍频配置</td></tr>
-            <tr><td>0x3820</td><td>0x40</td><td>垂直翻转关闭</td></tr>
-            <tr><td>0x3821</td><td>0x00</td><td>水平镜像关闭</td></tr>
-            <tr><td>0x4300</td><td>0x61</td><td>输出格式 — RGB565</td></tr>
-            <tr><td>0x501F</td><td>0x01</td><td>ISP 格式选择 — RGB</td></tr>
-            <tr><td>0x4408</td><td>0x02</td><td>VSYNC 极性设置</td></tr>
-        </table>
-
-        <p>采集模块的核心是 DVP 时序解码：VSYNC 上升沿表示一帧开始，HSYNC 高电平期间每个 PCLK 上升沿传输一个字节数据（两个 PCLK = 一个 RGB565 像素）。我们需要实例化一个行缓存（Line Buffer），暂存一行像素数据，组装成 AXI4-Stream 包发送。</p>
-
-        <h3>28.4 图像处理流水线</h3>
-
-        <p>图像处理分为三步：RGB565 → 灰度图 → Sobel 边缘检测 → 二值化输出。</p>
-
-        <p><strong>RGB → 灰度：</strong>使用定点加权平均 <code>Gray = (77*R + 150*G + 29*B) &gt;&gt; 8</code>，转换为 8-bit 灰度值。权重来自 ITU-R BT.601 标准，用整数定点实现避免浮点运算。</p>
-
-        <p><strong>Sobel 边缘检测：</strong>3×3 卷积窗口通过两个 Line Buffer + 一级 Shift Register 生成。Sobel 算子分为水平方向 Gx 和垂直方向 Gy，梯度幅值近似为 <code>|Gx| + |Gy|</code>（绝对值之和，避免开方运算）。</p>
-
-        <pre><code>// Sobel 边缘检测模块 — 核心卷积逻辑
-module sobel_edge_detect #(
-    parameter DATA_WIDTH = 8
-)(
-    input  wire clk,
-    input  wire rst_n,
-    input  wire [DATA_WIDTH-1:0] pixel_in,    // 灰度像素输入
-    input  wire pixel_valid,
-    output reg  pixel_ready,
-    output reg  edge_out,                      // 二值化边缘输出
-    output reg  edge_valid,
-    input  wire edge_ready
-);
-
-    // 行缓存 — 3 行数据同时可用
-    // line_buf[0] = 当前行, line_buf[1] = 上一行, line_buf[2] = 上上行
-    reg [DATA_WIDTH-1:0] line_buf [0:2][0:639];
-    reg [DATA_WIDTH-1:0] p [0:2][0:2];         // 3x3 窗口
-
-    integer row, col;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            for (row = 0; row &lt; 3; row++)
-                for (col = 0; col &lt; 3; col++)
-                    p[row][col] &lt;= 0;
-        end else if (pixel_valid &amp;&amp; pixel_ready) begin
-            // 移位窗口
-            p[0][0] &lt;= pixel_in;                // 新像素进入窗口左上
-            p[0][1] &lt;= p[0][0];
-            p[0][2] &lt;= p[0][1];
-            p[1][0] &lt;= line_buf[1][0];          // 上一行对应位置
-            p[1][1] &lt;= p[1][0];
-            p[1][2] &lt;= p[1][1];
-            p[2][0] &lt;= line_buf[2][0];          // 上上行对应位置
-            p[2][1] &lt;= p[2][0];
-            p[2][2] &lt;= p[2][1];
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从摄像头 PHY、多时钟域、AXI4-Stream Video、RGB 灰度处理、DDR 双缓冲到 VGA/HDMI 显示，构建可验证的 FPGA 视频系统。"><title>FPGA 图像采集与处理系统：流接口、帧缓存与显示工程 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 28 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#architecture">01 / 从摄像头到显示屏，首先是一个多时钟、带宽受限的系统</a><a href="#signals">02 / 视频流的最重要契约：SOF 与 EOL 是不同事件</a><a href="#pixel">03 / 可运行处理核：RGB888 → 8-bit 灰度 → 二值阈值</a><a href="#lab">04 / 三帧合成图像实验：独立记分牌验证背压与边界</a><a href="#neighborhood">05 / 需要 Sobel 和图像邻域时，为什么必须加入行缓存</a><a href="#buffer">06 / DDR 双缓冲：内存大小与真实带宽是两个不同预算</a><a href="#display">07 / 输出 VGA/HDMI：像素数据与 blanking 时序不可混合</a><a href="#integration">08 / 系统级 Bring-up：逐层收紧故障空间</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 28 · Capstone systems engineering</p><h1>FPGA 图像采集与处理系统：流接口、帧缓存与显示工程</h1><p class="dek">把 Camera、AXI4-Stream Video、像素处理、DDR 双缓冲和显示时序拆成可验证的工程契约，并用可仿真的 RGB 阈值流水线贯通数据与控制标记。</p></header><section id="architecture" aria-labelledby="architecture-title"><h2 id="architecture-title">01 / 从摄像头到显示屏，首先是一个多时钟、带宽受限的系统</h2>
+<p class="intro">摄像头输出的是按像素时钟或高速物理层恢复时钟到来的连续图像；显示器则要求严格的像素与同步时序。两端的时钟不一定相同，中间还可能经过不同宽度的像素处理、DDR 总线和处理器配置。要建成可靠系统，必须同时保证像素值正确、行帧边界正确、带宽充足以及存储所有权正确。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-video-system.svg" alt="摄像头接口、流式像素处理、DDR 帧写入、双缓冲、帧读取以及显示接口分别处理不同的时钟和协议。" width="960" height="540" loading="lazy"></div><figcaption>本章给出完整架构与可运行的一个像素处理子模块；DDR、PHY、CDC 和显示时序需要针对板卡再集成。</figcaption></figure>
+<p>例如一个实际系统可能分为：传感器配置 I²C/SCCB、DVP 或 MIPI CSI-2 摄像头接收、RAW Bayer 去马赛克（如果传感器输出 Bayer）、RGB 图像运算、AXI4-Stream Video → AXI4-MM Frame Buffer Write、DDR 双缓冲、Frame Buffer Read、Video Timing Controller、HDMI/VGA/DSI 输出。每一级都需要数据格式、宽高、时钟与错误处理契约。AMD <a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations">PG278 · System Considerations</a>介绍了 Video In、frame buffer、AXI4-Stream 与显示 timing 的连接场景。</p>
+<p><strong>设计范围：</strong>仓库中实际提供一个同域、单像素深度的 <code>RGB888→Gray8→Binary8</code> 处理 stage 和可复现的仿真；其他模块会按真实工程需求解释接口、约束与验证计划，但不假称已有 camera PHY、DDR 控制器或显示 bitstream。</p></section><section id="signals" aria-labelledby="signals-title"><h2 id="signals-title">02 / 视频流的最重要契约：SOF 与 EOL 是不同事件</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-video-sidebands.svg" alt="7×4 合成画面中，只有第一像素带 SOF，而每行第 7 个像素带 EOL；仅在 valid/ready 握手时消费。" width="960" height="540" loading="lazy"></div><figcaption>AMD AXI4-Stream Video 通常使用 TUSER[0] 表示帧起始，TLAST 表示每行结束；不是每帧结束。</figcaption></figure>
+<p>AXI4-Stream 的传输发生在同一时钟上升沿的 <code>TVALID &amp;&amp; TREADY</code> 同时为 1 时。若接收方拉低 READY，发送方必须维持 VALID，并使 TDATA、TUSER、TLAST 等同一传输的内容保持稳定，直到握手成功；任何内部计数器也只能在真实像素交接成功时前进。有关稳定性见 <a href="https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb">Arm AMBA AXI Protocol Specification</a>。</p>
+<p>AMD AXI4-Stream Video 协议约定：帧第一个像素带 <code>TUSER[0]=1</code>（Start of Frame，SOF），行的最后一个像素带 <code>TLAST=1</code>（End of Line，EOL），前者每帧一次、后者每行一次。详见 <a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals">AMD PG278 · EOL and SOF</a>。</p>
+<p>摄像头 DVP 可能持续发送像素而不支持接收方任意 backpressure，MIPI CSI-2 也有独立的链路/包处理规则；因此不可以仅将 DVP 的 <code>pclk, vsync, href, data</code> 直接接到一个带 READY 的 AXI 输入端就宣称协议兼容。必须定义完整的帧同步、行宽检测、丢帧策略、跨时钟 FIFO 容量，以及在上游不能暂停而下游发生阻塞时如何保护数据完整性。</p>
+<div class="table-wrap"><table><caption>像素域接口规范（示例中单像素 / beat）</caption><thead><tr><th>信号</th><th>意义</th><th>约束</th></tr></thead><tbody><tr><td>TDATA[23:0]</td><td>{R,G,B}；RGB888</td><td>传输停顿时保持</td></tr><tr><td>TVALID</td><td>当前 beat 有效</td><td>提交握手前不得任意撤销</td></tr><tr><td>TREADY</td><td>下游此拍可以接收</td><td>可能动态拉低</td></tr><tr><td>TUSER[0]</td><td>本帧首像素标志</td><td>随数据一同握手</td></tr><tr><td>TLAST</td><td>本行最后像素</td><td>不是本帧末尾</td></tr></tbody></table></div></section><section id="pixel" aria-labelledby="pixel-title"><h2 id="pixel-title">03 / 可运行处理核：RGB888 → 8-bit 灰度 → 二值阈值</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-pixel-threshold.svg" alt="输入 R/G/B 三个 8-bit 通道，经整数加权转换为灰度，再与阈值比较，输出 0 或 255。" width="960" height="540" loading="lazy"></div><figcaption>整个单像素 pipeline 将 SOF/EOL 和数据一起打拍；输出被堵住时四个字段保持。</figcaption></figure>
+<p>为了让实验可以在普通计算机上确定性测试，本章选择不需要邻域窗口的像素操作：<code>gray = (77·R+150·G+29·B+128) >> 8</code>。由于 <code>77+150+29=256</code>，三通道都为 255 时，加上 128 的最大和为 65,408，能够放进 16-bit 无符号整数。用 <code>gray >= threshold</code> 产生 8'hFF，否则 8'h00。</p>
+<p>系数 <code>(77,150,29)/256</code> 是一个供数字硬件使用的近似灰度配比，不是色彩管理标准的完整色域和 gamma 校正流程。RGB 的线性/非线性编码以及视频色彩矩阵在工程里必须另行约定；本模块只声明该固定整数映射。</p>
+<pre><code>wire [7:0] r=s_tdata[23:16],g=s_tdata[15:8],b=s_tdata[7:0];
+wire [15:0] weighted=r*16'd77+g*16'd150+b*16'd29+16'd128;
+wire [7:0] gray=weighted[15:8];
+assign s_tready=~m_tvalid | m_tready;
+always @(posedge clk) begin
+    if (!rst_n) m_tvalid &lt;= 0;
+    else if (s_tready) begin
+        m_tvalid &lt;= s_tvalid;
+        if (s_tvalid) begin
+            m_tdata &lt;= gray &gt;= threshold ? 8'hff : 8'h00;
+            m_tuser &lt;= s_tuser;
+            m_tlast &lt;= s_tlast;
         end
     end
-
-    // Sobel 算子 — 梯度计算（组合逻辑）
-    // Gx = (p[0][2]+2*p[1][2]+p[2][2]) - (p[0][0]+2*p[1][0]+p[2][0])
-    // Gy = (p[2][0]+2*p[2][1]+p[2][2]) - (p[0][0]+2*p[0][1]+p[0][2])
-    wire signed [10:0] Gx, Gy;
-    assign Gx = (p[0][2] + {p[1][2], 1'b0} + p[2][2])
-              - (p[0][0] + {p[1][0], 1'b0} + p[2][0]);
-    assign Gy = (p[2][0] + {p[2][1], 1'b0} + p[2][2])
-              - (p[0][0] + {p[0][1], 1'b0} + p[0][2]);
-
-    // 梯度幅值近似：|Gx| + |Gy|
-    wire [10:0] grad_mag;
-    assign grad_mag = (Gx[10] ? (~Gx + 1'b1) : Gx)
-                    + (Gy[10] ? (~Gy + 1'b1) : Gy);
-
-    // 阈值二值化 — 输出 0/1 边缘标志
-    localparam THRESHOLD = 11'd80;
-    always @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            edge_out &lt;= 0;
-        end else begin
-            edge_out &lt;= (grad_mag &gt; THRESHOLD) ? 1'b1 : 1'b0;
-        end
-    end
-
-endmodule</code></pre>
-
-        <h3>28.5 DDR3 帧缓存与乒乓缓冲</h3>
-
-        <p>DDR3 帧缓存通过 MIG IP 核实现。配置要点：时钟频率 200 MHz（DDR3 等效 533 MHz）、数据宽度 32 位（4 bytes/cycle）、突发长度 8。我们使用 AXI4 接口与 MIG 连接。</p>
-
-        <p><strong>乒乓缓冲策略：</strong>在 DDR3 中划分两个帧缓冲区（Frame Buffer A 和 B）。写入模块和读取模块各自指向不同的缓冲区——写模块写入 A 时，读模块从 B 读取；完成一帧后交换指针。这样避免了"写一半读"造成的画面撕裂（tearing）。</p>
-
-        <div class="tip">
-            <strong>实现细节：</strong>指针交换由一个简单的标志寄存器控制。当 camera_capture 模块检测到 VSYNC 上升沿（一帧结束），写入当前帧计数加一，读指针自动指向刚刚写入完毕的帧。这个寄存器用两级同步器跨到像素时钟域和数据时钟域，确保指针切换安全。
-        </div>
-
-        <h3>28.6 VGA 显示时序</h3>
-
-        <p>以 640x480@60Hz 为例，像素时钟为 25.175 MHz。VGA 时序分为行同步和场同步：</p>
-
-        <pre><code>// VGA 时序发生器 — 640x480@60Hz
-module vga_timing_gen #(
-    parameter  H_VISIBLE  = 640,
-    parameter  H_FP       = 16,    // Front Porch
-    parameter  H_SYNC     = 96,    // Sync Pulse
-    parameter  H_BP       = 48,    // Back Porch
-    parameter  V_VISIBLE  = 480,
-    parameter  V_FP       = 10,
-    parameter  V_SYNC     = 2,
-    parameter  V_BP       = 33
-)(
-    input  wire clk_25m,           // 25.175 MHz 像素时钟
-    input  wire rst_n,
-    output reg  hsync,
-    output reg  vsync,
-    output reg  de,                // Data Enable
-    output reg  [9:0] hcount,      // 当前列 (0 ~ H_TOTAL-1)
-    output reg  [9:0] vcount       // 当前行 (0 ~ V_TOTAL-1)
-);
-
-    localparam H_TOTAL = H_VISIBLE + H_FP + H_SYNC + H_BP; // 800
-    localparam V_TOTAL = V_VISIBLE + V_FP + V_SYNC + V_BP; // 525
-
-    // 行/场计数器
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) begin
-            hcount &lt;= 0;
-            vcount &lt;= 0;
-        end else begin
-            if (hcount == H_TOTAL - 1) begin
-                hcount &lt;= 0;
-                vcount &lt;= (vcount == V_TOTAL - 1) ? 0 : vcount + 1;
-            end else begin
-                hcount &lt;= hcount + 1;
-            end
-        end
-    end
-
-    // HSYNC — 在同步脉冲区间拉低
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) hsync &lt;= 1;
-        else hsync &lt;= ~((hcount &gt;= H_VISIBLE + H_FP) &amp;&amp;
-                        (hcount &lt; H_VISIBLE + H_FP + H_SYNC));
-    end
-
-    // VSYNC — 在同步脉冲区间拉低
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) vsync &lt;= 1;
-        else vsync &lt;= ~((vcount &gt;= V_VISIBLE + V_FP) &amp;&amp;
-                        (vcount &lt; V_VISIBLE + V_FP + V_SYNC));
-    end
-
-    // DE — 在有效显示区间为高
-    always @(posedge clk_25m or negedge rst_n) begin
-        if (!rst_n) de &lt;= 0;
-        else de &lt;= (hcount &lt; H_VISIBLE) &amp;&amp; (vcount &lt; V_VISIBLE);
-    end
-
-endmodule</code></pre>
-
-        <div class="highlight">
-            <strong>关于 HDMI 替代方案：</strong>如果开发板有 HDMI 输出而不是 VGA，可以使用 TMDS 编码器（如 Sil 1136 或 ADV7511）将 RGB + HSYNC/VSYNC/DE 转换为 HDMI 差分信号。RGB 数据通道只需将上述 VGA 模块输出的 12-bit RGB（4:4:4）送入 TMDS 编码器即可。
-        </div>
-
-        <h3>28.7 集成与调试</h3>
-
-        <p>在 Vivado Block Design 中，将 camera_capture、image_processor、vga_display 作为 RTL 模块添加，MIG IP 核通过 Block Design 的 AXI SmartConnect 连接到 frame_buffer 模块的 AXI Full Master 接口。</p>
-
-        <p>调试分三个阶段进行：</p>
-
-        <p><strong>第一阶段：</strong>ILA 抓取 camera_capture 模块输出端的 AXI4-Stream 信号。验证 HSYNC/VSYNC 时序正确、每个帧的像素计数等于 640×480。如果摄像头配置失败，检查 SCCB（I2C）初始化时序——这是最常见的失败点。</p>
-
-        <p><strong>第二阶段：</strong>ILA 抓取 DDR3 写入前后的数据。写入前（原始摄像头数据）和写入后（从 DDR3 读回）做一个像素级对比——确保 MIG 读写正确。常见问题是 AXI 地址对齐错误导致的数据错位。</p>
-
-        <p><strong>第三阶段：</strong>ILA 抓取 Sobel 模块输出端的边缘二值化结果。输入一组已知模式的测试图像（棋盘格、条纹），观察边缘是否正确。调整 THRESHOLD 参数以适应不同光照条件。</p>
-
-        <div class="warning">
-            <strong>踩坑故事——跨时钟域导致的撕裂帧：</strong>第一个版本中，我将摄像头 PCLK 域的输出直接连到了 MIG 的写接口（运行在 200 MHz 的 clk_200 域），中间没有加异步 FIFO。结果第一帧显示出来是撕裂的——上面三分之二是正确的画面，下面三分之一是上一帧的残留数据。原因很简单：写指针跨时钟域没有同步，DDR3 写控制器在摄像头域和 MIG 域之间按错误的地址持续写入。解决方案是在 camera_capture 和 MIG 写接口之间插入一个 AXI4-Stream 异步 FIFO，深度至少为一行像素的 2 倍（1280 个 16-bit 像素）。教训：<strong>只要接口跨越不同时钟源——哪怕看起来频率接近——也一定要用异步 FIFO 或双时钟域握手电路。</strong>
-        </div>
-
-        <h3>28.8 结语：一段学习之旅的终点，也是工程之路的起点</h3>
-
-        <p>二十八章。从 1985 年 XC2064 的 64 个逻辑单元，到 2026 年用 AI 辅助生成 AXI4-Stream FIFO，再到今天 OV5640 + DDR3 + Sobel 边缘检测的完整系统——你走过了一条相当完整的 FPGA 工程师成长之路。</p>
-
-        <p>回顾一下我们学会的东西：Verilog 的可综合语法和仿真验证（第 3-8 章）、UART/SPI/I2C 通信协议在 FPGA 上的实现细节（第 9-10 章）、跨时钟域处理和时序收敛（第 13-14 章）、Vivado 和 Quartus 的工程实践（第 15-16 章）、AXI4 全线协议的深度理解（第 19 章）、软核和 RISC-V 硬核的集成与定制（第 20-21 章）、硬件调试方法论的体系化掌握（第 23 章）、开源工具链的独立使用能力（第 24 章）、HLS 的合理使用和 AI 辅助开发的协作模式（第 26-27 章）。</p>
-
-        <p>这些知识就像是工具箱里的不同螺丝刀——你不需要每次都用全部，但当特定的问题出现时，你知道该用哪一把。</p>
-
-        <div class="tip">
-            <strong>下一步的建议：</strong>如果你希望在 FPGA 这条路上继续深入，我推荐三个阶段性的方向——<br>
-            <strong>短期（1-3 个月）：</strong>把你的开发板上的外设全驱动一遍。摄像头、HDMI、以太网、SD 卡——每驱动一个新外设，都在加深你对"真实硬件是如何工作的"的理解。<br>
-            <strong>中期（3-12 个月）：</strong>参与一个开源 FPGA 项目。OpenCPI、LiteX、FuseSoC 都是很好的起点。在开源项目里，你能看到真正的工程代码是如何组织的，也能接触到多人协作的代码评审流程。<br>
-            <strong>长期（1-3 年）：</strong>选择一个细分方向深度耕耘——要么走向系统架构（SoC 设计、NoC、异构计算），要么走向算法加速（AI 推理引擎、视频编解码器、5G LDPC 编码），要么走向 EDA 工具链（Yosys 插件开发、布局布线算法优化）。
-        </div>
-
-        <p>最后，记住 1.7 节的那个故事——仿真不是万能的，硬件调试需要一整套方法论。保持怀疑、保持实验、保持对"为什么这个波形长这样"的好奇心。一个成功的 FPGA 工程师，不是"什么都会写"的人，而是"什么都能 debug"的人。</p>
-
-        <p>感谢你陪伴我走完这 28 章。现在——关掉教程，打开 Vivado，开始搭建你自己的系统吧。</p>
-
-        <div class="footer-nav">
-            <a href="27.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="javascript:void(0)">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+end</code></pre>
+<p>该 RTL 使用输出寄存器作为 one-entry elastic stage：<code>m_tvalid=1 &amp;&amp; m_tready=0</code> 时保留数据和 sideband；输出可以被消耗的同拍允许接收新输入。样本与 TUSER/TLAST 的位宽在输入输出不同（RGB888 → Binary8），但是两侧仍各只有一个 pixel/beat。若阈值运行时来自异步 CPU 寄存器，应先完成 CDC 或 frame-boundary 同步更新，不能直接把异步配置总线穿到组合比较器。</p></section><section id="lab" aria-labelledby="lab-title"><h2 id="lab-title">04 / 三帧合成图像实验：独立记分牌验证背压与边界</h2>
+<p>运行 <code>tb_rgb_threshold_stream.v</code>，它发送三帧 7×4 的合成 RGB 图，按固定公式构造每个像素，并在不同周期随机拉低 <code>m_tready</code>。testbench 以纯整数参考算法独立算出预期黑白值、SOF 和 EOL，在输出握手时检查对应 pixel 的顺序与值；还会检查上拍背压时数据与 sideband 是否保持稳定、drain 后是否剩余有效输出。</p>
+<pre><code>iverilog -g2012 -Wall -s tb_rgb_threshold_stream \
+  -o /tmp/video.vvp \
+  examples/rtl/rgb_threshold_stream.v \
+  examples/tb/tb_rgb_threshold_stream.v
+vvp /tmp/video.vvp
+# PASS rgb_threshold_stream (... pixels, ... stalls)</code></pre>
+<p>该测试能发现常见错误：把 <code>TLAST</code> 当帧末尾、SOF 每行重复、输出堵塞时覆盖数据、只延迟 TDATA 不延迟 TUSER/TLAST、未按握手消费像素、灰度位宽溢出或舍入错误。更高等级的验证还应加入阈值动态配置、复位发生于帧中、视频丢包/超时恢复、随机帧宽高和实际 DMA/DDR 背压。</p>
+<p>注意输出状态来自像素同步时钟：这份 RTL <strong>没有</strong>直接生成 VGA 的 HSYNC/VSYNC，也没有模拟传感器输入和板级 connector。其“通过”只能证明像素级运算和规定的 ready/valid 协议在所测轨迹上正确。</p></section><section id="neighborhood" aria-labelledby="neighborhood-title"><h2 id="neighborhood-title">05 / 需要 Sobel 和图像邻域时，为什么必须加入行缓存</h2>
+<p>逐像素灰度/阈值的计算只依赖当前 <code>R,G,B</code>；3×3 Sobel 则依赖当前位置左右、上下各一行的数据。一个典型的流式实现需要保存至少前两行，并在当前行用移位寄存器形成三列窗口。若像素宽度是 W 且灰度每像素 8-bit，两条历史行缓存的原始数据下界为约 <code>2×W×8</code> bit；还需窗口寄存器、边界控制和 FIFO 额外资源。</p>
+<p>Sobel 的两个离散卷积核可写成 <code>Gx=[[-1,0,1],[-2,0,2],[-1,0,1]]</code>、<code>Gy=[[-1,-2,-1],[0,0,0],[1,2,1]]</code>。输出可能使用 <code>|Gx|+|Gy|</code> 近似梯度或更昂贵的平方根定义；位宽需要容纳有符号中间值。上下左右边界应约定补零、复制或丢弃，不能在 RTL 中默认一个未说明的边界模式。</p>
+<p>若架构同时支持 backpressure，窗口和 x/y 坐标也必须只在有效交接时推进，并确保延迟 N 拍后的 SOF/EOL 仍与其对应像素对齐。后续增加 Sobel 应先在小尺寸图（如 5×4）对照 Python golden，再开展逐列逐行与跨帧验证。本文没有把简单 threshold 电路冒充成 Sobel 实现。</p></section><section id="buffer" aria-labelledby="buffer-title"><h2 id="buffer-title">06 / DDR 双缓冲：内存大小与真实带宽是两个不同预算</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-frame-ownership.svg" alt="写入者拥有未完成帧的写权限；读取者只读取已经完成的帧；只有安全帧边界才能交换所有权。" width="960" height="540" loading="lazy"></div><figcaption>双缓冲是状态机与所有权协议，而不仅是两个地址。若写者追上慢读者，要定义丢帧、三缓冲或阻塞策略。</figcaption></figure>
+<p>以 RGB888 1920×1080 为例，一帧裸像素为 <code>1920×1080×3 = 6,220,800 bytes</code>；两帧的未对齐存储总量为 12,441,600 bytes。若存储图像为二值 8-bit 而非 RGB888，则每像素只需 1 byte，但仍取决于像素打包与 stride；绝不能拿处理前的 3-byte 格式预算和处理后的 1-byte 格式混算。</p>
+<div class="math-scroll" tabindex="0" role="region" aria-label="帧缓冲裸像素计算公式，可横向滚动"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="Active pixel bytes per second equal width times height times bytes per pixel times frames per second"><msub><mi>B</mi><mi>active</mi></msub><mo>=</mo><mi>W</mi><mo>×</mo><mi>H</mi><mo>×</mo><msub><mi>b</mi><mi>pixel</mi></msub><mo>×</mo><msub><mi>f</mi><mi>frame</mi></msub></math></div>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-bandwidth.svg" alt="1080p RGB888 每帧 6,220,800 字节，双缓冲 12,441,600 字节，60fps 写入约 373MB/s，双向读写约 746MB/s 的裸数据下界。" width="960" height="540" loading="lazy"></div><figcaption>该图仅计算未压缩活动像素数据，不包含总线效率、突发长度、stride 对齐、DDR refresh 或其他 master 的争用。</figcaption></figure>
+<p>在 60 fps 情况下，连续写入的裸像素速率是 <code>373,248,000 B/s</code>；若同等分辨率持续读出，还至少需要 <code>746,496,000 B/s</code> 的读写活跃像素搬运总量（方向分别计算），并不等于 DDR 控制器必须提供的峰值理论带宽。真实 DDR 预算还需要考虑 AXI burst、读写切换、行跨度、显示 blanking、refresh、仲裁、FIFO 和极端访问模式。AMD <a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview">PG278 · Frame Buffer Overview</a> 的 IP 将 AXI4-Stream Video 与 AXI4-MM DDR 分开处理。</p>
+<pre><code>python3 scripts/frame_budget.py --width 1920 --height 1080 \
+  --bytes-per-pixel 3 --fps 60 --buffers 2
+# bytes_per_frame: 6220800
+# allocated_bytes: 12441600
+# write_bytes_per_second: 373248000
+# read_write_bytes_per_second: 746496000</code></pre>
+<p>双缓冲安全切换需要至少三个状态条件：frame writer 彻底完成当前帧写入、reader 不再访问将被覆盖的 buffer、以及显示端在安全帧边界切换 base address。仅凭 VSYNC 高电平替换地址无法证明 DDR 中的帧已全部可用。若读者落后而下一帧必须到达，应选择三缓冲或显式丢帧策略，而不是覆盖正在读取的图像。</p></section><section id="display" aria-labelledby="display-title"><h2 id="display-title">07 / 输出 VGA/HDMI：像素数据与 blanking 时序不可混合</h2>
+<p>显示器需要总水平周期、总垂直行数、同步极性、front porch、back porch 和 active video 的一致配置。对一组给定的显示模式，可写为 <code>Htotal = Hactive + Hfront + Hsync + Hback</code>、<code>Vtotal = Vactive + Vfront + Vsync + Vback</code>，然后 <code>f_pixel = Htotal × Vtotal × refresh_rate</code>。因此仅用 <code>640×480×60</code> 计算 pixel clock，会漏掉空白区，不是正确的视频时序。</p>
+<p>VGA 需要模拟 RGB DAC 或适配电阻网络、HSYNC/VSYNC 和有效信号；HDMI 需要满足 TMDS（或新版本的不同物理层）、编码与时钟/收发器条件。实际端口约束、I/O 电气标准和显示时钟源不能从本章任意猜测。Video Timing Controller 与 Video Out/HDMI IP 的时钟和 CDC 也需要按厂家文档设计，绝不能把任意 25 MHz 算例当作对所有屏幕可用的时钟。</p>
+<p>逐像素 stream 的 <code>TUSER/TLAST</code> 不等价于 VGA/HDMI 引脚上的 HSYNC/VSYNC；转换器必须根据 frame/line 标记、宽高和 timing 模式生成 active pixel 与 blanking。验证时先用 test pattern 检查显示输出，再接入实际摄像头和 DDR，逐层排除输入/输出 clock 域之间的违例。</p></section><section id="integration" aria-labelledby="integration-title"><h2 id="integration-title">08 / 系统级 Bring-up：逐层收紧故障空间</h2>
+<div class="table-wrap"><table><caption>综合项目的验收顺序</caption><thead><tr><th>阶段</th><th>检查点</th><th>常见失败</th></tr></thead><tbody><tr><td>时钟/复位</td><td>外部时钟、PLL lock、reset release、CDC</td><td>完全无图、随机启动</td></tr><tr><td>摄像头 RX</td><td>帧、行、像素计数与颜色格式</td><td>行错位、色彩异常</td></tr><tr><td>像素处理</td><td>Golden、SOF/EOL、背压</td><td>第一/最后像素丢失</td></tr><tr><td>DDR write/read</td><td>buffer 归属、burst、stride、速率</td><td>撕裂、旧帧、偶发花屏</td></tr><tr><td>显示输出</td><td>HS/VS、active area、PLL、PHY</td><td>黑屏、不同步、偏移</td></tr><tr><td>生产签核</td><td>ILA 观察、CDC、STA、power、board log</td><td>仿真正确但板上不稳定</td></tr></tbody></table></div>
+<p>对没有目标开发板的教学环境，先用纯 RTL 视频 testbench 验证 7×4 帧数据，再用 Python 预算模型核对 1080p 带宽；接下来读者可以替换实际的 Video In、AXI Frame Buffer、Video Out IP、选择一块确定的板卡、导入真实 timing/IO 约束，并保留每个阶段的仿真和实现日志。</p>
+<p><strong>最重要的工程结论：</strong>摄像头到显示链路不是一个单独 RTL 文件。任何一个环节缺失时，都应清楚声明该系统尚未完成；只有将目标 part、板卡原理图、时钟、DDR 物理约束、PHY 配置、RTL/IP 版本和实际测量连接起来，才能给出真实的端到端验收结论。</p>
+<div class="callout warn">已实现并纳入回归：RGB888 整数灰度与阈值处理、注册式背压传递、SOF/EOL 对齐，以及 Python 裸像素预算。未实现/未测量：摄像头物理层、去马赛克、3×3 Sobel、DDR 控制与 DMA、跨时钟 FIFO、显示定时器、HDMI/VGA PHY、真实功耗、时序签核和开发板 bitstream。</div>
+<details class="exercise"><summary>自测：一帧 1920×1080 RGB888 在 60fps 下，连续读写裸像素数据至少需要多少吞吐？</summary><p>一帧 1920×1080×3 = 6,220,800 byte，60fps 的单向写入是 373,248,000 B/s；若另一方向同样持续读取，加起来至少搬运 746,496,000 B/s 裸像素数据。DDR 物理带宽预算还必须加上协议、仲裁、刷新、对齐和时序余量。</p></details></section><section id="references"><h2>官方协议与器件实现资料</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals" target="_blank" rel="noopener noreferrer">AMD PG278 2026.1 · AXI4-Stream Video SOF/EOL</a></li><li><a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations" target="_blank" rel="noopener noreferrer">AMD PG278 2026.1 · Video system integration</a></li><li><a href="https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview" target="_blank" rel="noopener noreferrer">AMD PG278 2026.1 · Frame buffer architecture</a></li><li><a href="https://docs.amd.com/r/en-US/pg043_v_vid_in_axi4s/AXI4-Stream-Interface" target="_blank" rel="noopener noreferrer">AMD PG043 · Video In to AXI4-Stream</a></li><li><a href="https://docs.amd.com/r/en-US/pg044_v_axis_vid_out/AXI4-Stream-Interface" target="_blank" rel="noopener noreferrer">AMD PG044 · AXI4-Stream to Video Out</a></li><li><a href="https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb" target="_blank" rel="noopener noreferrer">Arm · AXI valid/ready transport protocol</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="27.html">← 上一章</a><a href="../index.html">课程首页</a><a href="../README.md">项目 README →</a></nav></article></main></div></body></html>

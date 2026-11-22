@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-twenty-five-2026-11",
+  "scope": "all-twenty-eight-2026-11",
   "checks": [
     {
       "chapters": [
@@ -521,6 +521,162 @@
       "kind": "project_documentation",
       "source_url": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
       "locator": "Chapter 24 · Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while"
+    },
+    {
+      "id": "ch26-01",
+      "chapters": [
+        "26"
+      ],
+      "claim": "HLS PIPELINE pragma specifies target initiation interval; scheduling report determines achieved II.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Pipeline",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Pipeline",
+      "locator": "Chapter 26 · HLS PIPELINE pragma specifies target initiation interval; scheduling report determines achieved II.",
+      "status": "supported"
+    },
+    {
+      "id": "ch26-02",
+      "chapters": [
+        "26"
+      ],
+      "claim": "HLS loop unrolling and array partitioning affect parallel memory read pressure and hardware resources.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Array-Accesses-and-Performance",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Array-Accesses-and-Performance",
+      "locator": "Chapter 26 · HLS loop unrolling and array partitioning affect parallel memory read pressure and hardware resource",
+      "status": "supported"
+    },
+    {
+      "id": "ch26-03",
+      "chapters": [
+        "26"
+      ],
+      "claim": "Vitis HLS DATAFLOW overlaps process execution but requires proper communication and scheduling.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Dataflow",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Dataflow",
+      "locator": "Chapter 26 · Vitis HLS DATAFLOW overlaps process execution but requires proper communication and scheduling.",
+      "status": "supported"
+    },
+    {
+      "id": "ch26-04",
+      "chapters": [
+        "26"
+      ],
+      "claim": "Vitis HLS C/RTL Co-simulation is a distinct verification stage from C simulation and synthesis.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Co-simulation",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Co-simulation",
+      "locator": "Chapter 26 · Vitis HLS C/RTL Co-simulation is a distinct verification stage from C simulation and synthesis.",
+      "status": "supported"
+    },
+    {
+      "id": "ch26-05",
+      "chapters": [
+        "26"
+      ],
+      "claim": "HLS block level protocols differ between ap_ctrl_hs and ap_ctrl_none, affecting execution and backpressure behavior.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Block-Level-Control-Protocols",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Block-Level-Control-Protocols",
+      "locator": "Chapter 26 · HLS block level protocols differ between ap_ctrl_hs and ap_ctrl_none, affecting execution and backpr",
+      "status": "supported"
+    },
+    {
+      "id": "ch27-01",
+      "chapters": [
+        "27"
+      ],
+      "claim": "NVIDIA VerilogEval evaluates model-generated Verilog on HDLBits-derived problems and does not certify a real FPGA design.",
+      "kind": "paper",
+      "source": "https://research.nvidia.com/publication/2023-09_verilogeval-evaluating-large-language-models-verilog-code-generation",
+      "source_url": "https://research.nvidia.com/publication/2023-09_verilogeval-evaluating-large-language-models-verilog-code-generation",
+      "locator": "Chapter 27 · NVIDIA VerilogEval evaluates model-generated Verilog on HDLBits-derived problems and does not certif",
+      "status": "supported"
+    },
+    {
+      "id": "ch27-02",
+      "chapters": [
+        "27"
+      ],
+      "claim": "RTLLM 2.0 provides a benchmark with arithmetic, memory, control and miscellaneous RTL modules.",
+      "kind": "benchmark",
+      "source": "https://github.com/hkust-zhiyao/RTLLM",
+      "source_url": "https://github.com/hkust-zhiyao/RTLLM",
+      "locator": "Chapter 27 · RTLLM 2.0 provides a benchmark with arithmetic, memory, control and miscellaneous RTL modules.",
+      "status": "supported"
+    },
+    {
+      "id": "ch27-03",
+      "chapters": [
+        "27"
+      ],
+      "claim": "AMBA VALID/READY handshake requires the transmitter to keep payload stable until a transfer occurs.",
+      "kind": "standard",
+      "source": "https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb",
+      "source_url": "https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb",
+      "locator": "Chapter 27 · AMBA VALID/READY handshake requires the transmitter to keep payload stable until a transfer occurs.",
+      "status": "supported"
+    },
+    {
+      "id": "ch27-04",
+      "chapters": [
+        "27"
+      ],
+      "claim": "Yosys formal model-checking supports assertions/equivalence; properties and assumptions must be specified.",
+      "kind": "project_documentation",
+      "source": "https://yosyshq.readthedocs.io/projects/yosys/en/v0.70/using_yosys/more_scripting/model_checking.html",
+      "source_url": "https://yosyshq.readthedocs.io/projects/yosys/en/v0.70/using_yosys/more_scripting/model_checking.html",
+      "locator": "Chapter 27 · Yosys formal model-checking supports assertions/equivalence; properties and assumptions must be spec",
+      "status": "supported"
+    },
+    {
+      "id": "ch27-05",
+      "chapters": [
+        "27"
+      ],
+      "claim": "NIST AI RMF and Generative AI Profile describe risk-management processes; they do not certify generated RTL.",
+      "kind": "framework",
+      "source": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "source_url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "locator": "Chapter 27 · NIST AI RMF and Generative AI Profile describe risk-management processes; they do not certify genera",
+      "status": "supported"
+    },
+    {
+      "id": "ch28-01",
+      "chapters": [
+        "28"
+      ],
+      "claim": "In AMD AXI4-Stream Video, TUSER[0] marks SOF and TLAST marks EOL, not frame end.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
+      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
+      "locator": "Chapter 28 · In AMD AXI4-Stream Video, TUSER[0] marks SOF and TLAST marks EOL, not frame end.",
+      "status": "supported"
+    },
+    {
+      "id": "ch28-02",
+      "chapters": [
+        "28"
+      ],
+      "claim": "Frame Buffer Write and Read bridge AXI4-Stream Video and AXI4 memory-mapped subsystems.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview",
+      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview",
+      "locator": "Chapter 28 · Frame Buffer Write and Read bridge AXI4-Stream Video and AXI4 memory-mapped subsystems.",
+      "status": "supported"
+    },
+    {
+      "id": "ch28-03",
+      "chapters": [
+        "28"
+      ],
+      "claim": "Camera-to-display system integration requires explicitly managed interfaces and timing conditions.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "locator": "Chapter 28 · Camera-to-display system integration requires explicitly managed interfaces and timing conditions.",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -541,6 +697,9 @@
     "Chapter 23 includes a synchronous event counter; no ILA/SignalTap hardware capture was performed.",
     "Chapter 24 CI checks the iCEstick flow statically; no Yosys/nextpnr bitstream build, programmer run or board test is claimed.",
     "Chapter 25 timing/power calculators are mathematical teaching aids; no vendor STA engine, implementation report or device power measurement was run.",
-    "The nextpnr support table is a snapshot; the Nexus backend is experimental/alpha, and NanoXplore NG-Ultra binary bitstream generation requires proprietary Impulse."
+    "The nextpnr support table is a snapshot; the Nexus backend is experimental/alpha, and NanoXplore NG-Ultra binary bitstream generation requires proprietary Impulse.",
+    "Chapter 26 FIR4 C++ test checks arithmetic and state, not actual Vitis HLS scheduling/II, RTL co-simulation, FPGA resources or timing.",
+    "Chapter 27 ready_valid_slice test checks one synchronous 16-bit instance under deterministic backpressure; it is not an AXI CDC FIFO, exhaustive formal proof or PPA measurement.",
+    "Chapter 28 synthetic three-frame RGB threshold core does not implement camera PHY, DDR controller, DMA, CDC, Sobel, display timing or board-level operation; bandwidth script gives active-pixel lower bounds."
   ]
 }

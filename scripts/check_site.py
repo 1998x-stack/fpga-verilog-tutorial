@@ -34,7 +34,7 @@ def validate_html(file):
     try: parser.feed(file.read_text(encoding="utf-8"))
     except Exception as exc:
         errors.append(f"{rel}: failed to parse: {exc}");return
-    if file.parent.name=="chapters" and file.stem in tuple(f"{i:02}" for i in range(1,26)) and parser.h1s!=1:
+    if file.parent.name=="chapters" and file.stem in tuple(f"{i:02}" for i in range(1,29)) and parser.h1s!=1:
         errors.append(f"{rel}: must have exactly 1 h1; found {parser.h1s}")
     for target in parser.paths:
         u=urlsplit(target)
@@ -65,4 +65,4 @@ except Exception as exc:errors.append("data/evidence.json: "+str(exc))
 if errors:
     print("\n".join("ERROR "+s for s in errors))
     sys.exit(1)
-print("PASS local links, chapters 01-25 H1s, image alt text, SVG XML, and evidence ledger")
+print("PASS local links, chapters 01-28 H1s, image alt text, SVG XML, and evidence ledger")
