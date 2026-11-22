@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" role="img" aria-labelledby="proj18 proj18d">
+  <title id="proj18">源文件、约束与工具生成产物的分离</title>
+  <desc id="proj18d">左边是需要纳入版本控制的源文件、约束和 IP 配置（少量文本，决定设计）；右边是构建输出、IP 生成缓存、日志与比特流（体积大、可重建、含时间戳），应通过 .gitignore 排除在版本控制之外。分离后同一份源码才能在任何机器上重建。</desc>
+  <rect width="960" height="500" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">纳入版本控制的是“决定设计的东西”，不是“跑出来的东西”</text>
+  <rect x="40" y="80" width="410" height="300" rx="14" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+  <text x="245" y="116" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="18" font-weight="750" text-anchor="middle" fill="#147f80">纳入 Git（文本、可审查）</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="15" font-weight="500" fill="#203035">
+    <text x="72" y="156">src/  · RTL 源文件</text>
+    <text x="72" y="190">sim/  · testbench 与仿真脚本</text>
+    <text x="72" y="224">constraints/ · XDC / QSF+SDC</text>
+    <text x="72" y="258">ip/  · 仅 .xci/.qip 配置，不含生成输出</text>
+    <text x="72" y="292">doc/ · 接口与时序说明</text>
+    <text x="72" y="326">构建脚本 / .gitignore</text>
+  </g>
+  <rect x="510" y="80" width="410" height="300" rx="14" fill="#fbf4dd" stroke="#9c742c" stroke-width="2"/>
+  <text x="715" y="116" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="18" font-weight="750" text-anchor="middle" fill="#9c742c">排除（大、可重建、含时间戳）</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="15" font-weight="500" fill="#203035">
+    <text x="542" y="156">build/ · 工程、综合与实现输出</text>
+    <text x="542" y="190">IP 生成目录与缓存（可达数百 MB）</text>
+    <text x="542" y="224">*.log / *.rpt / *.jou</text>
+    <text x="542" y="258">*.bit / *.bin / *.sof / *.pof</text>
+    <text x="542" y="292">仿真波形与库（work/、*.wlf）</text>
+    <text x="542" y="326">编辑器与系统文件</text>
+  </g>
+  <rect x="40" y="400" width="880" height="76" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="480" y="432" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">同一份 src/ + constraints/ + 固定工具版本 ⇒ 任意机器上可重建的构建</text>
+  <text x="480" y="458" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="500" text-anchor="middle" fill="#203035">已经提交进历史的大文件需要用 git filter-repo 之类的工具清理，.gitignore 只能阻止未来的提交</text>
+</svg>
