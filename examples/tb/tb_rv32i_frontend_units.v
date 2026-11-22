@@ -94,12 +94,14 @@ module tb_rv32i_frontend_units;
         expect_forward(2'b00, 2'b00);
 
         // A load address is not the load result; do not forward it from EX/MEM.
-        ex_rs1=5'd7; ex_mem_rd=5'd7; ex_mem_regwrite=1; ex_mem_is_load=1;
-        mem_wb_regwrite=0;
+        ex_rs1=5'd7; ex_rs2=5'd8; ex_mem_rd=5'd7;
+        ex_mem_regwrite=1; ex_mem_is_load=1; mem_wb_regwrite=0;
+        expect_forward(2'b00, 2'b00);
+        ex_rs2=5'd7; ex_mem_rd=5'd7;
         expect_forward(2'b00, 2'b00);
         // Once the load reaches MEM/WB, the loaded value may be forwarded.
         mem_wb_regwrite=1; mem_wb_rd=5'd7;
-        expect_forward(2'b01, 2'b00);
+        expect_forward(2'b01, 2'b01);
         ex_mem_is_load=0;
 
         // Load-use stall only if a source actually used by the ID instruction matches.

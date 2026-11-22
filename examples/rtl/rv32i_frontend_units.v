@@ -55,7 +55,7 @@ module rv32i_hazard_unit (
             forward_a = 2'b01;
 
         forward_b = 2'b00;
-        if (ex_mem_regwrite && (ex_mem_rd != 5'd0) &&
+        if (ex_mem_regwrite && !ex_mem_is_load && (ex_mem_rd != 5'd0) &&
             (ex_mem_rd == ex_rs2))
             forward_b = 2'b10;
         else if (mem_wb_regwrite && (mem_wb_rd != 5'd0) &&
