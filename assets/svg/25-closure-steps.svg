@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" role="img" aria-labelledby="tc25 tc25d">
+  <title id="tc25">时序收敛的排查与修复顺序</title>
+  <desc id="tc25d">先确认约束正确，再读时序报告找出最差路径；按逻辑级数、扇出、布线延迟分类原因；优先在 RTL 层修复（插入流水级、改用时钟使能、重构逻辑），不够时再使用物理优化与区域约束；每次修改后重新实现并对比 WNS/TNS。约束错误会让所有后续优化失去意义。</desc>
+  <rect width="960" height="520" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">先确认约束，再改 RTL，最后才动物理约束</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="300" y="70" width="360" height="62" rx="12" fill="#fbf4dd" stroke="#9c742c" stroke-width="2"/>
+    <text x="480" y="98" font-size="17" font-weight="750" fill="#203035">1. 约束是否正确？</text>
+    <text x="480" y="120" font-size="13" font-weight="500" fill="#9c742c">时钟周期、时钟域数量、输入/输出延迟</text>
+
+    <path d="M480 132V164" stroke="#c6674b" stroke-width="3" fill="none"/>
+
+    <rect x="300" y="166" width="360" height="62" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="480" y="194" font-size="17" font-weight="750" fill="#203035">2. 读报告，按 WNS/TNS 排序</text>
+    <text x="480" y="216" font-size="13" font-weight="500" fill="#7564b8">聚焦最差路径，不逐条修</text>
+
+    <path d="M480 228V256" stroke="#c6674b" stroke-width="3" fill="none"/>
+
+    <rect x="120" y="258" width="330" height="96" rx="12" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="285" y="286" font-size="16" font-weight="750" fill="#203035">3. 先在 RTL 层修复</text>
+    <text x="285" y="310" font-size="13" font-weight="500" fill="#203035">插入流水级 / 降低扇出</text>
+    <text x="285" y="332" font-size="13" font-weight="500" fill="#203035">改用时钟使能、重构表达式</text>
+
+    <rect x="510" y="258" width="330" height="96" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="675" y="286" font-size="16" font-weight="750" fill="#203035">4. 不够再动物理约束</text>
+    <text x="675" y="310" font-size="13" font-weight="500" fill="#203035">phys_opt_design / Pblock</text>
+    <text x="675" y="332" font-size="13" font-weight="500" fill="#203035">手动 LOC（侵入性最高）</text>
+  </g>
+  <rect x="24" y="392" width="912" height="86" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="480" y="424" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">每改一处，重新实现并对比 WNS/TNS 与资源占用，而不是凭感觉“应该好了”</text>
+  <text x="480" y="454" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="500" text-anchor="middle" fill="#203035">真实 WNS 取决于器件、版本、XDC 与实现报告；任何数字离开这些前提都只是教学示意</text>
+</svg>
