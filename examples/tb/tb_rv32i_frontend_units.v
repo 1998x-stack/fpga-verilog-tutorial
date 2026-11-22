@@ -89,6 +89,11 @@ module tb_rv32i_frontend_units;
         ex_mem_rd=5'd9; mem_wb_rd=5'd8;
         expect_forward(2'b00, 2'b01);
 
+        // EX/MEM can also forward a non-load result to the B operand.
+        ex_rs1=5'd7; ex_rs2=5'd8; ex_mem_rd=5'd8;
+        ex_mem_regwrite=1; ex_mem_is_load=0; mem_wb_regwrite=0;
+        expect_forward(2'b00, 2'b10);
+
         // x0 never forwards, even if a write-enable is accidentally asserted.
         ex_rs1=0; ex_rs2=0; ex_mem_rd=0; mem_wb_rd=0;
         expect_forward(2'b00, 2'b00);
