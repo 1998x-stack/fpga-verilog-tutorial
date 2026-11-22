@@ -1,4 +1,4 @@
-\`timescale 1ns/1ps
+`timescale 1ns/1ps
 module tb_axi4lite_regs;
     reg aclk=0, aresetn=0;
     reg [5:0] awaddr=0, araddr=0;
