@@ -1,204 +1,92 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第16章 Quartus Prime与ModelSim</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🔧 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
-            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
-            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
-            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
-            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
-            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
-            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
-            <li><a href="08.html">第8章 Testbench编写与仿真验证</a></li>
-            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
-            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
-            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
-            <li><a href="12.html">第12章 流水线设计技术</a></li>
-            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
-            <li><a href="14.html">第14章 时序约束与分析基础</a></li>
-            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
-            <li><a href="16.html" class="active">第16章 Quartus Prime与ModelSim</a></li>
-            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
-            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
-            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
-            <li><a href="20.html">第20章 软核处理器集成</a></li>
-            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
-            <li><a href="22.html">第22章 高速串行接口设计</a></li>
-            <li><a href="23.html">第23章 硬件调试方法论</a></li>
-            <li><a href="24.html">第24章 开源工具链实战</a></li>
-            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
-            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
-            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
-            <li><a href="28.html">第28章 综合项目：FPGA图像采集与处理系统</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第16章 Quartus Prime与ModelSim</h2>
-
-        <p>上一章我们完整走了一遍 Vivado 的工程流程——从创建工程到生成比特流，再到 ILA 片上调试。但 FPGA 领域并不是 AMD Xilinx 一家独大。对于许多工程师来说，<strong>Altera（现为 Intel Altera，2025 年从 Intel 独立并获 Silver Lake 投资）</strong>的 Quartus Prime 同样是日常工作不可或缺的工具。</p>
-
-        <p>Intel 在 2025 年将 Altera 分拆为独立子公司，保留了 49% 的股份，Silver Lake 投资 $87.5 亿。这一重大变化也在 2026 年对 Quartus 的产品策略产生了影响——免费版 Quartus Prime Lite 继续可用，但 Pro 版本的价格策略有所调整。无论如何，学习 Quartus 依然非常值得，因为 Altera 的 FPGA 在工业、通信和军工领域有着庞大的存量市场。</p>
-
-        <h3>16.1 Intel/Altera 工具链全景</h3>
-
-        <p>Altera 的工具链比 Xilinx 的体系要更分散一些，理解各个组件的定位有助于你快速上手：</p>
-
-        <table>
-            <tr><th>工具/组件</th><th>功能</th><th>对应的 Xilinx 工具</th></tr>
-            <tr><td><strong>Quartus Prime Lite</strong></td><td>免费版，支持 Cyclone IV/V/10、Max 10 等中低端器件</td><td>Vivado WebPACK</td></tr>
-            <tr><td><strong>Quartus Prime Standard</strong></td><td>付费，支持 Arria、Stratix 部分系列，功能更完整</td><td>Vivado Design Edition</td></tr>
-            <tr><td><strong>Quartus Prime Pro</strong></td><td>旗舰版，支持 Agilex、Stratix 10 等最新高端器件，编译算法更先进</td><td>Vivado ML Edition</td></tr>
-            <tr><td><strong>Platform Designer</strong></td><td>原 Qsys，Altera 的 IP 集成工具（类似 IPI），支持 Avalon/AXI 总线</td><td>Vivado IP Integrator</td></tr>
-            <tr><td><strong>Nios II EDS / Soft-Core</strong></td><td>Nios II 软核处理器的软件开发套件（Eclipse 基）</td><td>Vitis (MicroBlaze)</td></tr>
-            <tr><td><strong>ModelSim / Questa</strong></td><td>Altera 版 ModelSim（OEM 授权），用于 RTL 仿真</td><td>Vivado Simulator (xsim)</td></tr>
-            <tr><td><strong>SignalTap II</strong></td><td>片上逻辑分析仪，嵌入在 Quartus 内部</td><td>ILA (Vivado)</td></tr>
-            <tr><td><strong>Timing Analyzer</strong></td><td>Quartus 的时序分析工具，读取 SDC 约束</td><td>Vivado Timing Analyzer</td></tr>
-        </table>
-
-        <div class="tip">
-            <strong>温馨提示：</strong>如果你是学生或自学者，从 <strong>Quartus Prime Lite</strong> 开始就足够了。它不仅免费，而且 Cyclone IV/V 开发板（如 Terasic DE10-Lite、DE0-CV）价格便宜（约 ¥300-600），非常适合入门。另外需要注意的是，Quartus 的安装包比 Vivado 小不少（~8GB vs ~30GB），对磁盘空间更友好。
-        </div>
-
-        <h3>16.2 Quartus 标准工程流程</h3>
-
-        <p>Quartus 的工程流程与 Vivado 在概念上是对应的，但各个步骤的名称和顺序有所不同。以 Cyclone V 上的 LED 流水灯为例：</p>
-
-        <p><strong>第一步：New Project Wizard。</strong>File → New Project Wizard。指定工程路径、顶层实体名称（Top-Level Entity，相当于 Vivado 的 top module）。在 Device Family 中选择 Cyclone V，具体器件按开发板确定（如 DE10-Lite 使用 <code>5CEBA2F23C7</code>）。</p>
-
-        <p><strong>第二步：添加设计文件。</strong>与 Vivado 不同，Quartus 允许直接编辑文件或通过 Project → Add/Remove Files in Project 添加。Quartus 对 Verilog-2001 和 SystemVerilog 的支持较好，但某些 VHDL 的语法检查比 Vivado 更严格。</p>
-
-        <p><strong>第三步：Pin Planner。</strong>Assignments → Pin Planner 打开引脚规划器。与 Vivado 的 XDC 编辑方式不同，Quartus 的引脚分配是图形化拖拽式的——你可以在器件封装图上直接点击并分配引脚。Altera 同时提供 <strong>QSF（Quartus Settings File）</strong> 文本格式的约束，等价于 XDC。</p>
-
-        <p><strong>第四步：Analysis & Synthesis。</strong>Processing → Start → Start Analysis & Synthesis。这一步对应 Vivado 的 <code>synth_design</code>，负责语法检查、逻辑综合和资源映射。综合完成后，Compilation Report 中会显示资源利用率、fan-out 分析、综合警告等详细信息。</p>
-
-        <p><strong>第五步：Fitter。</strong>Processing → Start → Start Fitter（或直接 Start Compilation 一步到位）。Fitter 对应 Vivado 的 place_design + route_design。Quartus 的 Fitter 的智能程度很高——它的增量编译（Incremental Compilation）功能比 Vivado 的 Incremental Implementation 成熟得更早。</p>
-
-        <p><strong>第六步：Assembler & Programmer。</strong>Fitter 完成后，Assembler 自动生成 .sof（SRAM Object File，对应 .bit）和 .pof（Programmer Object File，对应 .mcs）。然后通过 Tools → Programmer 打开烧录界面，选择 USB-Blaster 下载器，点击 Start 将 .sof 烧录到 FPGA。</p>
-
-        <h3>16.3 SignalTap II 逻辑分析仪</h3>
-
-        <p>SignalTap II 是 Quartus 内置的片上调试工具，与 Xilinx 的 ILA 功能类似，但在配置和使用方式上有一些有趣的差异。</p>
-
-        <p><strong>添加 SignalTap II 文件：</strong>File → New → SignalTap II Logic Analyzer File（.stp）。在 SignalTap II 窗口中，你需要配置：</p>
-
-        <ul>
-            <li><strong>采样时钟（Clock）：</strong>选择采样时钟信号，通常是系统时钟。注意 SignalTap II 是上升沿采样的。</li>
-            <li><strong>探针信号（Nodes）：</strong>点击 List 按钮，在设计中搜索要观察的信号。Quartus 会自动列出所有可观察的信号，你可以把感兴趣的信号拖到 SignalTap II 的信号列表中。</li>
-            <li><strong>采样深度（Sample Depth）：</strong>可选 128/256/512/1K/2K/4K/8K/16K。深度越大，占用的 M9K/M20K Block RAM 越多。</li>
-            <li><strong>触发条件（Trigger Conditions）：</strong>支持两级触发和多个触发条件组合。每个探针可以设置触发值或范围。</li>
-            <li><strong>存储限定（Storage Qualifier）：</strong>可以选择只存储满足特定条件的样本——这对于减少 BRAM 占用或在有限的深度下捕获更长的有效数据很有用。</li>
-        </ul>
-
-        <p>配置完成后，重新综合并下载包含 SignalTap II 的比特流。在 Programmer 中下载时，.sof 会自动包含调试逻辑。然后回到 SignalTap II 窗口，点击 Run Analysis 等待触发。</p>
-
-        <div class="highlight">
-            <strong>SignalTap II vs ILA 的小差异：</strong>在 ILA 中，你需要显式例化 IP 核并在 RTL 中连接探针。而 SignalTap II 是在综合后的网表上直接附加探针的——你不需要修改 RTL 源码。这意味着 SignalTap II 可以在不修改设计的情况下临时添加调试逻辑。但这也带来一个缺点：某些经过优化被综合工具合并或消除的内部信号可能无法被 SignalTap II 捕获。你需要设置 <code>set_keep</code> 综合属性来保留这些信号。
-        </div>
-
-        <h3>16.4 ModelSim 仿真集成</h3>
-
-        <p>Quartus 自带的仿真器（Questa 的入门版）功能有限，大多数工程师选择在 Quartus 中调用 <strong>ModelSim</strong> 进行仿真。ModelSim 是 FPGA 行业最经典的仿真器——它比 Vivado Simulator 更快（尤其对于 VHDL）、波形显示更清晰、脚本控制（.do 文件）更成熟。</p>
-
-        <p>模型集成流程：</p>
-
-        <ul>
-            <li><strong>在 Quartus 中设置 EDA 工具：</strong>Assignments → Settings → EDA Tool Settings → Simulation。指定工具为 ModelSim（或 Questa），语言为 Verilog，并设置输出网表格式。</li>
-            <li><strong>编译库文件：</strong>第一次使用时，需要编译 Altera 的器件库到 ModelSim 中。Quartus 提供了 <strong>Tools → Launch Simulation Library Compiler</strong> 来自动完成这一步。选择目标仿真器安装路径和器件家族，点击 Start Compilation。</li>
-            <li><strong>启动 ModelSim：</strong>在 Quartus 的 Processing → Start → Start Testbench Template，或者直接在 Tools → Run EDA Simulation → EDA RTL Simulation 中启动。</li>
-            <li><strong>使用 .do 脚本：</strong>ModelSim 的强大之处在于 .do 文件——一个 Tcl 命令序列文件。你可以写一个 <code>run_sim.do</code>：</li>
-        </ul>
-
-        <pre><code># ModelSim .do 文件示例：自动运行仿真
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="用文本工程、QSF/SDC 约束与脚本化仿真复现一次 Intel/Altera Quartus 构建，而不是依赖一次成功的 GUI 点击。"><title>Quartus Prime 与仿真：第二条工具链的可复现流程 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 16 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#why">01 / 为什么需要学会第二条工具链？</a><a href="#parts">02 / Quartus 的组件与器件分层</a><a href="#files">03 / 一个可复现的 Quartus 工程由哪些文本文件构成？</a><a href="#constraints">04 / QSF 与 SDC：器件、管脚和时序约束</a><a href="#signtap">05 / SignalTap II：在实现后的网表上加探针</a><a href="#sim">06 / 仿真：ModelSim/Questa 与可重复的 .do 脚本</a><a href="#map">07 / Vivado 与 Quartus 的概念映射</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 16 · Toolchain</p><h1>Quartus Prime 与仿真：第二条工具链的可复现流程</h1><p class="dek">RTL 可以跨厂商复用，约束和器件特性不能。本章用文本工程、QSF/SDC 与脚本化仿真，把一次 Quartus 构建变成可复核的产物。</p></header><section id="why" aria-labelledby="why-h"><h2 id="why-h">01 / 为什么需要学会第二条工具链？</h2>
+<p class="intro">你已经能在 Vivado 里把一段 RTL 变成比特流。换到一块 Cyclone 开发板，同样的 RTL 却可能直接报出上万个错误。真正发生变化的是<strong>器件原语、管脚定义、时钟资源和约束文件格式</strong>，而不是可综合的 Verilog 语法本身。</p>
+<p>可综合 RTL 的语义由语言标准决定，但映射结果由厂商的综合与实现算法决定。一块器件里没有的时钟缓冲、锁相环或收发器，RTL 里就没人能凭空造出来；管脚号、I/O 电平和时钟频率也完全依赖具体封装与板卡。因此“换厂商”时被替换的不是算法描述，而是<strong>约束与器件相关的实现细节</strong>。</p>
+<p>这也解释了教学实践中的常见误区：把某个工具的成功截图当作工程正确性的证据。真正可复核的工程需要固定顶层源文件、目标器件、约束、工具版本、构建命令和每个阶段的报告。本章以 Intel/Altera 的 Quartus Prime 为例，构造这样一条流程。</p>
+<div class="callout note">本章讨论的工具名称、版本分层与器件系列归属会随厂商发布策略变化。涉及具体版本时，应以 <a href="https://docs.altera.com/" target="_blank" rel="noopener noreferrer">Altera 官方文档</a> 当天内容为准；下面的分层只用于说明概念差异。</div></section>
+<section id="parts" aria-labelledby="parts-h"><h2 id="parts-h">02 / Quartus 的组件与器件分层</h2>
+<p>Quartus Prime 不是一个单一程序，而是一组围绕“编译”组织的组件。理解它们各自负责什么，比记住菜单路径更有用：<strong>综合与实现</strong>由编译器（Analysis &amp; Synthesis → Fitter → Assembler）完成，<strong>约束</strong>用 QSF 与 SDC 描述，<strong>调试</strong>由 SignalTap II 和 Timing Analyzer 承担，<strong>系统集成</strong>交给 Platform Designer。</p>
+<div class="table-wrap"><table><caption>Quartus 主要组件及其职责</caption><thead><tr><th>组件</th><th>职责</th><th>可写的文本形式</th></tr></thead><tbody>
+<tr><td>Analysis &amp; Synthesis</td><td>语法检查、推断逻辑、映射到器件资源</td><td>报告 .rpt / 网表</td></tr>
+<tr><td>Fitter</td><td>布局与布线，决定路径延迟</td><td>报告 .rpt / 约束后的网表</td></tr>
+<tr><td>Assembler</td><td>生成配置数据 <code>.sof</code>（易失）与 <code>.pof</code>（配置器件）</td><td><code>.sof</code> / <code>.pof</code></td></tr>
+<tr><td>Programmer</td><td>经下载器写入器件或配置器件</td><td>编程文件 / 脚本</td></tr>
+<tr><td>Timing Analyzer</td><td>读取 SDC，报告建立/保持与时钟关系</td><td>SDC + 报告</td></tr>
+<tr><td>SignalTap II</td><td>片上逻辑分析，探针挂在实现后网表上</td><td><code>.stp</code></td></tr>
+<tr><td>Platform Designer</td><td>集成 IP、总线与地址映射，生成系统</td><td>系统描述 + 生成 RTL</td></tr>
+</tbody></table></div>
+<p>器件分层方面，厂商通常把免费版、标准版与旗舰版对应到不同器件系列与编译能力。这三者的<strong>具体系列归属、免费范围与功能差异随发布变化</strong>，不要从旧笔记里照搬；选工具时先查自己的目标器件属于哪一档，再确认许可与操作系统要求。</p>
+<div class="table-wrap"><table><caption>Vivado / Quartus 概念对照（仅说明概念对应，不代表功能等价）</caption><thead><tr><th>概念</th><th>AMD Vivado</th><th>Intel/Altera Quartus</th></tr></thead><tbody>
+<tr><td>约束：物理与器件</td><td>XDC（Tcl）</td><td>QSF（键值对）+ SDC</td></tr>
+<tr><td>约束：时序</td><td>XDC 中的 <code>create_clock</code> 等</td><td>SDC 中的 <code>create_clock</code> 等</td></tr>
+<tr><td>片上调试</td><td>ILA（RTL 例化 IP）</td><td>SignalTap II（挂在网表上）</td></tr>
+<tr><td>系统集成</td><td>IP Integrator (.bd)</td><td>Platform Designer (.qsys/.qip 系统)</td></tr>
+</tbody></table></div></section>
+<section id="files" aria-labelledby="files-h"><h2 id="files-h">03 / 一个可复现的 Quartus 工程由哪些文本文件构成？</h2>
+<p>如果只把 <code>.qpf</code> 和图形界面里的点击序列交给别人，这个工程就不可复现。Quartus 将大部分工程信息保存在可版本控制的文本文件中，让“同样的源文件 + 同样的约束 + 同样的工具”能被重新跑一遍：</p>
+<div class="table-wrap"><table><caption>Quartus 工程中的关键文本文件</caption><thead><tr><th>文件</th><th>内容</th><th>为什么重要</th></tr></thead><tbody>
+<tr><td><code>.qpf</code></td><td>工程引用（指向 .qsf）</td><td>工程的入口</td></tr>
+<tr><td><code>.qsf</code></td><td>器件、顶层、管脚、I/O 标准等设置</td><td>决定“编到哪个器件、哪个管脚”</td></tr>
+<tr><td><code>.sdc</code></td><td>时钟、输入/输出延迟、假路径、多周期</td><td>决定时序分析以什么为目标</td></tr>
+<tr><td><code>.stp</code></td><td>SignalTap II 探针与触发配置</td><td>调试逻辑的来源</td></tr>
+</tbody></table></div>
+<p>把它们放进版本控制后，一次构建就可以用“源码哈希 + 工具版本 + 器件 + 约束”四个坐标定位。下面的图把五个阶段和它们的约束输入放在一起：从源文件与 QSF/SDC 开始，经综合、布局布线、生成配置数据，最后下载到器件。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/16-quartus-flow.svg" alt="源文件与 QSF 管脚、SDC 时序约束进入 Analysis &amp; Synthesis，再经 Fitter 布局布线、Assembler 生成 .sof/.pof，最后由 Programmer 下载；Timing Analyzer 与 SignalTap II 读取 Fitter 之后的实现结果。" width="960" height="470" loading="lazy"></div><figcaption>Quartus 编译阶段与约束输入：每个阶段都产生可归档的产物；时序不收敛、DRC 或管脚冲突应当作为失败处理，而不是绕过。</figcaption></figure>
+<p>和图里对应的是：<strong>Analysis &amp; Synthesis</strong> 只做逻辑推断与映射，<strong>Fitter</strong> 才决定真实连线与路径延迟，<strong>Assembler</strong> 输出配置数据，<strong>Programmer</strong> 写入器件。任何一个阶段失败，后面的“成功”都没有意义。</p></section>
+<section id="constraints" aria-labelledby="constraints-h"><h2 id="constraints-h">04 / QSF 与 SDC：器件、管脚和时序约束</h2>
+<p>Quartus 把约束分成两层。<strong>QSF</strong> 是键值对形式的工程设置，管器件型号、顶层名、管脚位置和 I/O 标准；<strong>SDC</strong> 是 Tcl 形式的时序约束，管时钟周期、输入/输出延迟、假路径和多周期路径。两者解决的问题不同，不能互相替代。</p>
+<p>QSF 中与管脚相关的行本来就应该由开发板手册推导，而不是手写猜测。下面只是格式示意：</p>
+<pre><code># 以下为 QSF 格式示意，管脚号必须改成自己的开发板手册上的真实值
+set_global_assignment -name FAMILY "Cyclone V"
+set_global_assignment -name TOP_LEVEL_ENTITY blink_top
+set_location_assignment PIN_AB12 -to clk
+set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk
+set_location_assignment PIN_C10 -to led</code></pre>
+<p>SDC 描述的是“分析器应该拿什么作为比较基准”。时钟周期必须和外部实际时钟一致，输入/输出延迟必须来自对端器件的时序规格：</p>
+<pre><code># 教学示意：具体数值必须来自时钟源和对端器件数据手册
+create_clock -name sys_clk -period 20.000 [get_ports clk]
+set_input_delay  -clock sys_clk -max 6.000 [get_ports data_in]
+set_input_delay  -clock sys_clk -min 1.000 [get_ports data_in]
+set_output_delay -clock sys_clk -max 4.000 [get_ports data_out]
+set_output_delay -clock sys_clk -min 1.000 [get_ports data_out]</code></pre>
+<div class="callout warn">上面的 <code>20.000</code>/<code>6.000</code> 等数字是为了说明<strong>写法</strong>的教学示意，不是任何开发板的实测值。把外部时钟写成比实际低的周期，能让时序报告“看起来通过”，却与真实硬件不符——这是在伪造验收，而不是完成约束。</div>
+<p>与 Vivado 的 XDC 一样，SDC 写在错误的端口名上不会报语法错，而是静默地不生效。因此约束后要回到<strong>时钟报告</strong>和<strong>时序总结</strong>里确认：工具真的看到了你期望的时钟与频率。</p></section>
+<section id="signtap" aria-labelledby="signtap-h"><h2 id="signtap-h">05 / SignalTap II：在实现后的网表上加探针</h2>
+<p>调试数字设计需要看到内部信号在真实时钟下随时间的变化。SignalTap II 把采样逻辑嵌进设计：它用一个采样时钟存下若干探针信号，当触发条件满足时把这段波形捕捉到片上 RAM，再经下载器读回。</p>
+<p>它和 Vivado 的 ILA 在概念上对应，但挂点不同：ILA 通常在 RTL 中例化 IP 核并连接探针；SignalTap II 在实现后的网表上选择节点。这带来一个重要后果——挂在网表上的探针<strong>看不见已被综合优化掉的中间信号</strong>。当你确信某个信号必须在波形里出现时，需要让综合器保留它（例如使用对应的综合属性，阻止优化将它合并或删除）。</p>
+<div class="table-wrap"><table><caption>SignalTap II 配置项与大方向</caption><thead><tr><th>配置</th><th>含义</th><th>取舍</th></tr></thead><tbody>
+<tr><td>采样时钟</td><td>探针在该时钟边沿采样</td><td>必须是被观察逻辑真正的相关时钟</td></tr>
+<tr><td>探针信号</td><td>要观察的网表节点</td><td>越多越占用路由与逻辑资源</td></tr>
+<tr><td>采样深度</td><td>保留多少个样本</td><td>越深占用越多片上存储</td></tr>
+<tr><td>触发条件</td><td>何时开始/停止捕获</td><td>条件太宽会捕到无关数据</td></tr>
+<tr><td>存储限定</td><td>只存满足条件的样本</td><td>用有限深度覆盖更长有效窗口</td></tr>
+</tbody></table></div>
+<p>采样逻辑在采样时钟域工作。如果它捕获的是另一个时钟域的信号，你看到的包括亚稳态与跨域不确定性，不能把这种波形当作确定性证据。调试一个跨时钟域问题，需要的是同步器和握手协议，而不是把探针加深一点。</p>
+<div class="callout note">SignalTap II 的逻辑和存储都要在器件里找位置，会让占用与时序与正式版本不同。把它当<strong>诊断手段</strong>，不要在同一个 bitstream 里把它当作最终交付形态。</div></section>
+<section id="sim" aria-labelledby="sim-h"><h2 id="sim-h">06 / 仿真：ModelSim/Questa 与可重复的 .do 脚本</h2>
+<p>Function 仿真检查的是 RTL 在给定激励下的行为，与综合和时序分析是不同层次的证据。ModelSim/Questa 用一套以 <code>vlib/vlog/vsim</code> 为核心的命令行，并用扩展名为 <code>.do</code> 的 Tcl 脚本把一次仿真固定下来：</p>
+<pre><code># run_sim.do：教学示意，路径按自己的目录结构修改
 vlib work
 vmap work work
-
-# 编译设计文件
-vlog -work work +incdir+../rtl ../rtl/top.v
-vlog -work work +incdir+../rtl ../rtl/uart_tx.v
+vlog -work work ../rtl/top.v
 vlog -work work ../tb/tb_top.v
-
-# 加载仿真
 vsim -voptargs=+acc work.tb_top
-
-# 添加波形信号
-add wave -hex /tb_top/u_uart_tx/*
 add wave -hex /tb_top/clk
-add wave -hex /tb_top/rst_n
-
-# 运行仿真
+add wave -hex /tb_top/u_dut/*
 run 100 us
-
-# 退出
-# quit -sim</code></pre>
-
-        <p>在 ModelSim 命令行中执行 <code>do run_sim.do</code> 即可一键完成编译、加载、跑仿真和添加波形。</p>
-
-        <h3>16.5 Vivado vs Quartus 对比</h3>
-
-        <p>作为一名 FPGA 工程师，你大概率需要同时使用 Vivado 和 Quartus——因为你不知道下一个项目会用到哪家的芯片。下面这张对比表可以帮你在两个工具之间快速切换：</p>
-
-        <table>
-            <tr><th>维度</th><th>Vivado (AMD Xilinx)</th><th>Quartus Prime (Intel Altera)</th></tr>
-            <tr><td><strong>工程管理</strong></td><td>.xpr 文件（XML），自动刷新；Project Summary 面板清晰</td><td>.qpf 文件，手动刷新更常用；界面稍显陈旧</td></tr>
-            <tr><td><strong>IP Catalog</strong></td><td>IP Catalog 树状结构，搜索速度快；IP 版本独立锁定</td><td>IP Catalog 与 Platform Designer 分离；IP 版本号与 Quartus 版本绑定</td></tr>
-            <tr><td><strong>约束语法</strong></td><td>XDC（Tcl 基），<code>set_property</code> + <code>create_clock</code></td><td>QSF（属性键值对） + SDC（Tcl 基时序约束）</td></tr>
-            <tr><td><strong>片上调试</strong></td><td>ILA（需 RTL 例化 IP 核）</td><td>SignalTap II（网表级添加，无需改 RTL）</td></tr>
-            <tr><td><strong>仿真器</strong></td><td>Vivado Simulator (xsim) 轻量够用；支持 SystemVerilog 覆盖率</td><td>ModelSim/Questa OEM 更成熟；VHDL 支持更好</td></tr>
-            <tr><td><strong>综合策略</strong></td><td>综合较快，默认策略偏向性能优化；支持 OOC 综合</td><td>综合较慢但更彻底；增量编译能力更强</td></tr>
-            <tr><td><strong>时序分析</strong></td><td>report_timing_summary 功能强大；图形化 Timing Report 交互性好</td><td>Timing Analyzer 报告格式更传统；但 SDC 兼容性更好</td></tr>
-            <tr><td><strong>安装包大小</strong></td><td>~30GB（全版本）</td><td>~8GB（Lite）/~20GB（Pro）</td></tr>
-            <tr><td><strong>学习曲线</strong></td><td>中等；GUI 现代化，用户友好</td><td>中等偏陡；功能菜单分散，新手容易迷路</td></tr>
-        </table>
-
-        <p>Quartus 的约束语法分为 QSF 和 SDC 两个层面。QSF 管理工程级属性（器件型号、引脚分配），SDC 管理时序约束。下面是一个典型的 SDC 约束示例：</p>
-
-        <pre><code>## ====================================
-## SDC Timing Constraints for Cyclone V
-## ====================================
-
-## 主时钟约束
-create_clock -name sys_clk -period 10.000 [get_ports clk]
-
-## PLL 输出时钟自动约束（需 derive_pll_clocks 扫描）
-derive_pll_clocks
-derive_clock_uncertainty
-
-## 输入延迟（外部器件为 5ns 建立时间参考）
-set_input_delay -clock sys_clk -max 5.000 [get_ports {data_in*}]
-set_input_delay -clock sys_clk -min 2.000 [get_ports {data_in*}]
-
-## 输出延迟（外部器件为 3ns 保持时间参考）
-set_output_delay -clock sys_clk -max 4.000 [get_ports {data_out*}]
-set_output_delay -clock sys_clk -min 1.500 [get_ports {data_out*}]
-
-## 异步信号假路径约束
-set_false_path -from [get_registers rst_meta*]</code></pre>
-
-        <div class="warning">
-            <strong>踩坑实录——PLL 静默重配置：</strong>我曾经把一个 Quartus 17 的工程迁移到 Quartus 23 上继续开发。打开工程，重新编译，一切看起来很顺利。直到我测试板子时发现——系统时钟频率变成了原来的两倍。排查了一整天，最后发现 Quartus 17 中配置的 PLL IP 在 Quartus 23 中打开时，工具"友好"地提示我 PLL 参数已在新版本中更新并自动迁移——但迁移后的倍频系数变了！Quartus 没有给出任何明显的警告，PLL 的输出频率从 50MHz 变成了 100MHz。从此以后，任何 IP 核的版本迁移，我都会在综合报告里手动验证 <code>report_clocks</code> 输出的频率值，绝不信任"自动迁移"的默认行为。
-        </div>
-
-        <p>两家工具链各有长处。Vivado 的 UI 更现代化、调试工具更直观；Quartus 的编译质量更稳定、VHDL 支持和增量编译更强。优秀的 FPGA 工程师应该<strong>两套工具都会用</strong>——从实际项目需求出发选择最合适的平台。</p>
-
-        <p>下一章，我们将深入一个核心话题——无论是 Vivado 还是 Quartus，都离不开对 IP 核的集成和使用。PLL、FIFO、Block RAM、AXI GPIO——掌握这些常用 IP 核的配置和连接方式，是提升开发效率的关键。</p>
-
-        <div class="footer-nav">
-            <a href="15.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="17.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+quit -sim</code></pre>
+<p>把这段脚本和 testbench 一起放进版本控制，“怎么跑仿真”就不再依赖某台机器上的鼠标操作。与 Vivado Simulator 相比，ModelSim 家族在脚本控制和 VHDL 支持上常被提及；但选仿真器时应以自己团队的实际许可、库编译流程和回归脚本为定。</p>
+<p>如果手边没有商业仿真器，<a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog</a> 是开源的替代方案：<code>iverilog</code> 编译、<code>vvp</code> 运行，适合小规模确定性 testbench。本仓的 RTL 自检就采用这一流程，而不是 ModelSim，因此在提交里不声称跑过商业仿真。</p>
+<div class="callout warn">仿真通过 <strong>不等于</strong> 能上板。仿真不包含真实的建立/保持、亚稳态、电源完整性和外部器件电气行为；它只回答“在给定激励与抽象模型下，逻辑行为是否符合预期”。</div></section>
+<section id="map" aria-labelledby="map-h"><h2 id="map-h">07 / 从 Vivado 切到 Quartus：一张概念检查表</h2>
+<p>两边工具的名词不同，但需要你回答的问题相同。迁移工程时按下表逐项核对，而不是等编译报错：</p>
+<div class="table-wrap"><table><thead><tr><th>你要回答的问题</th><th>Quartus 里的位置</th></tr></thead><tbody>
+<tr><td>顶层实体叫什么？</td><td>QSF 的 <code>TOP_LEVEL_ENTITY</code></td></tr>
+<tr><td>编到哪个器件？</td><td>QSF 的 <code>FAMILY</code>/器件设置</td></tr>
+<tr><td>每根管脚在哪、电平是什么？</td><td>QSF 的 <code>set_location_assignment</code> / IO_STANDARD</td></tr>
+<tr><td>时钟周期、输入/输出延迟？</td><td>SDC</td></tr>
+<tr><td>时序真的收敛了吗？</td><td>Timing Analyzer 的时序总结</td></tr>
+<tr><td>板子上的真实波形？</td><td>SignalTap II</td></tr>
+</tbody></table></div>
+<p>一张可复核的构建记录至少包含：顶层源文件、目标器件、QSF 与 SDC、工具版本、构建命令、时序总结与利用率报告。<strong>缺少其中任何一项，就不能说“别人可以复现这个结果”。</strong></p>
+<details class="exercise"><summary>思考练习：为什么不能把 Vivado 的 XDC 直接改个文件名当成 QSF/SDC 用？</summary><p>因为 XDC 把器件、物理与部分时序信息写在同一种 Tcl 语言里，而 Quartus 把工程属性（QSF）与时序约束（SDC）拆成两层。把两者机械拼接，很可能导致管脚设置与时钟约束都没被正确解析，而工具不一定报致命错误。</p></details></section>
+<section id="references" aria-labelledby="references-h"><h2 id="references-h">延伸阅读与资料来源</h2><ol class="source-list"><li><a href="https://docs.altera.com/" target="_blank" rel="noopener noreferrer">Altera 官方文档（Quartus Prime 用户指南入口）</a></li><li><a href="https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation" target="_blank" rel="noopener noreferrer">Quartus Prime 设计建议：避免无意锁存器</a></li><li><a href="https://eda.sw.siemens.com/en-US/ic/modelsim/" target="_blank" rel="noopener noreferrer">Siemens EDA：ModelSim/Questa 仿真器产品页</a></li><li><a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方文档</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="15.html">← 上一章</a><a href="../index.html">课程首页</a><a href="17.html">下一章 →</a></nav></article></main></div></body></html>

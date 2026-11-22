@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" role="img" aria-labelledby="q16flow q16flowd">
+  <title id="q16flow">Quartus Prime 的编译阶段与约束输入</title>
+  <desc id="q16flowd">源文件与 QSF 管脚/器件设置、SDC 时序约束一起进入 Analysis &amp; Synthesis，再经 Fitter 布局布线、Assembler 生成 .sof/.pof，最后由 Programmer 下载；Timing Analyzer 与 SignalTap II 读取 Fitter 之后的实现结果，任何一个阶段失败都不应被跳过。</desc>
+  <rect width="960" height="470" fill="#fffdf9"/>
+  <text x="40" y="44" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">从文本工程到下载文件：每个阶段都要留下可复核的产物</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="23" y="96" width="170" height="150" rx="13" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="108" y="130" font-size="19" font-weight="750" fill="#203035">源文件 + 约束</text>
+    <text x="108" y="168" font-size="15" font-weight="700" fill="#147f80">top.v / *.sv</text>
+    <text x="108" y="196" font-size="15" font-weight="500" fill="#203035">QSF：器件/管脚</text>
+    <text x="108" y="222" font-size="15" font-weight="500" fill="#203035">SDC：时钟/延迟</text>
+
+    <rect x="213" y="96" width="170" height="150" rx="13" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="298" y="130" font-size="19" font-weight="750" fill="#203035">Analysis &amp; Synthesis</text>
+    <text x="298" y="176" font-size="15" font-weight="500" fill="#203035">语法检查、推断逻辑</text>
+    <text x="298" y="204" font-size="15" font-weight="500" fill="#203035">输出网表 + 利用率</text>
+
+    <rect x="403" y="96" width="170" height="150" rx="13" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="488" y="130" font-size="19" font-weight="750" fill="#203035">Fitter</text>
+    <text x="488" y="176" font-size="15" font-weight="500" fill="#203035">布局 + 布线</text>
+    <text x="488" y="204" font-size="15" font-weight="500" fill="#203035">决定真实路径延迟</text>
+
+    <rect x="593" y="96" width="170" height="150" rx="13" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="678" y="130" font-size="19" font-weight="750" fill="#203035">Assembler</text>
+    <text x="678" y="176" font-size="15" font-weight="700" fill="#7564b8">.sof / .pof</text>
+    <text x="678" y="204" font-size="15" font-weight="500" fill="#203035">配置数据文件</text>
+
+    <rect x="783" y="96" width="154" height="150" rx="13" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="860" y="130" font-size="19" font-weight="750" fill="#203035">Programmer</text>
+    <text x="860" y="176" font-size="15" font-weight="500" fill="#203035">经下载器写入</text>
+    <text x="860" y="204" font-size="15" font-weight="500" fill="#203035">SRAM / 配置器件</text>
+  </g>
+  <g stroke="#c6674b" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M193 171H209"/><path d="M383 171H399"/><path d="M573 171H589"/><path d="M763 171H779"/>
+  </g>
+  <rect x="213" y="286" width="724" height="76" rx="10" fill="#fbf4dd" stroke="#9c742c" stroke-width="2"/>
+  <text x="575" y="318" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="17" font-weight="750" text-anchor="middle" fill="#9c742c">Timing Analyzer / SignalTap II 读取 Fitter 之后的实现结果</text>
+  <text x="575" y="344" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="15" font-weight="500" text-anchor="middle" fill="#203035">时序不收敛、DRC 或管脚冲突必须作为失败处理，而不是绕过</text>
+</svg>
