@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 490" role="img" aria-labelledby="e02t e02d"><title id="e02t">组合逻辑毛刺与同步触发器的采样时刻</title><desc id="e02d">时钟有两个上升沿。组合信号在第一个与第二个采样沿之间出现两次高窄脉冲，但两个沿上都为低，普通同步计数器不会因为这些毛刺多加两次。若毛刺恰好落在采样窗口则可能被采到或产生时序风险。</desc><defs><marker id="e02arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#147f80"/></marker></defs><rect width="960" height="490" fill="#fffdf9"/>
+<text x="41" y="42" font-family="system-ui,sans-serif" font-size="22" fill="#203035" text-anchor="start" font-weight="750">组合信号能跳变多次，触发器仍只在有效边沿采样</text>
+<text x="47" y="134" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">CLK</text><text x="47" y="249" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">enable</text><text x="47" y="364" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">count</text>
+<path d="M135 135H911" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M135 252H911" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M135 368H911" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M145 134H252V83H330V134H646V83H720V134H906" fill="none" stroke="#7461ba" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M145 252H384V194H417V252H495V194H531V252H905" fill="none" stroke="#147f80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M145 368H906" fill="none" stroke="#d06d4d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M252 69V410 M646 69V410" fill="none" stroke="#916c22" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 7"/>
+<text x="250" y="432" font-family="system-ui,sans-serif" font-size="17" fill="#916c22" text-anchor="middle" font-weight="500">边沿 A：低</text><text x="651" y="432" font-family="system-ui,sans-serif" font-size="17" fill="#916c22" text-anchor="middle" font-weight="500">边沿 B：低</text>
+<text x="480" y="180" font-family="system-ui,sans-serif" font-size="16" fill="#147f80" text-anchor="middle" font-weight="500">两段短脉冲发生于边沿之间</text>
+<text x="484" y="480" font-family="system-ui,sans-serif" font-size="15" fill="#53676d" text-anchor="middle" font-weight="500">此例 count 保持不变；仅靠“发生毛刺”不足以推断同步计数器会多计数。</text>
+</svg>
