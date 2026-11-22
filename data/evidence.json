@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "scope": "all-twenty-eight-2026-11",
   "checks": [
     {
@@ -9,7 +9,12 @@
       ],
       "claim": "LUT/FF and routing are separate FPGA resource classes; architecture is series-specific.",
       "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/CLB-Overview",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-01-02-01",
+      "source_url": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/CLB-Overview",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 01, 02 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -18,7 +23,12 @@
       ],
       "claim": "Generic HDL recommended; RTL syntax alone does not guarantee one specific CLB resource mapping.",
       "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Using-the-CLB-Resources",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-01-05-02",
+      "source_url": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Using-the-CLB-Resources",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 01, 05 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -27,7 +37,12 @@
       ],
       "claim": "Incomplete combinational assignment can infer an unintended latch.",
       "source": "https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-02-04-03",
+      "source_url": "https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 02, 04 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -36,7 +51,12 @@
       ],
       "claim": "Icarus uses iverilog compilation and vvp execution for Verilog simulation.",
       "source": "https://github.com/steveicarus/iverilog/blob/master/Documentation/usage/getting_started.rst",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-03-05-04",
+      "source_url": "https://github.com/steveicarus/iverilog/blob/master/Documentation/usage/getting_started.rst",
+      "kind": "project_documentation",
+      "locator": "Chapter 03, 05 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -44,7 +64,12 @@
       ],
       "claim": "Nonblocking assignments schedule later LHS updates after RHS evaluation; clocked coding style avoids races.",
       "source": "https://rfsoc.mit.edu/6S965/_static/F25/lectures/CummingsSNUG2000SJ_NBA.pdf",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-04-05",
+      "source_url": "https://rfsoc.mit.edu/6S965/_static/F25/lectures/CummingsSNUG2000SJ_NBA.pdf",
+      "kind": "reference",
+      "locator": "Chapter 04 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -52,7 +77,12 @@
       ],
       "claim": "7 Series devices include wide multiplexer resources; LUT mapping depends on design and tools.",
       "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Multiplexers",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-05-06",
+      "source_url": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Multiplexers",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 05 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -60,7 +90,12 @@
       ],
       "claim": "Local generated clocks need suitable routing/constraints; clock enables are preferable when staying in a single domain.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Avoiding-Local-Clocks",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-06-07",
+      "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Avoiding-Local-Clocks",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 06 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -68,7 +103,12 @@
       ],
       "claim": "Reset startup synchronization and controlled release require design-specific care.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Controlling-and-Synchronizing-Device-Startup",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-06-08",
+      "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Controlling-and-Synchronizing-Device-Startup",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 06 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -77,7 +117,12 @@
       ],
       "claim": "Functional HDL simulation and testbench use iverilog plus vvp; verification must establish actual assertions.",
       "source": "https://steveicarus.github.io/iverilog/usage/simulation.html",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-07-08-09",
+      "source_url": "https://steveicarus.github.io/iverilog/usage/simulation.html",
+      "kind": "reference",
+      "locator": "Chapter 07, 08 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -85,7 +130,12 @@
       ],
       "claim": "SPI CPOL/CPHA define idle level and leading/trailing capture edges.",
       "source": "https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-09-10",
+      "source_url": "https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html",
+      "kind": "reference",
+      "locator": "Chapter 09 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -93,7 +143,12 @@
       ],
       "claim": "NXP UM10204 Rev 7 defines START/STOP, ninth ACK, clock stretching and bus clear.",
       "source": "https://www.nxp.com/docs/en/user-guide/UM10204.pdf?locale=de",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-10-11",
+      "source_url": "https://www.nxp.com/docs/en/user-guide/UM10204.pdf?locale=de",
+      "kind": "reference",
+      "locator": "Chapter 10 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -101,7 +156,12 @@
       ],
       "claim": "24LC256 does not ACK while internal write cycle is in progress; ACK polling determines readiness rather than assuming clock stretch.",
       "source": "https://www.microchip.com/content/dam/mchp/documents/MPD/ProductDocuments/DataSheets/24AA256-24LC256-24FC256-Data-Sheet-20001203W.pdf",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-10-12",
+      "source_url": "https://www.microchip.com/content/dam/mchp/documents/MPD/ProductDocuments/DataSheets/24AA256-24LC256-24FC256-Data-Sheet-20001203W.pdf",
+      "kind": "reference",
+      "locator": "Chapter 10 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -109,7 +169,12 @@
       ],
       "claim": "Vivado UG901 differentiates synchronous RAM inference and port read/write modes; physical collision depends on the RAM primitive.",
       "source": "https://docs.amd.com/r/en-US/ug901-vivado-synthesis/Inference-Capabilities",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-11-13",
+      "source_url": "https://docs.amd.com/r/en-US/ug901-vivado-synthesis/Inference-Capabilities",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 11 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -117,7 +182,12 @@
       ],
       "claim": "UltraScale block memory address collisions require matching documented clock/port/mode conditions; cannot infer safe dual-clock read-first behavior.",
       "source": "https://docs.amd.com/r/en-US/ug573-ultrascale-memory-resources/Address-Collision",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-11-14",
+      "source_url": "https://docs.amd.com/r/en-US/ug573-ultrascale-memory-resources/Address-Collision",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 11 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -126,7 +196,12 @@
       ],
       "claim": "Routing-based data path max and min delays drive setup and hold analysis.",
       "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Timing-Path-Details",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-12-14-15",
+      "source_url": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Timing-Path-Details",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 12, 14 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -134,7 +209,12 @@
       ],
       "claim": "Use recognizable CDC synchronizer circuits and ASYNC_REG attributes; report_cdc and report_synchronizer_mtbf help review.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Clock-Domain-Crossing",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-13-16",
+      "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Clock-Domain-Crossing",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 13 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -143,7 +223,12 @@
       ],
       "claim": "Gray bus transfers may need max_delay -datapath_only or bus skew; check precedence of clock group exceptions.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Constraints-on-Individual-CDC-Paths",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-13-14-17",
+      "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Constraints-on-Individual-CDC-Paths",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 13, 14 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -151,7 +236,12 @@
       ],
       "claim": "set_input_delay and set_output_delay min/max describe external interface timing, not a local FPGA FF setup number.",
       "source": "https://docs.amd.com/r/en-US/ug903-vivado-using-constraints/Input-Delay",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-14-18",
+      "source_url": "https://docs.amd.com/r/en-US/ug903-vivado-using-constraints/Input-Delay",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 14 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -159,7 +249,12 @@
       ],
       "claim": "Vivado 2026.1 moved to tiered licensing; BASIC remains free and supports both Windows and Linux within its tier scope.",
       "source": "https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-licensing-options.html",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-15-19",
+      "source_url": "https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-licensing-options.html",
+      "kind": "reference",
+      "locator": "Chapter 15 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -167,7 +262,12 @@
       ],
       "claim": "Non-project Tcl supports read_verilog/read_xdc, synthesis, place, route, reporting and bitstream commands.",
       "source": "https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-15-20",
+      "source_url": "https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 15 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -175,7 +275,12 @@
       ],
       "claim": "Quartus Prime QSF stores project/entity assignments while SDC stores timing constraints; project assignment precedence includes CLI, QSF, compiler database and defaults.",
       "source": "https://docs.altera.com/r/docs/683143/25.1.1/quartus-prime-pro-edition-user-guide/constraining-designs",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-16-21",
+      "source_url": "https://docs.altera.com/r/docs/683143/25.1.1/quartus-prime-pro-edition-user-guide/constraining-designs",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 16 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -183,7 +288,12 @@
       ],
       "claim": "Quartus Prime Pro compiler supports full compilation flows including synthesis, fitter, timing analysis and programming-file generation.",
       "source": "https://docs.altera.com/r/docs/683236/25.3/quartus-prime-pro-edition-user-guide/compilation-flows",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-16-22",
+      "source_url": "https://docs.altera.com/r/docs/683236/25.3/quartus-prime-pro-edition-user-guide/compilation-flows",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 16 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -191,7 +301,12 @@
       ],
       "claim": "TimeQuest create_clock defines clock period and targets; PLL clock derivation behavior is family/IP dependent.",
       "source": "https://docs.altera.com/r/docs/683243/26.3/quartus-prime-pro-edition-user-guide-timing-analyzer/create-clock-create_clock",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-16-23",
+      "source_url": "https://docs.altera.com/r/docs/683243/26.3/quartus-prime-pro-edition-user-guide-timing-analyzer/create-clock-create_clock",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 16 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -199,7 +314,12 @@
       ],
       "claim": "Questa-Altera FPGA Starter Edition is free but requires a no-cost license for elaboration and simulation.",
       "source": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/simulator-versions-and-licensing",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-17-24",
+      "source_url": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/simulator-versions-and-licensing",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 17 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -207,7 +327,12 @@
       ],
       "claim": "Questa-Altera command line supports vsim -c and vsim -do run.do invocation.",
       "source": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/commands-to-invoke-questa-altera-fpga-edition",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-17-25",
+      "source_url": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/commands-to-invoke-questa-altera-fpga-edition",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 17 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -215,7 +340,12 @@
       ],
       "claim": "A source manifest with file hashes, device, tool version and revision aids traceability but does not itself prove bitstream reproducibility.",
       "source": "https://git-scm.com/docs/gitignore",
-      "status": "derived"
+      "status": "derived",
+      "id": "legacy-18-26",
+      "source_url": "https://git-scm.com/docs/gitignore",
+      "kind": "reference",
+      "locator": "Chapter 18 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -223,7 +353,12 @@
       ],
       "claim": "AXI transaction channels use VALID/READY; transfer occurs only when both are high at a rising edge and source payload stays stable until handshake.",
       "source": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-19-27",
+      "source_url": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
+      "kind": "reference",
+      "locator": "Chapter 19 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -231,7 +366,12 @@
       ],
       "claim": "AXI4-Lite supports single-beat 32-bit or 64-bit memory-mapped accesses and does not support burst or exclusive accesses.",
       "source": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-19-28",
+      "source_url": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
+      "kind": "reference",
+      "locator": "Chapter 19 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -239,7 +379,12 @@
       ],
       "claim": "MicroBlaze V is a configurable RISC-V processor with separate instruction/data interfaces and supports LMB, AXI4/AXI4-Lite and AXI4-Stream interfaces.",
       "source": "https://docs.amd.com/r/en-US/ug1629-microblaze-v-user-guide/MicroBlaze-V-I/O-Overview",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-20-29",
+      "source_url": "https://docs.amd.com/r/en-US/ug1629-microblaze-v-user-guide/MicroBlaze-V-I/O-Overview",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 20 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -247,7 +392,12 @@
       ],
       "claim": "MicroBlaze V embedded design flow uses Vivado IP Integrator, address editor, XSA export and Vitis software platform.",
       "source": "https://docs.amd.com/r/en-US/ug1711-microblaze-v-embedded-design/Using-a-MicroBlaze-V-Processor-in-an-Embedded-Design",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-20-30",
+      "source_url": "https://docs.amd.com/r/en-US/ug1711-microblaze-v-embedded-design/Using-a-MicroBlaze-V-Processor-in-an-Embedded-Design",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 20 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -255,7 +405,12 @@
       ],
       "claim": "Xil_Out32 writes a 32-bit value to a specified memory-mapped address.",
       "source": "https://docs.amd.com/r/2026.1-English/oslib_rm/Xil_Out32",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-20-31",
+      "source_url": "https://docs.amd.com/r/2026.1-English/oslib_rm/Xil_Out32",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 20 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -264,7 +419,12 @@
       ],
       "claim": "Nios V has its own Platform Designer and software developer workflow; it should not be conflated with MicroBlaze V.",
       "source": "https://docs.altera.com/r/docs/743810/current",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-18-20-32",
+      "source_url": "https://docs.altera.com/r/docs/743810/current",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 18, 20 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -272,7 +432,12 @@
       ],
       "claim": "Platform Designer supports Avalon MM/Streaming, AXI, AXI-Lite, AXI-Stream and APB interfaces and generates interconnect to bridge protocol differences.",
       "source": "https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-18-33",
+      "source_url": "https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 18 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -280,7 +445,12 @@
       ],
       "claim": "Vivado IP Packager documents AXI signal inference, clock/reset interfaces, constraints, dependencies, and IP version/revision management.",
       "source": "https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction",
-      "status": "supported"
+      "status": "unverified",
+      "id": "legacy-18-34",
+      "source_url": "https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction",
+      "kind": "vendor_documentation",
+      "locator": "Chapter 18 · legacy record; section anchor was not stored",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -288,11 +458,12 @@
       ],
       "claim": "RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J immediate variants.",
       "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch21-01",
       "kind": "standard",
       "source_url": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "locator": "Chapter 21 · RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J i"
+      "locator": "Chapter 21 · RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J i",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -300,11 +471,12 @@
       ],
       "claim": "RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and encode offsets in multiples of two bytes.",
       "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch21-02",
       "kind": "standard",
       "source_url": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "locator": "Chapter 21 · RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and "
+      "locator": "Chapter 21 · RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -312,11 +484,12 @@
       ],
       "claim": "RISC-V Architectural Certification Tests are not a substitute for additional processor verification.",
       "source": "https://github.com/riscv/riscv-arch-test",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch21-03",
       "kind": "standard",
       "source_url": "https://github.com/riscv/riscv-arch-test",
-      "locator": "Chapter 21 · RISC-V Architectural Certification Tests are not a substitute for additional processor verification."
+      "locator": "Chapter 21 · RISC-V Architectural Certification Tests are not a substitute for additional processor verification.",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -324,11 +497,12 @@
       ],
       "claim": "PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC.",
       "source": "https://pcisig.com/pci-express-6.0-specification",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch22-01",
       "kind": "standard",
       "source_url": "https://pcisig.com/pci-express-6.0-specification",
-      "locator": "Chapter 22 · PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC."
+      "locator": "Chapter 22 · PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC.",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -336,11 +510,12 @@
       ],
       "claim": "PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direction.",
       "source": "https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch22-02",
       "kind": "standard",
       "source_url": "https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations",
-      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direct"
+      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direct",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -348,11 +523,12 @@
       ],
       "claim": "AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed grade.",
       "source": "https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch22-03",
       "kind": "vendor_documentation",
       "source_url": "https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers",
-      "locator": "Chapter 22 · AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed gr"
+      "locator": "Chapter 22 · AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed gr",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -360,11 +536,12 @@
       ],
       "claim": "Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI serve distinct debug roles.",
       "source": "https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch23-01",
       "kind": "vendor_documentation",
       "source_url": "https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design",
-      "locator": "Chapter 23 · Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI "
+      "locator": "Chapter 23 · Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -372,11 +549,12 @@
       ],
       "claim": "Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition buffer options.",
       "source": "https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch23-02",
       "kind": "vendor_documentation",
       "source_url": "https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html",
-      "locator": "Chapter 23 · Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition"
+      "locator": "Chapter 23 · Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -384,11 +562,12 @@
       ],
       "claim": "Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog -sv remains a small subset and read_slang availability depends on the build.",
       "source": "https://github.com/YosysHQ/yosys",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-01",
       "kind": "project_documentation",
       "source_url": "https://github.com/YosysHQ/yosys",
-      "locator": "Chapter 24 · Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog"
+      "locator": "Chapter 24 · Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -396,11 +575,12 @@
       ],
       "claim": "nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; Nexus, Cyclone V, MachXO2 and Xilinx 7-Series are experimental; NG-Ultra bitstream creation requires proprietary Impulse.",
       "source": "https://github.com/YosysHQ/nextpnr",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-02",
       "kind": "project_documentation",
       "source_url": "https://github.com/YosysHQ/nextpnr",
-      "locator": "Chapter 24 · nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; N"
+      "locator": "Chapter 24 · nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; N",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -408,11 +588,12 @@
       ],
       "claim": "The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow and iCEstick PCF pins.",
       "source": "https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-03",
       "kind": "project_documentation",
       "source_url": "https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky",
-      "locator": "Chapter 24 · The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow "
+      "locator": "Chapter 24 · The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -420,11 +601,12 @@
       ],
       "claim": "Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, SDF or mixed-signal simulator use case.",
       "source": "https://verilator.org/guide/latest/",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-04",
       "kind": "vendor_documentation",
       "source_url": "https://verilator.org/guide/latest/",
-      "locator": "Chapter 24 · Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, "
+      "locator": "Chapter 24 · Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -432,11 +614,12 @@
       ],
       "claim": "Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed timing paths.",
       "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Timing-Summary",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch25-01",
       "kind": "vendor_documentation",
       "source_url": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Timing-Summary",
-      "locator": "Chapter 25 · Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed "
+      "locator": "Chapter 25 · Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -444,11 +627,12 @@
       ],
       "claim": "Vivado power analysis depends on device operating conditions and switching activity; simulation activity files can improve estimation accuracy.",
       "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Power",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch25-02",
       "kind": "vendor_documentation",
       "source_url": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Power",
-      "locator": "Chapter 25 · Vivado power analysis depends on device operating conditions and switching activity; simulation acti"
+      "locator": "Chapter 25 · Vivado power analysis depends on device operating conditions and switching activity; simulation acti",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -456,11 +640,12 @@
       ],
       "claim": "AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch25-03",
       "kind": "vendor_documentation",
       "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
-      "locator": "Chapter 25 · AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks."
+      "locator": "Chapter 25 · AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks.",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -468,11 +653,12 @@
       ],
       "claim": "Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separate frontend when installed.",
       "source": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-05",
       "kind": "project_documentation",
       "source_url": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
-      "locator": "Chapter 24 · Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separ"
+      "locator": "Chapter 24 · Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separ",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -480,11 +666,12 @@
       ],
       "claim": "PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding is approximately 63 GB/s per direction before protocol overhead.",
       "source": "https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch22-04",
       "kind": "vendor_documentation",
       "source_url": "https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/",
-      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding i"
+      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding i",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -492,11 +679,12 @@
       ],
       "claim": "MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lanes; CSI-2 is a higher-layer protocol.",
       "source": "https://www.mipi.org/groups/d-phy",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch22-05",
       "kind": "standard",
       "source_url": "https://www.mipi.org/groups/d-phy",
-      "locator": "Chapter 22 · MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lan"
+      "locator": "Chapter 22 · MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lan",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -504,11 +692,12 @@
       ],
       "claim": "nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream generation requires NanoXplore Impulse.",
       "source": "https://github.com/YosysHQ/nextpnr",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-06",
       "kind": "project_documentation",
       "source_url": "https://github.com/YosysHQ/nextpnr",
-      "locator": "Chapter 24 · nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream g"
+      "locator": "Chapter 24 · nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream g",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "chapters": [
@@ -516,11 +705,12 @@
       ],
       "claim": "Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while read_verilog -sv supports only a small subset.",
       "source": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
-      "status": "supported",
+      "status": "unverified",
       "id": "ch24-07",
       "kind": "project_documentation",
       "source_url": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
-      "locator": "Chapter 24 · Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while"
+      "locator": "Chapter 24 · Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while",
+      "notes": "Legacy claim/source pair retained from evidence schema v1; this 2026-11-23 review did not recheck it, and the old record did not preserve a section-level locator."
     },
     {
       "id": "ch26-01",
@@ -531,8 +721,9 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Pipeline",
       "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Pipeline",
-      "locator": "Chapter 26 · HLS PIPELINE pragma specifies target initiation interval; scheduling report determines achieved II.",
-      "status": "supported"
+      "locator": "Chapter 26 · #model — Latency, II and clock-cycle semantics",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch26-02",
@@ -543,8 +734,9 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Array-Accesses-and-Performance",
       "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Array-Accesses-and-Performance",
-      "locator": "Chapter 26 · HLS loop unrolling and array partitioning affect parallel memory read pressure and hardware resource",
-      "status": "supported"
+      "locator": "Chapter 26 · #mem — Memory ports, banking and array access",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch26-03",
@@ -555,8 +747,9 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Dataflow",
       "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Dataflow",
-      "locator": "Chapter 26 · Vitis HLS DATAFLOW overlaps process execution but requires proper communication and scheduling.",
-      "status": "supported"
+      "locator": "Chapter 26 · #mem — DATAFLOW and producer/consumer channels",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch26-04",
@@ -567,8 +760,9 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Co-simulation",
       "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Co-simulation",
-      "locator": "Chapter 26 · Vitis HLS C/RTL Co-simulation is a distinct verification stage from C simulation and synthesis.",
-      "status": "supported"
+      "locator": "Chapter 26 · #verify — C/RTL co-simulation",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch26-05",
@@ -579,8 +773,9 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Block-Level-Control-Protocols",
       "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Block-Level-Control-Protocols",
-      "locator": "Chapter 26 · HLS block level protocols differ between ap_ctrl_hs and ap_ctrl_none, affecting execution and backpr",
-      "status": "supported"
+      "locator": "Chapter 26 · #verify — Block-level control protocols",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch27-01",
@@ -591,8 +786,9 @@
       "kind": "paper",
       "source": "https://research.nvidia.com/publication/2023-09_verilogeval-evaluating-large-language-models-verilog-code-generation",
       "source_url": "https://research.nvidia.com/publication/2023-09_verilogeval-evaluating-large-language-models-verilog-code-generation",
-      "locator": "Chapter 27 · NVIDIA VerilogEval evaluates model-generated Verilog on HDLBits-derived problems and does not certif",
-      "status": "supported"
+      "locator": "Chapter 27 · #scope — VerilogEval benchmark scope",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch27-02",
@@ -603,8 +799,9 @@
       "kind": "benchmark",
       "source": "https://github.com/hkust-zhiyao/RTLLM",
       "source_url": "https://github.com/hkust-zhiyao/RTLLM",
-      "locator": "Chapter 27 · RTLLM 2.0 provides a benchmark with arithmetic, memory, control and miscellaneous RTL modules.",
-      "status": "supported"
+      "locator": "Chapter 27 · #scope — RTLLM benchmark scope",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch27-03",
@@ -615,32 +812,35 @@
       "kind": "standard",
       "source": "https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb",
       "source_url": "https://documentation-service.arm.com/static/68b03beb01ae952d9559f9eb",
-      "locator": "Chapter 27 · AMBA VALID/READY handshake requires the transmitter to keep payload stable until a transfer occurs.",
-      "status": "supported"
+      "locator": "Chapter 27 · #contract — VALID/READY payload stability",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch27-04",
       "chapters": [
         "27"
       ],
-      "claim": "Yosys formal model-checking supports assertions/equivalence; properties and assumptions must be specified.",
+      "claim": "Yosys documents symbolic model checking; the property to prove and its environment assumptions must be specified.",
       "kind": "project_documentation",
       "source": "https://yosyshq.readthedocs.io/projects/yosys/en/v0.70/using_yosys/more_scripting/model_checking.html",
       "source_url": "https://yosyshq.readthedocs.io/projects/yosys/en/v0.70/using_yosys/more_scripting/model_checking.html",
-      "locator": "Chapter 27 · Yosys formal model-checking supports assertions/equivalence; properties and assumptions must be spec",
-      "status": "supported"
+      "locator": "Chapter 27 · #tests — Symbolic model-checking evidence",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch27-05",
       "chapters": [
         "27"
       ],
-      "claim": "NIST AI RMF and Generative AI Profile describe risk-management processes; they do not certify generated RTL.",
+      "claim": "NIST AI 600-1 provides a Generative AI risk-management profile; it is guidance, not RTL or FPGA certification.",
       "kind": "framework",
-      "source": "https://www.nist.gov/itl/ai-risk-management-framework",
-      "source_url": "https://www.nist.gov/itl/ai-risk-management-framework",
-      "locator": "Chapter 27 · NIST AI RMF and Generative AI Profile describe risk-management processes; they do not certify genera",
-      "status": "supported"
+      "source": "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence",
+      "source_url": "https://www.nist.gov/publications/artificial-intelligence-risk-management-framework-generative-artificial-intelligence",
+      "locator": "Chapter 27 · #limits — NIST AI risk-management profile",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch28-01",
@@ -651,32 +851,74 @@
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
       "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Core-Behavior-with-EOL-and-SOF-Signals",
-      "locator": "Chapter 28 · In AMD AXI4-Stream Video, TUSER[0] marks SOF and TLAST marks EOL, not frame end.",
-      "status": "supported"
+      "locator": "Chapter 28 · #signals — AXI4-Stream Video SOF/EOL semantics",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch28-02",
       "chapters": [
         "28"
       ],
-      "claim": "Frame Buffer Write and Read bridge AXI4-Stream Video and AXI4 memory-mapped subsystems.",
+      "claim": "AMD PG278 Frame Buffer Read/Write IP provides high-bandwidth access between AXI4-Stream Video and AXI4 memory-mapped interfaces.",
       "kind": "vendor_documentation",
-      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview",
-      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/Overview",
-      "locator": "Chapter 28 · Frame Buffer Write and Read bridge AXI4-Stream Video and AXI4 memory-mapped subsystems.",
-      "status": "supported"
+      "source": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/Overview",
+      "source_url": "https://docs.amd.com/r/en-US/pg278-v-frmbuf/Overview",
+      "locator": "Chapter 28 · #buffer — Frame Buffer Read/Write architecture",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
     },
     {
       "id": "ch28-03",
       "chapters": [
         "28"
       ],
-      "claim": "Camera-to-display system integration requires explicitly managed interfaces and timing conditions.",
+      "claim": "AMD PG278 system guidance sizes frame-buffer bandwidth using frame rate, image height and line stride.",
       "kind": "vendor_documentation",
       "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
       "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
-      "locator": "Chapter 28 · Camera-to-display system integration requires explicitly managed interfaces and timing conditions.",
-      "status": "supported"
+      "locator": "Chapter 28 · #buffer — Stride-based frame-buffer bandwidth",
+      "status": "verified",
+      "notes": "Rechecked against the linked official documentation, standard, paper or project source on 2026-11-23."
+    },
+    {
+      "id": "ch26-06",
+      "chapters": [
+        "26"
+      ],
+      "claim": "Vitis HLS C/RTL co-simulation needs at least two transactions in the RTL simulation to calculate initiation interval.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Running-C/RTL-Co-Simulation",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Running-C/RTL-Co-Simulation",
+      "locator": "Chapter 26 · #verify — Co-simulation transaction count and II report",
+      "status": "verified",
+      "notes": "Rechecked against AMD UG1399 Co-Simulation guidance on 2026-11-23."
+    },
+    {
+      "id": "ch28-04",
+      "chapters": [
+        "28"
+      ],
+      "claim": "For frame-buffer IP, per-direction transfer bandwidth scales with fps × height × stride; active-pixel-only byte rate undercounts padded lines.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "locator": "Chapter 28 · #buffer — Stride-based frame-buffer bandwidth",
+      "status": "verified",
+      "notes": "Rechecked against AMD PG278 3.1 System Considerations on 2026-11-23."
+    },
+    {
+      "id": "ch28-05",
+      "chapters": [
+        "28"
+      ],
+      "claim": "Active-pixel byte rate and stride-based DMA byte rate differ when line padding is present; active-pixel rate is a lower-bound calculation.",
+      "kind": "derived",
+      "source": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "source_url": "https://docs.amd.com/r/en-US/2026.1/pg278-v-frmbuf/System-Considerations",
+      "locator": "Chapter 28 · #buffer — Active-pixel versus stride transfer equations",
+      "status": "derived",
+      "notes": "Derived by comparing active_line_bytes = width × bytes_per_pixel with stride_bytes; frame-buffer transfer estimate uses stride × height × fps."
     }
   ],
   "limitations": [
@@ -700,6 +942,9 @@
     "The nextpnr support table is a snapshot; the Nexus backend is experimental/alpha, and NanoXplore NG-Ultra binary bitstream generation requires proprietary Impulse.",
     "Chapter 26 FIR4 C++ test checks arithmetic and state, not actual Vitis HLS scheduling/II, RTL co-simulation, FPGA resources or timing.",
     "Chapter 27 ready_valid_slice test checks one synchronous 16-bit instance under deterministic backpressure; it is not an AXI CDC FIFO, exhaustive formal proof or PPA measurement.",
-    "Chapter 28 synthetic three-frame RGB threshold core does not implement camera PHY, DDR controller, DMA, CDC, Sobel, display timing or board-level operation; bandwidth script gives active-pixel lower bounds."
+    "Chapter 28 synthetic three-frame RGB threshold core does not implement camera PHY, DDR controller, DMA, CDC, Sobel, display timing or board-level operation; bandwidth script gives active-pixel lower bounds.",
+    "Legacy chapter 01–25 evidence entries were migrated to schema v2 as unverified because their section-level locators and source checks were not repeated in the 2026-11-23 review.",
+    "The 2026-11-23 external-source recheck covered the claims and references in chapters 26–28; legacy references in chapters 01–25 still require a separate source-by-source audit.",
+    "Playwright validation runs Chromium only; Safari, Firefox, native mobile browsers and physical FPGA hardware were not tested in this review."
   ]
 }
