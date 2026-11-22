@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 // Synchronous saturating event counter for low-cost FPGA observability.
 module debug_event_counter #(
     parameter WIDTH = 8

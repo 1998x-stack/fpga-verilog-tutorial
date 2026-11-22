@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 // Small RV32I front-end helpers used to teach immediate decoding and hazards.
 // This file is NOT a complete processor implementation.
 module rv32i_imm_gen (

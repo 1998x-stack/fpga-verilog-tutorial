@@ -74,7 +74,8 @@ module tb_rv32i_frontend_units;
         // LUI x1,0xABCDE; JAL x1,-4.
         expect_imm(3'd0, 32'hFFF00093, 32'hFFFF_FFFF);
         expect_imm(3'd1, 32'hFE21_AE23, 32'hFFFF_FFFC);
-        expect_imm(3'd2, 32'hFE00_0E63, 32'hFFFF_FFFC);
+        expect_imm(3'd2, 32'hFE00_0EE3, 32'hFFFF_FFFC);
+        expect_imm(3'd2, 32'h0000_0463, 32'h0000_0008);
         expect_imm(3'd3, 32'hABCDE0B7, 32'hABCDE000);
         expect_imm(3'd4, 32'hFFDFF0EF, 32'hFFFF_FFFC);
         expect_imm(3'd7, 32'hFFFF_FFFF, 32'h0000_0000);
