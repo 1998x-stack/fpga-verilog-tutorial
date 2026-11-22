@@ -8,7 +8,7 @@ import os
 from pathlib import Path
 
 EXCLUDED_DIRS = {
-    ".git", "__pycache__", ".pytest_cache", ".Xil", "db", "incremental_db",
+    ".git", "build", "__pycache__", ".pytest_cache", ".Xil", "db", "incremental_db",
     "output_files", "ip_user_files", ".ip_cache", ".cache", ".runs", ".sim",
     ".hw", "work", "simulation", "qa", "node_modules", ".venv"
 }

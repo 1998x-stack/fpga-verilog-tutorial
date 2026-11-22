@@ -14,7 +14,7 @@ set build_dir [file join $root build quartus]
 file mkdir $build_dir
 cd $build_dir
 load_package project
-project_new -overwrite -revision rev_a -family $::env(FPGA_FAMILY) -part $::env(FPGA_DEVICE) fpga_lab
+project_new -overwrite -revision rev_a -family "$::env(FPGA_FAMILY)" -part "$::env(FPGA_DEVICE)" fpga_lab
 set_global_assignment -name TOP_LEVEL_ENTITY led_counter
 set_global_assignment -name VERILOG_FILE [file join $root examples quartus led_counter.v]
 set_global_assignment -name SDC_FILE [file join $root examples quartus base.sdc]

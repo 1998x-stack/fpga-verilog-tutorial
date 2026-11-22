@@ -127,7 +127,7 @@ module tb_axi4lite_regs;
         write_tx(6'h04,32'hFFFFFFFF,4'b1111,2,2'b10);
         write_tx(6'h09,32'h12345678,4'b1111,1,2'b10);
         read_tx(6'h10,32'h00000000,2'b10);
-        if (checks != 9) $fatal(1,"Unexpected transaction count %0d",checks);
+        if (checks != 11) $fatal(1,"Unexpected transaction count %0d",checks);
         $display("PASS tb_axi4lite_regs: %0d read/write responses, channel order, strobes and backpressure",checks);
         $finish;
     end
