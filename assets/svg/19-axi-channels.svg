@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 530" role="img" aria-labelledby="axi19 axi19d">
+  <title id="axi19">AXI4 的五个独立通道与 VALID/READY 握手</title>
+  <desc id="axi19d">写地址 AW、写数据 W、写响应 B、读地址 AR、读数据 R 是五条方向固定、彼此独立的通道；每条通道只有在 VALID 与 READY 同时为高的时钟上升沿才完成一次传输。图下方的波形展示 VALID 先到、READY 后到的一种常见时序，说明握手发生在两者同时为高的那个时钟沿。</desc>
+  <rect width="960" height="530" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">五条单向通道，一套统一的 VALID/READY 握手</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif">
+    <rect x="330" y="76" width="150" height="54" rx="10" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="405" y="110" font-size="19" font-weight="750" text-anchor="middle" fill="#203035">Master</text>
+    <rect x="640" y="76" width="150" height="54" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="715" y="110" font-size="19" font-weight="750" text-anchor="middle" fill="#203035">Slave</text>
+
+    <g stroke="#c6674b" stroke-width="3" fill="none" stroke-linecap="round">
+      <path d="M330 158H475"/><path d="M330 212H475"/><path d="M790 158H645"/><path d="M330 300H475"/><path d="M790 300H645"/>
+    </g>
+    <g font-size="16" font-weight="700" fill="#7564b8">
+      <text x="322" y="152" text-anchor="end">AW 写地址 →</text>
+      <text x="322" y="206" text-anchor="end">W 写数据 →</text>
+      <text x="800" y="152">← B 写响应</text>
+      <text x="322" y="294" text-anchor="end">AR 读地址 →</text>
+      <text x="800" y="294">← R 读数据</text>
+    </g>
+    <rect x="486" y="146" width="148" height="24" rx="6" fill="#fbf4dd" stroke="#9c742c" stroke-width="1.5"/>
+    <text x="560" y="163" font-size="13" font-weight="700" text-anchor="middle" fill="#9c742c">各自独立握手</text>
+    <rect x="486" y="200" width="148" height="24" rx="6" fill="#fbf4dd" stroke="#9c742c" stroke-width="1.5"/>
+    <text x="560" y="217" font-size="13" font-weight="700" text-anchor="middle" fill="#9c742c">方向单一</text>
+  </g>
+  <rect x="40" y="352" width="880" height="150" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="64" y="384" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="16" font-weight="750" fill="#203035">握手的四条规则（每条通道都适用）</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="500" fill="#203035">
+    <text x="64" y="411">1. 发送方拉高 VALID 表示数据就绪；拉高后在握手完成前不得拉低。</text>
+    <text x="64" y="433">2. 接收方拉高 READY 表示可以接收；READY 可以先于 VALID 出现。</text>
+    <text x="64" y="455">3. 只有 VALID 与 READY 在同一时钟上升沿同时为高，才算完成一次传输。</text>
+  </g>
+  <text x="64" y="477" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="750" fill="#9c742c">4. 发送方的 VALID 只能依赖自身内部状态，绝不能等对方的 READY。</text>
+</svg>
