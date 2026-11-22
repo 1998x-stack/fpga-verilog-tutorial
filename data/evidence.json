@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-ten-2026-11",
+  "scope": "first-fifteen-2026-11",
   "checks": [
     {
       "chapters": [
@@ -102,12 +102,80 @@
       "claim": "24LC256 does not ACK while internal write cycle is in progress; ACK polling determines readiness rather than assuming clock stretch.",
       "source": "https://www.microchip.com/content/dam/mchp/documents/MPD/ProductDocuments/DataSheets/24AA256-24LC256-24FC256-Data-Sheet-20001203W.pdf",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "11"
+      ],
+      "claim": "Vivado UG901 differentiates synchronous RAM inference and port read/write modes; physical collision depends on the RAM primitive.",
+      "source": "https://docs.amd.com/r/en-US/ug901-vivado-synthesis/Inference-Capabilities",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "11"
+      ],
+      "claim": "UltraScale block memory address collisions require matching documented clock/port/mode conditions; cannot infer safe dual-clock read-first behavior.",
+      "source": "https://docs.amd.com/r/en-US/ug573-ultrascale-memory-resources/Address-Collision",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "12",
+        "14"
+      ],
+      "claim": "Routing-based data path max and min delays drive setup and hold analysis.",
+      "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Timing-Path-Details",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "13"
+      ],
+      "claim": "Use recognizable CDC synchronizer circuits and ASYNC_REG attributes; report_cdc and report_synchronizer_mtbf help review.",
+      "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Clock-Domain-Crossing",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "13",
+        "14"
+      ],
+      "claim": "Gray bus transfers may need max_delay -datapath_only or bus skew; check precedence of clock group exceptions.",
+      "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Constraints-on-Individual-CDC-Paths",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "14"
+      ],
+      "claim": "set_input_delay and set_output_delay min/max describe external interface timing, not a local FPGA FF setup number.",
+      "source": "https://docs.amd.com/r/en-US/ug903-vivado-using-constraints/Input-Delay",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "15"
+      ],
+      "claim": "Vivado 2026.1 moved to tiered licensing; BASIC remains free and supports both Windows and Linux within its tier scope.",
+      "source": "https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-licensing-options.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "15"
+      ],
+      "claim": "Non-project Tcl supports read_verilog/read_xdc, synthesis, place, route, reporting and bitstream commands.",
+      "source": "https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands",
+      "status": "supported"
     }
   ],
   "limitations": [
     "Code simulation does not establish board-level timing.",
     "Proposed FPGA logic and timing figures are conceptual; no hardware measurements are claimed.",
     "No synthesis resource usage, power or Fmax benchmark is asserted.",
-    "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP."
+    "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP.",
+    "Chapter 14 STA numbers are arithmetic examples, not measured or Vivado-reported slack.",
+    "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed."
   ]
 }

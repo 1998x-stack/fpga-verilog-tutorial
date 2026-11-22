@@ -17,4 +17,8 @@ run tb_detect101 examples/rtl/detect101.v examples/tb/tb_detect101.v
 run tb_uart_loopback examples/rtl/uart_tx.v examples/rtl/uart_rx.v examples/tb/tb_uart_loopback.v
 run tb_spi_master_mode0 examples/rtl/spi_master_mode0.v examples/tb/tb_spi_master_mode0.v
 run tb_i2c_bit_cell examples/rtl/i2c_bit_cell.v examples/tb/tb_i2c_bit_cell.v
-echo "PASS: eight RTL testbenches"
+run tb_ram_sp_read_first examples/rtl/ram_sp_read_first.v examples/tb/tb_ram_sp_read_first.v
+run tb_sync_fifo examples/rtl/sync_fifo.v examples/tb/tb_sync_fifo.v
+run tb_pipe3_calc examples/rtl/pipe3_calc.v examples/tb/tb_pipe3_calc.v
+run tb_cdc_toggle_event examples/rtl/cdc_toggle_event.v examples/tb/tb_cdc_toggle_event.v
+echo "PASS: twelve RTL testbenches"
