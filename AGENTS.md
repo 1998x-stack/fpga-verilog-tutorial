@@ -39,7 +39,7 @@
 - `spi_master_mode0.v` 只支持 CPOL=0、CPHA=0；禁止称为四模式 SPI Master。
 - `i2c_bit_cell.v` 仅为单个 bit 的 data/SCL 时序单元，无 START/STOP/ACK/多主仲裁；示例顶层需明确开漏输出与管脚上拉。
 - 将 24LC256 的内部写周期忙碌与一般 I²C stretching 分开：官方数据手册的 ACK polling 是 NACK 检测，不得编造该器件将 SCL 长时间拉低。
-- CI 必须运行 `bash scripts/run_rtl_tests.sh`、`python3 -m unittest discover -s tests -v`、站点静态检查和示例契约检查；浏览器覆盖首页与 01—25，四种宽度，并对新章节的原生 details 与 MathML 做交互/渲染验收。
+- CI 必须运行 `bash scripts/run_rtl_tests.sh`、`python3 -m unittest discover -s tests -v`、站点静态检查和示例契约检查；浏览器覆盖首页与 01—28，四种宽度，并对新章节的原生 details 与 MathML 做交互/渲染验收。
 
 ## 第三批存储、CDC、时序、工具链边界
 - `ram_sp_read_first.v` 明确单时钟、同一端口 READ_FIRST 语义；跨端口、跨时钟碰撞必须依据器件原语 datasheet，不得从此例推论。
@@ -48,7 +48,7 @@
 - CDC：2FF 用于慢变化单 bit 电平，toggle 事件握手用于接受后应答；任意多 bit 总线不可逐位同步替代协议。Gray 总线需 max-delay/bus-skew 约束并检查与异步分组例外的优先级。
 - STA 示例 `sta_budget.py` 的所有数字是数学演示。真实 WNS/TNS/时序收敛需具体 FPGA part、工具版本、XDC 和实现报告。
 - Vivado：非工程模式须指定真实 `FPGA_PART`、`BOARD_XDC`，不可硬编码虚构引脚、禁止跳过 DRC。GitHub Pages 的成功与 FPGA bitstream 无关。
-- CI：`bash scripts/run_rtl_tests.sh`（15 组），`python3 -m unittest discover -s tests -v`，`python3 scripts/check_quartus_example.py`，`python3 scripts/check_vivado_example.py`，`python3 scripts/check_open_source_example.py`，Playwright 首页与 01—25。
+- CI：`bash scripts/run_rtl_tests.sh`（17 组），`python3 -m unittest discover -s tests -v`，`python3 scripts/check_quartus_example.py`，`python3 scripts/check_vivado_example.py`，`python3 scripts/check_open_source_example.py`，Playwright 首页与 01—28。
 
 ## 第四批工程工具、IP、AXI 与软核边界
 - Quartus：QSF/QPF 属于工程输入，SDC 是独立时序模型；不能用一份通用时钟周期替代板级 I/O 延迟和 pin/IOSTANDARD。项目脚本必须要求真实 `FPGA_FAMILY` 与完整 `FPGA_DEVICE`，不允许猜测开发板型号。
@@ -58,7 +58,7 @@
 - Softcore：本章以 MicroBlaze V（RISC-V）为例，必须与 classic MicroBlaze 区分。地址宏来自生成的 `xparameters.h`，固件 ABI 与 RV32/RV64 配置一致；不能把示例 base address 当成板级固定地址。
 - 工程可复现：提交 QSF/SDC/XPR/XCI/QSYS 等真实输入（按实际 flow 选择），忽略可再生数据库与缓存；build manifest 记录 SHA-256、part、工具版本和 Git revision，但不自动保证 bitstream 字节级重现。
 - 本批不虚构 Quartus Fitter、TimeQuest、Questa、Vivado bitstream、LUT/FF/Fmax 或板级测试结果。GitHub Actions 的 RTL/静态/浏览器通过只能证明对应检查范围。
-- CI：15 组 Icarus RTL 回归、`python3 -m unittest discover -s tests -v`、Quartus/Vivado 静态脚本检查、首页及 01—25 Playwright。
+- CI：17 组 Icarus RTL 回归、`python3 -m unittest discover -s tests -v`、Quartus/Vivado 静态脚本检查、首页及 01—28 Playwright。
 
 
 ## 第五批 RISC-V、SerDes、调试、开源工具与时序功耗边界
@@ -70,4 +70,14 @@
 - 开源工具：Yosys、nextpnr、Verilator、packer 和 programmer 职责分离。nextpnr backend 支持列表需标记 alpha/experimental；Nexus 属 alpha，NG-Ultra bitstream 需专有 Impulse；不能声称开源工具对所有器件、PLL、SerDes、DDR 或 IP 都完整支持。
 - iCEstick example 使用 upstream nextpnr iCE40 blinky 的板级 pin mapping。其他开发板必须核对原理图、封装和引脚；CI 只做静态契约检查，不声称生成 bitstream、下载或上板运行。
 - Timing/power：setup slack 教学公式不替代 min/max STA、clock latency、OCV、I/O delay 或 CDC 审计；动态功耗公式不替代实现网表、活动文件、器件电压与热条件驱动的 power report。禁止虚构 WNS、TNS、Fmax、功耗比例或资源占用。
-- CI：15 组 Icarus RTL 回归；`python3 -m unittest discover -s tests -v`；静态 HTML/SVG、Quartus/Vivado/Open-source 示例契约；Playwright 首页 + 01—25。
+- CI：17 组 Icarus RTL 回归；`python3 -m unittest discover -s tests -v`；静态 HTML/SVG、Quartus/Vivado/Open-source 示例契约；Playwright 首页 + 01—28。
+
+
+## 第六批工程与全站完成定义（26—28）
+- HLS：声明 C-Sim、C synthesis、RTL Co-sim、implement/STA 的不同证据层级。PIPELINE II=1 仅是目标；资源端口、依赖与器件实现决定 achieved II。C++ `fir4` 每次调用一笔样本，reset invocation 不等于已证明的硬件 reset pin；没有 Vitis HLS 测试时不得写已合成、已通过 II 或已测 Fmax。
+- AI RTL：不要把模型 benchmark 通过率宣传为工程正确率；需求必须给出模块、位宽、时钟、复位、握手时刻、输出稳定性和验收方法。至少有独立 scoreboard 验证 backpressure、full/empty、同拍读写和 drain；模拟测试不是形式证明。不得向未经批准的外部服务泄露敏感 IP、数据或配置。
+- Ready/Valid slice：单 entry、单时钟、同步 active-low reset、无组合数据 bypass，但存在 m_ready 到 s_ready 的组合依赖；它不是完整异步 FIFO，也不是完全断开 READY 路径的 skid buffer。
+- AXI4-Stream Video：SOF = TUSER[0] 的帧首像素，TLAST = 每行 EOL。只有 TVALID && TREADY 才传输像素；所有 data / sideband 在停顿时必须稳定。不能把普通 DVP 直接当作带 READY 的 AXI 流。
+- 图像系统：本仓库仅实现 RGB888 到加权 gray8 / Binary8 的单像素流水线（带 SOF/EOL），testbench 只有合成 7x4 帧。3x3 Sobel、camera PHY、DDR DMA、CDC、frame ownership、显示 timing / PHY 均为详细设计指南而非已完成硬件。
+- DDR 裸像素预算公式是吞吐下界；必须注明像素格式、stride、帧数、fps、读写方向及总线开销。不得宣称实际 DDR 带宽达到工具输出的裸像素值。
+- 回归：17 组 Icarus、Python unittest、FIR4 portable C++ test、HTML/SVG/link、工具链静态契约和 Playwright 首页 + 01—28 在四种宽度；新章节原生 details 和 MathML 可访问性须验收。GitHub Pages 成功不是板级签核。

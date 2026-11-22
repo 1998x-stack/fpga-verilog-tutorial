@@ -5,7 +5,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 root=Path(__file__).resolve().parent.parent
-pages=["index.html"]+[f"chapters/{i:02}.html" for i in range(1,26)]
+pages=["index.html"]+[f"chapters/{i:02}.html" for i in range(1,29)]
 out=root/"qa"/"screens"
 out.mkdir(parents=True,exist_ok=True)
 issues=[]
@@ -26,7 +26,7 @@ with sync_playwright() as p:
             if a["scroll"]>a["width"]+2:issues.append(f"{width}px {rel}: horizontal overflow {a}")
             bad=tab.locator("img").evaluate_all("(imgs)=>imgs.filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.src)")
             if bad:issues.append(f"{width}px {rel}: broken images {bad}")
-            if width==1440 and rel.startswith("chapters/2") and rel in [f"chapters/{i:02}.html" for i in range(21,26)]:
+            if width==1440 and rel.startswith("chapters/2") and rel in [f"chapters/{i:02}.html" for i in range(21,29)]:
                 disclosure=tab.locator("details.exercise summary")
                 if disclosure.count()!=1:
                     issues.append(f"{rel}: expected one native exercise disclosure")
@@ -38,16 +38,16 @@ with sync_playwright() as p:
                     if tab.locator("details.exercise").evaluate("(el)=>el.open"):
                         issues.append(f"{rel}: exercise disclosure did not close")
             tab.screenshot(path=str(out/(rel.replace("/","-").replace(".html",f"-{width}.png"))), full_page=True)
-            if rel=="chapters/25.html":
+            if rel in ("chapters/25.html","chapters/26.html","chapters/28.html"):
                 math_info=tab.locator(".math-scroll").evaluate("(el)=>({tabIndex:el.tabIndex,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),namespace:el.querySelector('math')?.namespaceURI,height:el.getBoundingClientRect().height})")
                 if math_info["tabIndex"]!=0 or math_info["role"]!="region" or not math_info["label"] or math_info["namespace"]!="http://www.w3.org/1998/Math/MathML" or math_info["height"]<=0:
                     issues.append(f"{width}px {rel}: MathML region failed accessibility/render checks {math_info}")
                 tab.locator(".math-scroll").focus()
                 if not tab.locator(".math-scroll").evaluate("(el)=>document.activeElement===el"):
                     issues.append(f"{width}px {rel}: MathML region is not keyboard focusable")
-            if width==1440 and rel=="chapters/21.html":
+            if width==1440 and rel in ("chapters/21.html","chapters/28.html"):
                 tab.emulate_media(media="print")
-                tab.screenshot(path=str(out/"chapter-21-print.png"),full_page=True)
+                tab.screenshot(path=str(out/(rel.replace("/","-").replace(".html","-print.png"))),full_page=True)
                 tab.emulate_media(media="screen")
             if rel=="index.html" and width==1440:
                 tab.locator("#chapter-search").fill("AXI4-Lite")
@@ -63,4 +63,4 @@ with sync_playwright() as p:
 if issues:
     print("\n".join("FAIL "+s for s in issues))
     sys.exit(1)
-print("PASS browser checks: 26 pages x 4 widths; five native disclosures; print sample; screenshots: qa/screens")
+print("PASS browser checks: 29 pages x 4 widths; eight native disclosures; print sample; screenshots: qa/screens")

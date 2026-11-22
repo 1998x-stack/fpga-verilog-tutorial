@@ -24,4 +24,6 @@ run tb_cdc_toggle_event examples/rtl/cdc_toggle_event.v examples/tb/tb_cdc_toggl
 run tb_axi4lite_regs examples/rtl/axi4lite_regs.v examples/tb/tb_axi4lite_regs.sv
 run tb_rv32i_frontend_units examples/rtl/rv32i_frontend_units.v examples/tb/tb_rv32i_frontend_units.v
 run tb_debug_event_counter examples/rtl/debug_event_counter.v examples/tb/tb_debug_event_counter.v
-echo "PASS: fifteen RTL testbenches"
+run tb_ready_valid_slice examples/rtl/ready_valid_slice.v examples/tb/tb_ready_valid_slice.v
+run tb_rgb_threshold_stream examples/rtl/rgb_threshold_stream.v examples/tb/tb_rgb_threshold_stream.v
+echo "PASS: seventeen RTL testbenches"
