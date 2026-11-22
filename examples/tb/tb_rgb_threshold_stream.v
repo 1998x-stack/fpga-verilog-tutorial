@@ -16,13 +16,14 @@ module tb_rgb_threshold_stream;
         .m_tuser(m_tuser),.m_tlast(m_tlast)
     );
     reg [31:0] rng=32'hD0AB12E7;
-    reg pending=0,was_stalled=0;
+    reg pending=0,was_stalled=0,source_was_stalled=0;
     reg [7:0] hold_data;
-    reg hold_user,hold_last;
+    reg hold_user,hold_last,source_hold_user,source_hold_last;
+    reg [23:0] source_hold_data;
     reg [7:0] expected_data[0:PIXELS-1];
     reg expected_user[0:PIXELS-1],expected_last[0:PIXELS-1];
     integer wr=0,rd=0,cycle,total_stalls=0,gray_calc;
-    integer rr,gg,bb;
+    integer rr,gg,bb,output_sof_count=0,output_eol_count=0;
     function [23:0] pattern;
         input integer n;
         begin
@@ -33,14 +34,19 @@ module tb_rgb_threshold_stream;
     task sample_edge;
         begin
             @(posedge clk);
+            if(source_was_stalled && (!s_tvalid || s_tdata!==source_hold_data ||
+                                      s_tuser!==source_hold_user || s_tlast!==source_hold_last))
+                $fatal(1,"source changed pixel/sideband before input handshake");
             if(was_stalled && (!m_tvalid || m_tdata!==hold_data ||
                                m_tuser!==hold_user || m_tlast!==hold_last))
-                $fatal(1,"pixel/sideband changed under backpressure");
+                $fatal(1,"pixel/sideband changed under output backpressure");
             if(m_tvalid && m_tready) begin
                 if(rd>=wr || m_tdata!==expected_data[rd] ||
                    m_tuser!==expected_user[rd] || m_tlast!==expected_last[rd])
                     $fatal(1,"pixel mismatch index=%0d data=%h SOF=%b EOL=%b",
                            rd,m_tdata,m_tuser,m_tlast);
+                if(m_tuser) output_sof_count=output_sof_count+1;
+                if(m_tlast) output_eol_count=output_eol_count+1;
                 rd=rd+1;
             end
             if(s_tvalid && s_tready) begin
@@ -52,6 +58,12 @@ module tb_rgb_threshold_stream;
                 if(s_tuser!==expected_user[wr] || s_tlast!==expected_last[wr])
                     $fatal(1,"SOF/EOL input geometry mismatch at %0d",wr);
                 wr=wr+1;pending=0;
+            end
+            source_was_stalled=s_tvalid && !s_tready;
+            if(source_was_stalled) begin
+                source_hold_data=s_tdata;
+                source_hold_user=s_tuser;
+                source_hold_last=s_tlast;
             end
             was_stalled=m_tvalid && !m_tready;
             if(was_stalled) begin
@@ -78,10 +90,12 @@ module tb_rgb_threshold_stream;
             @(negedge clk);s_tvalid=0;m_tready=1;
             sample_edge();
         end
-        if(rd!=PIXELS || m_tvalid || total_stalls<5)
-            $fatal(1,"sink/drain/stall failure rd=%0d/%0d stalls=%0d",
-                   rd,PIXELS,total_stalls);
-        $display("PASS rgb_threshold_stream (%0d pixels, %0d stalls)",rd,total_stalls);
+        if(rd!=PIXELS || m_tvalid || total_stalls<5 ||
+           output_sof_count!=FRAMES || output_eol_count!=H*FRAMES)
+            $fatal(1,"sink/drain/marker/stall failure rd=%0d/%0d stalls=%0d SOF=%0d EOL=%0d",
+                   rd,PIXELS,total_stalls,output_sof_count,output_eol_count);
+        $display("PASS rgb_threshold_stream (%0d pixels, %0d stalls, %0d SOF, %0d EOL)",
+                 rd,total_stalls,output_sof_count,output_eol_count);
         $finish;
     end
 endmodule
