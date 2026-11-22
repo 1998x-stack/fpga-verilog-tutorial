@@ -20,6 +20,7 @@ class Inspector(HTMLParser):
     def handle_starttag(self, tag, attrs):
         props = dict(attrs)
         if tag == "h1": self.h1s += 1
+        if tag == "img" and not props.get("alt", "").strip(): errors.append("image missing alt text")
         if "id" in props:
             if props["id"] in self.ids: errors.append("duplicate HTML id: "+props["id"])
             self.ids.add(props["id"])
@@ -64,4 +65,4 @@ except Exception as exc:errors.append("data/evidence.json: "+str(exc))
 if errors:
     print("\n".join("ERROR "+s for s in errors))
     sys.exit(1)
-print("PASS local links, chapters 01-20 H1s, SVG XML, and evidence ledger")
+print("PASS local links, chapters 01-20 H1s, image alt text, SVG XML, and evidence ledger")
