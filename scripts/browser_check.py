@@ -18,7 +18,9 @@ with sync_playwright() as p:
             tab=context.new_page()
             tab.on("pageerror",lambda error:issues.append("JS error: "+str(error)))
             tab.goto((root/rel).as_uri(),wait_until="load")
-            tab.wait_for_timeout(100)
+            tab.locator("img").evaluate_all(
+                "(imgs) => Promise.all(imgs.map(img => { img.loading = 'eager'; return img.decode().catch(() => null); }))"
+            )
             a=tab.evaluate("({scroll:document.documentElement.scrollWidth,width:innerWidth})")
             if a["scroll"]>a["width"]+2:issues.append(f"{width}px {rel}: horizontal overflow {a}")
             bad=tab.locator("img").evaluate_all("(imgs)=>imgs.filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.src)")
