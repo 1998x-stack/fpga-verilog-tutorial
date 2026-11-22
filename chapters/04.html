@@ -1,0 +1,74 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="用两级寄存器、事件队列与完整赋值，理解阻塞赋值、非阻塞赋值及锁存器的边界。"><title>同一个时钟沿，到底先发生什么？ · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 04 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#tension">01 / 同一个时钟沿，为什么流水线要读旧值？</a><a href="#schedule">02 / 阻塞与非阻塞赋值对应哪种调度？</a><a href="#comb">03 / always @(*) 怎样避免意外锁存器？</a><a href="#parameters">04 / parameter、位宽与复位如何影响结构？</a><a href="#verify">05 / 测试台该在哪个时刻检查 q？</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 04 · RTL reasoning</p><h1>同一个时钟沿，到底先发生什么？</h1><p class="dek">用两级寄存器、事件队列与完整赋值，理解阻塞赋值、非阻塞赋值及锁存器的边界。</p></header><section id="tension" aria-labelledby="tension-heading"><h2 id="tension-heading">01 / 同一个时钟沿，为什么流水线要读旧值？</h2>
+<p class="intro">假设 <code>din=1</code>，原来 <code>q1=0</code>、<code>q2=0</code>。在一个时钟上升沿，若希望 q1 接住 din、q2 接住 q1 的上一拍值，应怎样写？</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/04-nba-registers.svg" alt="两个寄存器在同一上升沿同时采样：q1 更新为 din=1，q2 更新为旧 q1=0；下一沿 q2 才变成 1。" width="960" height="490" loading="lazy"></div><figcaption>两个寄存器在同一上升沿同时采样：q1 更新为 din=1，q2 更新为旧 q1=0；下一沿 q2 才变成 1。</figcaption></figure>
+<pre><code>module pipe2 (
+    input  wire clk,
+    input  wire din,
+    output reg  q1, q2
+);
+    always @(posedge clk) begin
+        q1 &lt;= din;
+        q2 &lt;= q1;
+    end
+endmodule</code></pre>
+<p>这段代码与两个串联的 D 触发器完全一致。每个时钟沿，右侧表达式按事件调度读取旧值，非阻塞赋值延后提交左侧更新。由此 <code>q2</code> 自然比 <code>q1</code> 晚一个采样沿。</p>
+<div class="callout">这不是语句“要等一个完整周期才执行”。计算和更新仍在同一个仿真时间戳的不同调度区域发生，真实硬件则体现为寄存器的同步采样和 clk-to-Q 延迟。</div></section><section id="schedule" aria-labelledby="schedule-heading"><h2 id="schedule-heading">02 / 阻塞与非阻塞赋值对应哪种调度？</h2>
+<p>阻塞赋值 <code>=</code> 在当前过程里按顺序更新变量，后续语句可读到该过程里刚写的值。非阻塞赋值 <code>&lt;=</code> 先计算 RHS，再在 NBA 更新阶段修改 LHS。这是语言仿真事件调度语义，不是某种直接可见的电路延迟。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/04-event-queue.svg" alt="在同一仿真时间戳内，简化成触发、Active 计算、NBA 更新和稳定后观察四步；这是教学视图，非完整标准调度图。" width="960" height="490" loading="lazy"></div><figcaption>在同一仿真时间戳内，简化成触发、Active 计算、NBA 更新和稳定后观察四步；这是教学视图，非完整标准调度图。</figcaption></figure>
+<div class="table-wrap"><table><thead><tr><th>写法</th><th>常见用途</th><th>容易误解</th></tr></thead><tbody><tr><td><code>=</code></td><td>组合过程、中间临时量</td><td>如果在多个独立时钟块中传播数据，可能出现仿真竞态</td></tr><tr><td><code>&lt;=</code></td><td>触发器寄存状态</td><td>同一时刻提交不表示 RHS 是新值</td></tr><tr><td><code>assign</code></td><td>网络的连续驱动</td><td>不是顺序执行的赋值语句</td></tr></tbody></table></div>
+<p>推荐的工程习惯是：<strong>时钟触发的寄存器更新使用非阻塞赋值；纯组合过程使用阻塞赋值。</strong> 这不是语法强制规定，而是便于模拟硬件并避免竞态的健壮风格。</p>
+<p>若多个 <code>always</code> 在同一时间戳中读写共享信号，测试台和 DUT 的采样也应避免在相同边沿无同步规则地交错。不要因为单次仿真通过就断言代码没有竞态。</p></section><section id="comb" aria-labelledby="comb-heading"><h2 id="comb-heading">03 / always @(*) 怎样避免意外锁存器？</h2>
+<p>一段过程是否是组合逻辑，关键在于<strong>每个可能路径是否都对输出赋值</strong>。如果某个路径需要“保持之前的 y”，工具就可能推断电平敏感锁存器。这与 FF 按时钟沿锁存完全不同。</p>
+<pre><code>// 有意展示问题：sel=1 时 y 必须保持旧值
+always @(*) begin
+    if (!sel)
+        y = a;   // 没有 else，可能推断 latch
+end
+
+// 完整赋值：不需要保持旧值
+always @(*) begin
+    y = b;       // 先给默认值
+    if (!sel)
+        y = a;
+end</code></pre>
+<p>从组合逻辑的数学表达来看，完整版本等价于 <code>y = sel ? b : a</code>。如果使用 <code>case</code>，可以设置默认赋值或覆盖所有合法组合；同时要分析 X/Z 仿真条件，而不是依赖 <code>casex</code> 掩盖未知值。</p>
+<div class="callout warn">“在时钟 <code>always @(posedge clk)</code> 里少写 else”通常代表寄存器保持当前值，不等同于组合锁存器。判断前务必确认敏感事件与时序意图。</div></section><section id="parameters" aria-labelledby="parameters-heading"><h2 id="parameters-heading">04 / parameter、位宽与复位如何影响结构？</h2>
+<p><code>parameter</code> 允许在实例化时定制电路结构，<code>localparam</code> 用于模块内不应从外部覆写的局部常量。它们在 elaboration（设计展开）阶段影响宽度、生成分支和实例数，不能把参数当作运行时输入端口。</p>
+<pre><code>module register_n #(
+    parameter WIDTH = 8
+) (
+    input  wire             clk,
+    input  wire             rst_n,
+    input  wire [WIDTH-1:0] d,
+    output reg  [WIDTH-1:0] q
+);
+    always @(posedge clk) begin
+        if (!rst_n) q &lt;= {WIDTH{1'b0}};
+        else        q &lt;= d;
+    end
+endmodule
+
+// 实例化时得到 16 位寄存器
+// register_n #(.WIDTH(16)) u_reg (...);</code></pre>
+<p>这段是同步低有效复位：只有上升沿才会执行 <code>if (!rst_n)</code>。改成异步复位需要在事件控制中加入复位边沿，并检查目标器件对控制引脚的支持、复位释放与时序约束。</p></section><section id="verify" aria-labelledby="verify-heading"><h2 id="verify-heading">05 / 测试台该在哪个时刻检查 q？</h2>
+<p>如果在 <code>@(posedge clk)</code> 立刻比较非阻塞赋值的结果，检查逻辑可能早于 NBA 更新而看到旧值。初学者可以先用下一个下降沿观察上一上升沿之后的稳定结果，避免测试台竞态。</p>
+<pre><code>module tb;
+    reg clk = 0, din = 0;
+    wire q1, q2;
+    pipe2 dut (.clk(clk), .din(din), .q1(q1), .q2(q2));
+    always #5 clk = ~clk;
+
+    initial begin
+        @(negedge clk); din = 1;
+        @(negedge clk);
+        if (q1 !== 1 || q2 !== 0)
+            $fatal(1, "first sampling edge");
+        @(negedge clk);
+        if (q1 !== 1 || q2 !== 1)
+            $fatal(1, "second sampling edge");
+        $display("PASS pipe2");
+        $finish;
+    end
+endmodule</code></pre>
+<p>保存 <code>pipe2</code> 与该 <code>tb</code> 于同一文件，运行 <code>iverilog -g2012 -s tb -o /tmp/pipe2.vvp pipe2.v &amp;&amp; vvp /tmp/pipe2.vvp</code>；预期为 <code>PASS pipe2</code>。更复杂的 SystemVerilog 验证环境可以使用 clocking block 等机制约束采样驱动区域。</p>
+<details class="exercise"><summary>练习：把 pipe2 的两条 &lt;= 改成 =，一定会得到正确的两个寄存器吗？</summary><p>不能保证。阻塞赋值在同一过程内按顺序生效，会使 q2 读取刚写入的 q1，产生与预期两级流水线不同的模拟结果。跨过程同时写读还可能产生调度竞态。</p></details></section><section id="references"><h2>资料与延伸阅读</h2><ol class="source-list"><li><a href="https://rfsoc.mit.edu/6S965/_static/F25/lectures/CummingsSNUG2000SJ_NBA.pdf" target="_blank" rel="noopener noreferrer">Clifford Cummings：Nonblocking Assignments in Verilog Synthesis</a></li><li><a href="https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation" target="_blank" rel="noopener noreferrer">Altera / Quartus：Avoid Unintentional Latch Generation</a></li><li><a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方文档</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="03.html">← 上一章</a><a href="../index.html">全部章节</a><a href="05.html">下一章 →</a></nav></article></main></div></body></html>

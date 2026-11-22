@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "scope": "first-five-2026-11",
+  "checks": [
+    {
+      "chapters": [
+        "01",
+        "02"
+      ],
+      "claim": "LUT/FF and routing are separate FPGA resource classes; architecture is series-specific.",
+      "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/CLB-Overview",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "01",
+        "05"
+      ],
+      "claim": "Generic HDL recommended; RTL syntax alone does not guarantee one specific CLB resource mapping.",
+      "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Using-the-CLB-Resources",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "02",
+        "04"
+      ],
+      "claim": "Incomplete combinational assignment can infer an unintended latch.",
+      "source": "https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "03",
+        "05"
+      ],
+      "claim": "Icarus uses iverilog compilation and vvp execution for Verilog simulation.",
+      "source": "https://github.com/steveicarus/iverilog/blob/master/Documentation/usage/getting_started.rst",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "04"
+      ],
+      "claim": "Nonblocking assignments schedule later LHS updates after RHS evaluation; clocked coding style avoids races.",
+      "source": "https://rfsoc.mit.edu/6S965/_static/F25/lectures/CummingsSNUG2000SJ_NBA.pdf",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "05"
+      ],
+      "claim": "7 Series devices include wide multiplexer resources; LUT mapping depends on design and tools.",
+      "source": "https://docs.amd.com/r/en-US/ug474_7Series_CLB/Multiplexers",
+      "status": "supported"
+    }
+  ],
+  "limitations": [
+    "Code simulation does not establish board-level timing.",
+    "Proposed FPGA logic and timing figures are conceptual; no hardware measurements are claimed.",
+    "No synthesis resource usage, power or Fmax benchmark is asserted."
+  ]
+}

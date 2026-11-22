@@ -1,0 +1,72 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="用真值表、触发器与采样窗口重新理解组合逻辑、寄存状态和时序约束。"><title>时间怎样进入数字电路？ · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 02 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#two-kinds">01 / 没有时钟与有时钟，是两种不同电路</a>
+<a href="#boolean">02 / 真值表如何变成硬件结构？</a>
+<a href="#edge">03 / 时钟沿与建立 / 保持时间</a>
+<a href="#sync">04 / 复位、使能与时钟的边界</a>
+<a href="#experiment">05 / 把采样动作写成可观察实验</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 02 · Hardware foundations</p><h1>时间怎样进入数字电路？</h1><p class="dek">用真值表、触发器与采样窗口重新理解组合逻辑、寄存状态和时序约束。</p></header><section id="two-kinds" aria-labelledby="two-kinds-heading"><h2 id="two-kinds-heading">01 / 没有时钟与有时钟，是两种不同电路</h2>
+<p class="intro">输入从 0 变成 1 时，输出是“立即跟着变”，还是“等下一个时钟沿才变”？这两种行为分别对应组合逻辑和时序逻辑，是阅读每一行 RTL 之前必须先建立的模型。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/02-logic-storage.svg" alt="组合逻辑没有记忆，输出取决于当前输入；触发器保留状态，输出在有效时钟沿采样并经历传播延迟。" width="960" height="490" loading="lazy"></div><figcaption>组合逻辑没有记忆，输出取决于当前输入；触发器保留状态，输出在有效时钟沿采样并经历传播延迟。</figcaption></figure>
+<p>组合逻辑是当前输入的函数，不依赖之前经历。时序逻辑的输出还依赖此前保存的状态。这个区分不是靠 Verilog 变量名字作出的，而是由电路如何触发和保持信息决定。</p>
+<pre><code>// 纯组合逻辑：无寄存状态
+assign y = (a &amp; b) | c;
+
+// 1 位 D 触发器：在 clk 的上升沿采样
+always @(posedge clk)
+    q &lt;= d;</code></pre>
+<p>组合逻辑中的“输入变，输出变”不是零时间传播，真实门电路存在传播延迟，仿真 RTL 常常隐藏这一物理细节。对同步电路，FF 输出也不是数学瞬间更新，而有时钟到 Q 的延迟。</p></section>
+<section id="boolean" aria-labelledby="boolean-heading"><h2 id="boolean-heading">02 / 真值表如何变成硬件结构？</h2>
+<p>以三输入组合函数 <code>y = (a &amp; b) | c</code> 为例，只有当 <code>c=1</code>，或 <code>a=b=1</code> 时输出才为 1。判断完全由输入组合决定，不需要时钟。</p>
+<div class="table-wrap"><table><caption>函数 y = (a AND b) OR c 的完整真值表</caption><thead><tr><th>a</th><th>b</th><th>c</th><th>y</th></tr></thead><tbody>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr><tr><td>0</td><td>0</td><td>1</td><td>1</td></tr><tr><td>0</td><td>1</td><td>0</td><td>0</td></tr><tr><td>0</td><td>1</td><td>1</td><td>1</td></tr><tr><td>1</td><td>0</td><td>0</td><td>0</td></tr><tr><td>1</td><td>0</td><td>1</td><td>1</td></tr><tr><td>1</td><td>1</td><td>0</td><td>1</td></tr><tr><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+</tbody></table></div>
+<p>AND、OR、NOT 可以通过门电路连接实现，也可在特定 FPGA 上映射为一张 LUT。RTL 写法描述布尔等价关系；综合器可做常量传播、化简、共享和重写，因此不能仅从源代码门符号数量推断最终 LUT 数量。</p>
+<p>对于任何二输入布尔函数，可以枚举四种输入组合以核查功能；对于复杂逻辑，应将参考模型与 testbench 的全部输入组合对照。</p></section>
+<section id="edge" aria-labelledby="edge-heading"><h2 id="edge-heading">03 / 时钟沿与建立 / 保持时间</h2>
+<p>触发器的基本前提不是“任意时刻都能正确读 D”。它需要输入在采样时钟沿附近满足<strong>建立时间</strong>（setup：采样前必须稳定的最短时间）和<strong>保持时间</strong>（hold：采样后仍需稳定的最短时间）。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/02-setup-hold.svg" alt="时钟上升沿 t₀ 周围有建立与保持窗口；D 在窗口外切换，Q 稍后更新。图中的窗口相对位置是概念示意。" width="960" height="490" loading="lazy"></div><figcaption>时钟上升沿 t₀ 周围有建立与保持窗口；D 在窗口外切换，Q 稍后更新。图中的窗口相对位置是概念示意。</figcaption></figure>
+<p>对一条同步寄存器路径，设计者会使用时钟约束让 STA 工具检查数据到达、启动触发器到 Q 的延迟、组合路径延迟、时钟偏斜和不确定性。<strong>简单提高时钟频率并不等于解决 hold 问题</strong>：hold 是最小延迟检查，而 setup 主要制约最长路径。</p>
+<div class="callout warn">如果 D 在窗口内跳变，可能导致采样值无法保证或触发亚稳态。亚稳态不是仿真中出现 X 的同义词，普通 RTL 仿真无法准确预测物理亚稳态的模拟波形。</div></section>
+<section id="sync" aria-labelledby="sync-heading"><h2 id="sync-heading">04 / 复位、使能与时钟的边界</h2>
+<p>一个带同步复位与使能的寄存器，可以用以下代码描述：</p>
+<pre><code>module enabled_reg (
+    input  wire clk,
+    input  wire rst_n,
+    input  wire enable,
+    input  wire d,
+    output reg  q
+);
+    always @(posedge clk) begin
+        if (!rst_n)
+            q &lt;= 1'b0;
+        else if (enable)
+            q &lt;= d;
+    end
+endmodule</code></pre>
+<p>当 <code>enable=0</code> 时，过程没有赋值，时钟触发器自然保持已有 Q。这里“不写 else”不是无意的锁存器，因为这是沿触发时序逻辑。相反，组合过程少赋值往往会推断锁存器，见第四章。</p>
+<p>异步复位通常写成 <code>always @(posedge clk or negedge rst_n)</code>；它在复位边沿也响应，需要根据目标架构考虑复位解除时的时序与同步释放。复位策略由系统需求与器件资源决定，不能只靠一行代码说“更安全”。</p></section>
+<section id="experiment" aria-labelledby="experiment-heading"><h2 id="experiment-heading">05 / 把采样动作写成可观察实验</h2>
+<p>最小实验可以使用 Icarus Verilog 编译下面的触发器与 testbench。将输入数据安排在时钟下降沿修改，随后观察上升沿采样效果，避免测试台在同一时刻与 DUT 竞争驱动。</p>
+<pre><code>module dff(input wire clk, input wire d, output reg q);
+    always @(posedge clk) q &lt;= d;
+endmodule
+
+module tb;
+    reg clk = 0;
+    reg d   = 0;
+    wire q;
+    dff dut (.clk(clk), .d(d), .q(q));
+
+    always #5 clk = ~clk;
+
+    initial begin
+        @(negedge clk); d = 1'b1;
+        @(negedge clk);
+        if (q !== 1'b1) $fatal(1, "q failed to sample 1");
+        d = 1'b0;
+        @(negedge clk);
+        if (q !== 1'b0) $fatal(1, "q failed to sample 0");
+        $display("PASS dff");
+        $finish;
+    end
+endmodule</code></pre>
+<p>保存为 <code>dff_tb.v</code>，运行 <code>iverilog -g2012 -s tb -o /tmp/dff.vvp dff_tb.v &amp;&amp; vvp /tmp/dff.vvp</code>。预期输出 <code>PASS dff</code>。这验证功能与调度，不证明目标器件满足 setup/hold；后者需要约束与实现后的时序分析。</p>
+<details class="exercise"><summary>检查理解：将时钟加快到原来两倍，setup 与 hold 都会变容易吗？</summary><p>不会。时钟周期缩短通常压缩允许的最大路径延迟（setup 预算），而 hold 检查关注数据是否过早到达。两者需要分别检查。</p></details></section><section id="references" aria-labelledby="references-heading"><h2 id="references-heading">延伸阅读与资料来源</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB" target="_blank" rel="noopener noreferrer">AMD 7 Series CLB User Guide</a></li><li><a href="https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation" target="_blank" rel="noopener noreferrer">Altera / Quartus：避免意外锁存器</a></li><li><a href="https://github.com/steveicarus/iverilog/blob/master/Documentation/usage/getting_started.rst" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方入门文档</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="01.html">← 上一章</a><a href="../index.html">全部章节</a><a href="03.html">下一章 →</a></nav></article></main></div></body></html>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 490" role="img" aria-labelledby="b02t b02d"><title id="b02t">建立时间和保持时间是相对于采样边沿的窗口</title><desc id="b02d">时钟上升沿 t0 周围区分建立时间区间与保持时间区间；D 应避免在该窗口内变化，Q 在 clk-to-Q 传播延迟后改变。</desc><defs><marker id="b02arrow" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#147f80"/></marker></defs><rect width="960" height="490" fill="#fffdf9"/>
+<text x="38" y="40" font-family="system-ui,sans-serif" font-size="23" fill="#203035" text-anchor="start" font-weight="750">数据必须围绕采样边沿保持稳定</text>
+<rect x="420" y="63" width="170" height="358" rx="0" fill="#fcf3dc" stroke="#916c22" stroke-width="2"/>
+<text x="502" y="87" font-family="system-ui,sans-serif" font-size="17" fill="#916c22" text-anchor="middle" font-weight="750">采样保护窗口</text>
+<path d="M105 160H901" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M105 265H901" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /><path d="M105 370H901" fill="none" stroke="#c8d8d4" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+<text x="53" y="163" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">CLK</text><text x="53" y="268" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">D</text><text x="53" y="372" font-family="system-ui,sans-serif" font-size="20" fill="#203035" text-anchor="start" font-weight="500">Q</text>
+<path d="M115 160H505V110H590V160H896" fill="none" stroke="#7461ba" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M115 266H325V218H685V266H894" fill="none" stroke="#147f80" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M115 370H601V318H892" fill="none" stroke="#d06d4d" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M505 96V399" fill="none" stroke="#916c22" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 6"/>
+<text x="505" y="417" font-family="system-ui,sans-serif" font-size="18" fill="#916c22" text-anchor="middle" font-weight="750">t₀ ↑</text>
+<text x="415" y="441" font-family="system-ui,sans-serif" font-size="17" fill="#916c22" text-anchor="end" font-weight="500">← t_setup</text>
+<text x="603" y="441" font-family="system-ui,sans-serif" font-size="17" fill="#916c22" text-anchor="start" font-weight="500">t_hold →</text>
+<text x="713" y="307" font-family="system-ui,sans-serif" font-size="16" fill="#d06d4d" text-anchor="start" font-weight="500">t_clk→Q 后更新</text>
+<text x="42" y="478" font-family="system-ui,sans-serif" font-size="15" fill="#53676d" text-anchor="start" font-weight="500">窗口宽度来自具体器件时序要求；图形只说明相对位置，不给出虚构纳秒数。</text>
+</svg>

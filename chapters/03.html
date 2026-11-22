@@ -1,0 +1,72 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从模块、端口与信号到四态仿真、位宽和 testbench，建立“语法—电路”之间的可靠联系。"><title>Verilog：描述硬件，而不是执行脚本 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 03 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#concept">01 / 一段 Verilog 会变成什么电路？</a><a href="#modules">02 / 模块、端口、位宽和实例化</a><a href="#drivers">03 / 连续赋值和过程赋值不是一回事</a><a href="#four-values">04 / X 和 Z 是仿真值，不是另外两种电压</a><a href="#run">05 / 用编译器和 testbench 证明代码含义</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 03 · RTL reasoning</p><h1>Verilog：描述硬件，而不是执行脚本</h1><p class="dek">从模块、端口与信号到四态仿真、位宽和 testbench，建立“语法—电路”之间的可靠联系。</p></header><section id="concept" aria-labelledby="concept-heading"><h2 id="concept-heading">01 / 一段 Verilog 会变成什么电路？</h2>
+<p class="intro">写下 <code>assign y = a ^ b;</code>，芯片是否会先“读取 a”，再“读取 b”，最后“执行异或”？不会。只要设计被综合成功，输入与输出之间存在持续工作的组合逻辑。</p>
+<p>Verilog 是硬件描述语言。<code>module</code> 定义可以实例化的硬件层级，端口描述模块与外部的连接，信号连接层级内的数据通路。部分语言结构（例如 testbench 的时间延迟、文件读写）用于仿真，并不具备通用的可综合电路意义。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/03-module-ports.svg" alt="一个模块通过输入网线、异或组合逻辑和过程赋值连接输出。reg 在组合 always 中是过程赋值目标，不意味着触发器。" width="960" height="490" loading="lazy"></div><figcaption>一个模块通过输入网线、异或组合逻辑和过程赋值连接输出。reg 在组合 always 中是过程赋值目标，不意味着触发器。</figcaption></figure>
+<p>语法层面，声明 <code>wire</code> 常用于连接连续驱动的网络；<code>reg</code> 是过程赋值的变量类型。<strong>reg 不一定代表物理寄存器</strong>。如果组合逻辑的赋值覆盖所有情况，它仍可被综合成没有状态的电路。</p></section><section id="modules" aria-labelledby="modules-heading"><h2 id="modules-heading">02 / 模块、端口、位宽和实例化</h2>
+<p>下面构建一个有两个 4 位输入、一个选择输入的 4 位多路选择模块：</p>
+<pre><code>module mux2_4 (
+    input  wire [3:0] a,
+    input  wire [3:0] b,
+    input  wire       sel,
+    output wire [3:0] y
+);
+    assign y = sel ? b : a;
+endmodule
+
+module top (
+    input  wire [3:0] left, right,
+    input  wire       select,
+    output wire [3:0] result
+);
+    mux2_4 u_mux (
+        .a(left),
+        .b(right),
+        .sel(select),
+        .y(result)
+    );
+endmodule</code></pre>
+<p><code>[3:0]</code> 定义 4 位向量；<code>sel</code> 是 1 位。<code>mux2_4 u_mux (...)</code> 创建模块实例，类似把一个可复用电路块连接到顶层的引脚。端口连接支持按名称绑定，推荐优先采用这种形式，减少位置顺序变化导致的错误。</p>
+<p>Verilog 中的显式位宽很重要：未标注位宽的整数常量、符号扩展、截断和混合有符号表达式会影响结果。写算术时应明确规定输出宽度，并在边界值上验证。</p>
+<div class="callout note"><strong>一个宽度例子：</strong> 两个 4 位无符号数相加可能得到 5 位结果。若只保存 4 位，最高进位会被丢弃。需要进位时可以明确写成 <code>{1'b0, a} + {1'b0, b}</code>，并接入 5 位目标。</div></section><section id="drivers" aria-labelledby="drivers-heading"><h2 id="drivers-heading">03 / 连续赋值和过程赋值不是一回事</h2>
+<p><code>assign</code> 描述对网络持续有效的驱动关系，输入变更后会重新求值。<code>always @(*)</code> 是敏感列表自动展开的组合过程块，过程内通常使用阻塞赋值 <code>=</code> 描述中间计算与输出。</p>
+<pre><code>// 两种等价的组合逻辑写法
+module xor_assign (
+    input wire a, b,
+    output wire y
+);
+    assign y = a ^ b;
+endmodule
+
+module xor_proc (
+    input wire a, b,
+    output reg y
+);
+    always @(*) begin
+        y = a ^ b;
+    end
+endmodule</code></pre>
+<p>这两种写法对二值输入给出相同的异或输出，而且没有需要保存的状态。它们的综合映射通常可以等价优化，但“最终一定是一个特定物理门”不能凭源代码保证。</p>
+<p>一个过程变量不应被多个互相竞争的组合过程驱动。建议以单一清晰的过程决定一个逻辑输出，避免多驱动、组合环路与难以审查的隐含优先级。</p></section><section id="four-values" aria-labelledby="four-values-heading"><h2 id="four-values-heading">04 / X 和 Z 是仿真值，不是另外两种电压</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/03-four-state.svg" alt="0/1 是逻辑电平；X 表示未知或冲突，Z 表示高阻模型。内部 FPGA 逻辑通常不会把 X/Z 当成可存储的第三或第四稳定物理值。" width="960" height="490" loading="lazy"></div><figcaption>0/1 是逻辑电平；X 表示未知或冲突，Z 表示高阻模型。内部 FPGA 逻辑通常不会把 X/Z 当成可存储的第三或第四稳定物理值。</figcaption></figure>
+<p>Verilog 具备四态逻辑：<code>0</code>、<code>1</code>、<code>x</code>、<code>z</code>。<code>x</code> 常见于未初始化信号和驱动冲突；<code>z</code> 是高阻状态，常见于三态总线和 I/O 模型。对于在 FPGA 内部进行逻辑运算的电路，目标综合工具可能将不完整驱动等价化为 MUX 或其他结构。</p>
+<div class="table-wrap"><table><thead><tr><th>表达式</th><th>作用</th><th>教学提醒</th></tr></thead><tbody><tr><td><code>==</code></td><td>逻辑相等比较</td><td>参与 X/Z 时结果可能为 X</td></tr><tr><td><code>===</code></td><td>四态完全相等</td><td>常用于 testbench 检查 X/Z</td></tr><tr><td><code>&amp;</code> / <code>|</code></td><td>按位布尔运算</td><td>检查每一位传播规则</td></tr><tr><td><code>&amp;&amp;</code> / <code>||</code></td><td>逻辑条件运算</td><td>不是按位运算</td></tr></tbody></table></div>
+<p>当使用 <code>casex</code> 和 <code>casez</code> 时还会引入通配匹配语义，可能掩盖未初始化问题。初学设计优先选择明确的 <code>case</code> 规则，除非确实需要通配编码并已分析风险。</p></section><section id="run" aria-labelledby="run-heading"><h2 id="run-heading">05 / 用编译器和 testbench 证明代码含义</h2>
+<p>功能仿真的最小闭环是：模块 → 激励 → 期望值 → 比较 → 成功 / 失败报告。下面针对 2:1 MUX 检查两个选择路径：</p>
+<pre><code>module tb;
+    reg [3:0] a = 4'ha, b = 4'h5;
+    reg sel = 1'b0;
+    wire [3:0] y;
+
+    mux2_4 dut (.a(a), .b(b), .sel(sel), .y(y));
+    initial begin
+        #1;
+        if (y !== 4'ha) $fatal(1, "sel=0");
+        sel = 1'b1;
+        #1;
+        if (y !== 4'h5) $fatal(1, "sel=1");
+        $display("PASS mux2_4");
+        $finish;
+    end
+endmodule</code></pre>
+<p>把 <code>mux2_4</code> 和 testbench 保存到一个文件 <code>demo.v</code>，执行 <code>iverilog -g2012 -s tb -o /tmp/demo.vvp demo.v &amp;&amp; vvp /tmp/demo.vvp</code>。期望看到 <code>PASS mux2_4</code>。这里用 <code>#1</code> 给组合结果一个仿真调度机会；它仅属于测试台，不是让真实电路延迟 1ns 的承诺。</p>
+<details class="exercise"><summary>练习：把 4 位 mux 改成 8 位，为什么不能只改输出端口？</summary><p>数据端口 a、b 和输出 y 的宽度必须保持一致，实例化模块的连接也要相应调整；否则可能发生截断或零扩展，虽然部分工具只给出警告。</p></details></section><section id="references"><h2>资料与延伸阅读</h2><ol class="source-list"><li><a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方文档</a></li><li><a href="https://github.com/steveicarus/iverilog/blob/master/Documentation/usage/getting_started.rst" target="_blank" rel="noopener noreferrer">Icarus Verilog：Getting Started</a></li><li><a href="https://yosyshq.readthedocs.io/projects/yosys/en/0.40/yosys_internals/flow/verilog_frontend.html" target="_blank" rel="noopener noreferrer">Yosys Verilog 前端的 AST 与过程转换</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="02.html">← 上一章</a><a href="../index.html">全部章节</a><a href="04.html">下一章 →</a></nav></article></main></div></body></html>

@@ -1,0 +1,76 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从一颗 4:1 MUX 开始，构建译码器和 4 位 ALU，理解毛刺与同步采样的真正关系。"><title>把选择、译码与运算连成电路 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 05 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#mux">01 / 一颗多路选择器到底在选什么？</a><a href="#decoder">02 / 译码器、编码器与优先级的差别</a><a href="#alu">03 / 从组合电路构造 4 位 ALU</a><a href="#glitches">04 / 毛刺怎样产生，什么时候危险？</a><a href="#test">05 / 实际运行、检查综合映射</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 05 · RTL reasoning</p><h1>把选择、译码与运算连成电路</h1><p class="dek">从一颗 4:1 MUX 开始，构建译码器和 4 位 ALU，理解毛刺与同步采样的真正关系。</p></header><section id="mux" aria-labelledby="mux-heading"><h2 id="mux-heading">01 / 一颗多路选择器到底在选什么？</h2>
+<p class="intro">一段电路需要从四个 4 位数据通道中选出一个输出。最朴素的设计是一个 4:1 MUX。理解它，应先写出函数和选择表，再考虑 RTL 写法和 FPGA 实际映射。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/05-mux-tree.svg" alt="两个第一级 MUX 由选择位 s0 决定相邻数据对，第二级 MUX 由 s1 决定输出；00、01、10、11 分别选 d0、d1、d2、d3。" width="960" height="490" loading="lazy"></div><figcaption>两个第一级 MUX 由选择位 s0 决定相邻数据对，第二级 MUX 由 s1 决定输出；00、01、10、11 分别选 d0、d1、d2、d3。</figcaption></figure>
+<pre><code>module mux4 (
+    input  wire [3:0] d0, d1, d2, d3,
+    input  wire [1:0] sel,
+    output reg  [3:0] y
+);
+    always @(*) begin
+        case (sel)
+            2'b00: y = d0;
+            2'b01: y = d1;
+            2'b10: y = d2;
+            2'b11: y = d3;
+            default: y = 4'b0000; // 仿真 X/Z 情况的确定策略
+        endcase
+    end
+endmodule</code></pre>
+<p>对于二值 <code>sel</code>，输出严格遵守真值表：00→d0，01→d1，10→d2，11→d3。这里加入 default 是为了消除缺失赋值及明确未知选择值的输出策略；它并不意味着任何 X/Z 都真实存在于内部 FPGA 电路。</p>
+<div class="callout warn"><strong>综合器不承诺按写法保留树的形状。</strong> 嵌套 <code>?:</code> 和完整的 <code>case</code> 很可能被优化成相同逻辑。AMD 7 系列有 LUT 与专门的宽 MUX 资源；具体映射取决于器件、优化目标和约束。不要写“case 一定比三目运算快”。</div></section><section id="decoder" aria-labelledby="decoder-heading"><h2 id="decoder-heading">02 / 译码器、编码器与优先级的差别</h2>
+<p>译码器把二进制地址变为 one-hot 选择。例如 2 位地址可驱动四路独热输出。若地址为 2'b10，应只有第 2 位为 1（约定最低位为第 0 路）。</p>
+<pre><code>module decoder2to4 (
+    input  wire [1:0] addr,
+    output wire [3:0] onehot
+);
+    assign onehot = 4'b0001 &lt;&lt; addr;
+endmodule</code></pre>
+<p>编码器从多路输入生成二进制编号。但如果多个请求可以同时拉高，就需要优先编码器定义明确的优先级，而不是让不同 <code>if</code> 分支无意覆盖。对错误输入条件，应约定 <code>valid</code> 输出并在验证中覆盖。</p>
+<div class="table-wrap"><table><thead><tr><th>组件</th><th>输入 → 输出</th><th>需要确认的规则</th></tr></thead><tbody><tr><td>MUX</td><td>多路数据 → 单路数据</td><td>sel 的每个编码选哪一路</td></tr><tr><td>译码器</td><td>地址 → 独热选择</td><td>位序、有效高低、默认情况</td></tr><tr><td>优先编码器</td><td>多路请求 → 编码 + valid</td><td>多输入同时有效时的优先顺序</td></tr></tbody></table></div></section><section id="alu" aria-labelledby="alu-heading"><h2 id="alu-heading">03 / 从组合电路构造 4 位 ALU</h2>
+<p>把四种操作交给一个 2 位操作码：<code>00</code> 加法、<code>01</code> 按位与、<code>10</code> 按位异或、<code>11</code> 对 a 取反。规定结果 4 位；只有加法操作才对 <code>carry</code> 有意义，其他时候置 0。</p>
+<pre><code>module alu4 (
+    input  wire [3:0] a,
+    input  wire [3:0] b,
+    input  wire [1:0] op,
+    output reg  [3:0] result,
+    output reg        carry
+);
+    reg [4:0] ext;
+    always @(*) begin
+        ext    = 5'b0;
+        result = 4'b0;
+        carry  = 1'b0;
+        case (op)
+            2'b00: begin
+                ext    = {1'b0, a} + {1'b0, b};
+                result = ext[3:0];
+                carry  = ext[4];
+            end
+            2'b01: result = a &amp; b;
+            2'b10: result = a ^ b;
+            2'b11: result = ~a;
+            default: begin
+                result = 4'b0;
+                carry  = 1'b0;
+            end
+        endcase
+    end
+endmodule</code></pre>
+<p>假设 <code>a=4'b1111</code>、<code>b=4'b0001</code>、<code>op=00</code>，无符号结果是 16，即 <code>5'b10000</code>；因此 4 位 <code>result=0000</code>，<code>carry=1</code>。这里没有定义带符号溢出标志（signed overflow），不能将 carry 直接用作有符号溢出判断。</p>
+<p>项目提供 <code>examples/rtl/alu4.v</code> 与 <code>examples/tb/tb_alu4.v</code> 的穷举测试：4 位 a、b 各 16 种、op 四种，共 <code>16 × 16 × 4 = 1024</code> 个组合。穷举可以有效验证这个小模块的功能，不等于完成目标 FPGA 的物理时序分析。</p></section><section id="glitches" aria-labelledby="glitches-heading"><h2 id="glitches-heading">04 / 毛刺怎样产生，什么时候危险？</h2>
+<p>组合逻辑的不同路径有不同传播延迟。多个输入同时改变时，可能短暂产生并非稳态真值表所代表的输出，即毛刺或竞争冒险。这个现象不能简单说成“计数器会因此在一个时钟周期中多计几次”。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/05-glitch-sampling.svg" alt="组合 enable 在两个时钟上升沿之间有两段窄脉冲；同步计数器只在有效上升沿采样，图中的两个边沿都采到 0，因此不会多计数。" width="960" height="490" loading="lazy"></div><figcaption>组合 enable 在两个时钟上升沿之间有两段窄脉冲；同步计数器只在有效上升沿采样，图中的两个边沿都采到 0，因此不会多计数。</figcaption></figure>
+<p>普通同步计数器的 <code>always @(posedge clk)</code> 在每个有效边沿只进行一次采样：<strong>两个时钟边沿之间出现多个脉冲，不会让它在该时钟间隔内重复触发。</strong> 但如果毛刺跨越采样窗口，可能采到错误逻辑值或造成 setup/hold 风险；如果把组合毛刺用作真正的时钟、异步复位或异步控制信号，则风险又是另一种。</p>
+<p>合理措施取决于风险源：给跨域输入做同步；避免组合生成时钟；对复杂组合结果在适当阶段做寄存与时序约束；对异步信号采用专用握手/同步协议。<strong>额外增加一级寄存器并不能自动修复所有逻辑错误或 CDC 风险。</strong></p>
+<div class="callout note">示例中的 enable 是单一同步时钟下的组合使能。若用它直接驱动触发器时钟端，便不再满足该示例的采样假设，不能套用相同结论。</div></section><section id="test" aria-labelledby="test-heading"><h2 id="test-heading">05 / 实际运行、检查综合映射</h2>
+<p>用 Icarus Verilog 验证四路选择器与 ALU 的所有二值输入组合：</p>
+<pre><code>iverilog -g2012 -Wall -s tb_mux4 \
+  -o /tmp/mux4.vvp examples/rtl/mux4.v examples/tb/tb_mux4.v
+vvp /tmp/mux4.vvp
+
+iverilog -g2012 -Wall -s tb_alu4 \
+  -o /tmp/alu4.vvp examples/rtl/alu4.v examples/tb/tb_alu4.v
+vvp /tmp/alu4.vvp</code></pre>
+<p>期望分别显示 <code>PASS mux4: 4 selects x sample patterns</code> 和 <code>PASS alu4: 1024 combinations</code>。任何比较失败都会触发非零退出状态；脚本化 CI 因此能阻止明显的功能回归。</p>
+<p>真正讨论 LUT 数目或临界路径，需要先指定 FPGA 器件、时钟约束与综合/布局布线版本，再读综合报告和 STA 报告。可对等价的 <code>case</code> 与 <code>?:</code> 版本作约束一致的 A/B 实验，比较而非预设结果。</p>
+<details class="exercise"><summary>思考：ALU 的 carry=1 是否代表“有符号结果溢出”？</summary><p>不是。carry 是无符号加法的最高位进位。有符号两补码溢出需要考虑操作数符号与结果符号。例如 4 位有符号 7+1，结果位型 1000（表示 -8），虽然 signed overflow 发生，但最高进位可以为 0。</p></details></section><section id="references"><h2>资料与延伸阅读</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB/Multiplexers" target="_blank" rel="noopener noreferrer">AMD 7 Series：Multiplexers</a></li><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB/Using-the-CLB-Resources" target="_blank" rel="noopener noreferrer">AMD 7 Series：Using CLB Resources</a></li><li><a href="https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation" target="_blank" rel="noopener noreferrer">Altera / Quartus：Latch 推断建议</a></li><li><a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方文档</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="04.html">← 上一章</a><a href="../index.html">全部章节</a><a href="06.html">下一章 →</a></nav></article></main></div></body></html>

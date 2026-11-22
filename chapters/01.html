@@ -1,0 +1,59 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从 CPU 与可重构逻辑的差别出发，追踪 LUT、触发器、互连和时钟，直到一段可综合的 LED 逻辑。"><title>FPGA 究竟在执行什么？ · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 01 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#problem">01 / FPGA 为什么不是另一种 CPU？</a>
+<a href="#fabric">02 / FPGA 芯片里到底有什么？</a>
+<a href="#flow">03 / 从源代码到下载文件，经过什么？</a>
+<a href="#led">04 / 一个完整的最小硬件：LED 分频翻转</a>
+<a href="#comparison">05 / FPGA、MCU、GPU、ASIC 怎样选？</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 01 · Hardware foundations</p><h1>FPGA 究竟在执行什么？</h1><p class="dek">从 CPU 与可重构逻辑的差别出发，追踪 LUT、触发器、互连和时钟，直到一段可综合的 LED 逻辑。</p></header><section id="problem" aria-labelledby="problem-heading"><h2 id="problem-heading">01 / FPGA 为什么不是另一种 CPU？</h2>
+<p class="intro">设想一块开发板每秒接收数百万次输入脉冲。你写下三行 Verilog：三个计数器分别处理不同通道。芯片是“先运行第一行，再运行第二行，再运行第三行”吗？</p>
+<p>不。<strong>Verilog 的可综合部分描述的是硬件结构和并发行为</strong>。三个独立寄存器及其组合逻辑可以在同一个时钟周期内同时工作，综合后的关键问题变成了它们分别占据哪些逻辑单元、如何连线、能否满足时序。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/01-cpu-fpga.svg" alt="左图强调处理器指令序列；右图强调多个 FPGA 逻辑通道同时存在。图是组织方式示意，不暗示 CPU 只能串行执行。" width="960" height="490" loading="lazy"></div><figcaption>左图强调处理器指令序列；右图强调多个 FPGA 逻辑通道同时存在。图是组织方式示意，不暗示 CPU 只能串行执行。</figcaption></figure>
+<p>处理器执行软件指令，有寄存器文件、指令流、缓存和流水线；现代 CPU 也有多核与 SIMD。FPGA 则提供大量可配置逻辑资源，允许设计者直接构造特定数据通路。两者常组合使用：CPU 负责调度与复杂控制，FPGA 负责确定延迟、并行流处理或专用接口。</p>
+<div class="callout warn"><strong>不要把“FPGA 比 CPU 快”当作定律。</strong> 吞吐率和延迟取决于算法、位宽、频率、内存带宽、并行结构、工具实现、功耗约束和器件型号。单个乘法或分支密集程序可能更适合 CPU。</div></section>
+<section id="fabric" aria-labelledby="fabric-heading"><h2 id="fabric-heading">02 / FPGA 芯片里到底有什么？</h2>
+<p>一颗 FPGA 不只是可编程“门电路海洋”。典型器件包含查找表（LUT）、触发器（FF）、可编程互连、I/O 资源、时钟网络，以及依器件不同而存在的 Block RAM、DSP 乘加单元和高速收发器。</p>
+<div class="table-wrap"><table><caption>常见资源的行为与用途</caption><thead><tr><th>资源</th><th>主要作用</th><th>你在 RTL 中怎样使用</th></tr></thead><tbody>
+<tr><td>LUT</td><td>实现布尔函数；输入组合决定输出</td><td><code>assign</code>、条件逻辑、部分算术运算</td></tr>
+<tr><td>FF</td><td>在时钟沿采样、存储状态</td><td><code>always @(posedge clk)</code></td></tr>
+<tr><td>布线与开关矩阵</td><td>连接逻辑、存储器、I/O</td><td>由实现工具选择，不写成普通顺序代码</td></tr>
+<tr><td>BRAM / DSP</td><td>存储与高效算术</td><td>可能从推断风格映射，也可使用器件原语/IP</td></tr>
+</tbody></table></div>
+<p>例如 AMD 7 系列的 LUT 可作为 6 输入查找表，也有特定双输出工作模式；<strong>这不是所有 FPGA 均相同的物理规格</strong>。不同厂商和系列的 ALM、LUT、存储资源与互连拓扑存在差异。</p>
+<p>可以将单个 LUT 想象成一个由输入位选择的真值表：对于一个 N 输入布尔函数，需要给出其 <code>2^N</code> 种输入组合下的输出。该类比适合解释功能，但不能单独预测逻辑利用率和最终时序。</p></section>
+<section id="flow" aria-labelledby="flow-heading"><h2 id="flow-heading">03 / 从源代码到下载文件，经过什么？</h2>
+<p>编写 RTL 只是工程的起点。仿真证明的是在模型和激励下的功能；综合尝试将描述转为可用逻辑；布局布线决定物理位置与路径；静态时序分析检查时钟与数据路径约束。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/01-design-flow.svg" alt="五个节点把 RTL、功能仿真、逻辑综合、布局布线和配置串联，并且包含反馈修正路径。" width="960" height="490" loading="lazy"></div><figcaption>五个节点把 RTL、功能仿真、逻辑综合、布局布线和配置串联，并且包含反馈修正路径。</figcaption></figure>
+<ol><li><strong>描述与约束。</strong> 确定顶层模块、时钟频率、I/O 管脚和必要的时序例外。</li><li><strong>功能验证。</strong> 编写 testbench，覆盖复位、边界值、握手状态与错误条件。</li><li><strong>综合与资源检查。</strong> 检查未驱动信号、意外锁存器、截断、组合回路。</li><li><strong>实现与 STA。</strong> 检查最大/最小路径延迟、跨时钟域问题及实际时钟假设。</li><li><strong>板级验证。</strong> 对照仿真，考虑时钟源、按键、电平和外部设备行为。</li></ol>
+<div class="callout note">比特流由具体 FPGA 厂商的工具链及器件配置机制生成；不是任意 Verilog 文件都能在所有开发板上通用。</div></section>
+<section id="led" aria-labelledby="led-heading"><h2 id="led-heading">04 / 一个完整的最小硬件：LED 分频翻转</h2>
+<p>假设开发板提供稳定的 50 MHz 时钟，想让 LED 以 1 Hz 的完整亮灭周期重复。一个周期包含亮 0.5 秒与灭 0.5 秒，因此每 <code>25,000,000</code> 个输入时钟沿翻转一次 LED。计数器必须能表示从 0 到 24,999,999，25 位足够。</p>
+<pre><code>module led_blink (
+    input  wire clk,      // 50 MHz
+    input  wire rst_n,    // 同步、低有效复位输入
+    output reg  led
+);
+    localparam integer HALF_TICKS = 25000000;
+    reg [24:0] count;
+
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            count &lt;= 25'd0;
+            led   &lt;= 1'b0;
+        end else if (count == HALF_TICKS - 1) begin
+            count &lt;= 25'd0;
+            led   &lt;= ~led;
+        end else begin
+            count &lt;= count + 25'd1;
+        end
+    end
+endmodule</code></pre>
+<p>每一个时钟沿，只会执行相应条件分支，但综合出的 <code>count</code> 和 <code>led</code> 是同时存在的触发器。<code>&lt;=</code> 表示时钟过程里的非阻塞赋值，避免把同一个时钟沿的状态更新误写成顺序数据依赖。</p>
+<p>检查公式：计数器从 0 数到 <code>HALF_TICKS - 1</code>，恰好经历 25,000,000 次时钟采样；在 50 MHz 时钟下相当于 0.5 秒。因此完整高低循环为 1 秒，即 1 Hz。这里默认 LED 电平与亮灭对应关系已按板卡原理图确认。</p>
+<div class="callout warn">这个例子是 RTL 功能说明，不提供具体开发板的管脚约束。真正下载前必须确认时钟源、电平与时钟约束。若按钮复位来自异步外部管脚，还需根据板卡架构处理同步释放和跨域问题。</div></section>
+<section id="comparison" aria-labelledby="comparison-heading"><h2 id="comparison-heading">05 / FPGA、MCU、GPU、ASIC 怎样选？</h2>
+<div class="table-wrap"><table><thead><tr><th>维度</th><th>FPGA</th><th>MCU / CPU</th><th>GPU</th><th>ASIC</th></tr></thead><tbody>
+<tr><td>执行组织</td><td>可配置空间数据通路</td><td>通用指令执行</td><td>大规模并行计算</td><td>固定专用硬件</td></tr>
+<tr><td>修改功能</td><td>重新综合、实现和配置</td><td>替换软件</td><td>替换内核/软件</td><td>通常要重新制造</td></tr>
+<tr><td>入门门槛</td><td>RTL、时序与板卡约束</td><td>软件编程与外设</td><td>并行编程与内存模型</td><td>验证、物理设计与制造</td></tr>
+<tr><td>适合问题</td><td>定制协议、低延迟流处理</td><td>复杂控制与通用软件</td><td>吞吐型数值计算</td><td>大批量固定功能</td></tr>
+</tbody></table></div>
+<p>不同器件之间不存在单一最优答案。决定前应先提出三个具体问题：数据怎样到达？允许多少时钟周期的延迟？预计怎样验证并维护系统？</p>
+<details class="exercise"><summary>思考练习：两个传感器需要同时记录边沿，能否使用两段并行 RTL？</summary><p>可以构建独立边沿检测电路，但若两个传感器不与系统时钟同步，各自输入的同步和亚稳态风险必须另行处理。并行 RTL 本身不能解决跨时钟域问题。</p></details></section><section id="references" aria-labelledby="references-heading"><h2 id="references-heading">延伸阅读与资料来源</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB" target="_blank" rel="noopener noreferrer">AMD 7 Series CLB User Guide (UG474)</a></li><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB/CLB-Overview" target="_blank" rel="noopener noreferrer">AMD：7 系列 CLB 的 LUT 结构</a></li><li><a href="https://docs.amd.com/r/en-US/ug474_7Series_CLB/Using-the-CLB-Resources" target="_blank" rel="noopener noreferrer">AMD：推荐的通用 HDL 推断方式</a></li><li><a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog 官方文档</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="../index.html">← 课程首页</a><a href="../index.html">全部章节</a><a href="02.html">下一章 →</a></nav></article></main></div></body></html>

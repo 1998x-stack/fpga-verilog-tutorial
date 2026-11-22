@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>第14章 时序约束与分析基础</title>
+    <link rel="stylesheet" href="theme.css">
+</head>
+<body>
+<div class="double-border">
+<div class="container">
+    <div class="sidebar">
+        <h3>🔧 课程目录</h3>
+        <ul class="chapter-list">
+            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
+            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
+            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
+            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
+            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
+            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
+            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
+            <li><a href="08.html">第8章 Testbench编写与仿真验证</a></li>
+            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
+            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
+            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
+            <li><a href="12.html">第12章 流水线设计技术</a></li>
+            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
+            <li><a href="14.html" class="active">第14章 时序约束与分析基础</a></li>
+            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
+            <li><a href="16.html">第16章 Quartus Prime与ModelSim</a></li>
+            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
+            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
+            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
+            <li><a href="20.html">第20章 软核处理器集成</a></li>
+            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
+            <li><a href="22.html">第22章 高速串行接口设计</a></li>
+            <li><a href="23.html">第23章 硬件调试方法论</a></li>
+            <li><a href="24.html">第24章 开源工具链实战</a></li>
+            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
+            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
+            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
+            <li><a href="28.html">第28章 综合项目：FPGA图像采集与处理系统</a></li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h2>第14章 时序约束与分析基础</h2>
+
+        <p>你的 RTL 代码写完了，仿真通过了，CDC 也同步了——但你还不能保证它在真实硬件上稳定工作。有两个问题悬而未决：第一，你的设计在目标时钟频率下是否真的满足所有触发器的 setup/hold 时间？第二，综合工具是否知道你的频率目标是什么？这两个问题的答案都指向同一个方向——<strong>时序约束（Timing Constraints）</strong>。</p>
+
+        <p>时序约束是你告诉综合和布局布线工具"设计应该以多快的速度运行"的方式。没有约束，工具要么默认尝试最大化性能（在不必 要的地方浪费资源），要么默认约束太松（关键路径未被优化）。更本质地说：<strong>没有正确定义约束的时序报告毫无意义</strong>——报告里显示的"fmax=300 MHz"只有在你的约束写对了的情况下才说明问题。</p>
+
+        <h3>14.1 时序分析的基础模型</h3>
+
+        <p>静态时序分析（Static Timing Analysis, STA）的核心是分析<strong>寄存器到寄存器路径</strong>的时序。考虑一个简单的路径：</p>
+
+        <ul>
+            <li><strong>Launch Edge（启动沿）：</strong>第一个时钟沿，源触发器的时钟端，使 Q 输出开始变化。</li>
+            <li><strong>Data Path（数据路径）：</strong>信号从源触发器 Q 端出发，经过组合逻辑，到达目的触发器的 D 端。</li>
+            <li><strong>Clock Path（时钟路径）：</strong>时钟信号从时钟源分别到达源触发器和目的触发器的时钟端。</li>
+            <li><strong>Capture Edge（捕获沿）：</strong>第二个时钟沿，目的触发器采样 D 输入。</li>
+        </ul>
+
+        <p>数据必须在 Capture Edge 之前 Tsetup 时间到达，且之后保持 Thold 时间。Setup 和 Hold 的 slack 计算公式为：</p>
+
+        <p><code>Setup Slack = Tperiod - (Tclk-q + Tlogic + Tsetup - Tskew)</code></p>
+
+        <p><code>Hold Slack = Tclk-q + Tlogic - Thold + Tskew</code></p>
+
+        <p>其中 Tskew = Tcapture_clock - Tlaunch_clock（Capture 时钟比 Launch 时钟晚到为正）。如果 Setup Slack 为负，说明数据到达太晚，需要降低频率或缩短组合逻辑路径。如果 Hold Slack 为负，说明数据变化太快，需要增加路径延迟——而且降低频率对 Hold 违例毫无帮助。</p>
+
+        <div class="highlight">
+            <strong>Setup vs Hold 的本质差异：</strong>Setup 问题与时钟<strong>周期</strong>相关——你可以通过降频来修复。但 Hold 问题与时钟<strong>频率无关</strong>——它只取决于数据路径和时钟路径的相对延迟。这意味着 Hold 违例在芯片老化、温度变化时更危险，因为你无法通过"降频运行"来绕过它。在 FPGA 设计中，Hold 违例通常由 I/O 路径引起（外部器件的 hold time 要求），内部寄存器之间的 hold 违例很少见（因为 FPGA 的布线资源提供了足够的延迟）。
+        </div>
+
+        <h3>14.2 时钟约束</h3>
+
+        <p>时钟是时序分析的"心跳"——没有定义时钟，工具就无法计算任何路径的时序裕量。</p>
+
+        <p><strong>主时钟约束（create_clock）：</strong>用于定义输入到 FPGA 的时钟端口或 PLL 的输入参考时钟。</p>
+
+        <pre><code># 100 MHz 主时钟，周期 10.000 ns，占空比 50%
+create_clock -name sys_clk -period 10.000 [get_ports clk_p]
+
+# 差分时钟输入
+create_clock -name ref_clk -period 8.000 [get_ports {refclk_p refclk_n}]
+
+# 带抖动的时钟（Jitter）
+create_clock -name pll_clk -period 5.000 \
+    [get_pins clk_gen/mmcm/CLKOUT0]</code></pre>
+
+        <p><strong>生成时钟约束（create_generated_clock）：</strong>当 PLL/MMCM 或分频逻辑产生派生时钟时，需要告诉工具它与源时钟的频率和相位关系。否则工具会把它当作一个独立时钟，进行过于悲观的时序分析。</p>
+
+        <pre><code># MMCM 输出 200 MHz (input 100 MHz × 2 / 1)
+create_generated_clock -name clk_200m \
+    -source [get_pins clk_gen/mmcm/CLKIN1] \
+    -multiply_by 2 -divide_by 1 \
+    [get_pins clk_gen/mmcm/CLKOUT0]
+
+# 计数器分频产生的 SPI SCK (100 MHz / 100 = 1 MHz)
+create_generated_clock -name spi_sck \
+    -source [get_pins spi_top/sck_gen/sck_reg] \
+    -divide_by 100 \
+    [get_ports sck]</code></pre>
+
+        <p><strong>异步时钟组（set_clock_groups）：</strong>对于已经通过异步 FIFO 或握手协议安全同步的跨时钟域路径，你需要告诉工具不要分析它们的 setup/hold——否则工具会尝试在"同一个周期"内满足时序，造成不必要的违例或资源浪费。</p>
+
+        <pre><code># sys_clk 和 adc_clk 之间无时序关系（已由异步 FIFO 处理）
+set_clock_groups -asynchronous \
+    -group [get_clocks sys_clk] \
+    -group [get_clocks adc_clk]</code></pre>
+
+        <div class="tip">
+            <strong>时钟约束中的常见错误：</strong>很多新手忘记为 PLL 的输出时钟创建 <code>create_generated_clock</code>。Vivado 的 IP 核在生成时会自动添加这些约束（在 <code>.xdc</code> 文件中），但如果你在顶层手动例化了 MMCM 原语而没有对应的约束，工具会把 PLL 输出当作未知时钟，自动推断出一个默认频率——这可能导致时序报告完全不可信。每次添加新的时钟域后，运行 <code>report_clocks</code> 检查所有时钟是否都有正确的约束。
+        </div>
+
+        <h3>14.3 I/O 约束</h3>
+
+        <p>FPGA 不是孤立工作的——它总是连接到外部器件。这些外部器件的时序要求通过 I/O 约束传递给工具。</p>
+
+        <p><strong>set_input_delay：</strong>定义外部器件在 FPGA 输入引脚上提供数据的时间窗口。注意——这个值描述的是 FPGA <strong>外部</strong>的时序，不是 FPGA 内部的！</p>
+
+        <pre><code># ADC 数据在 adc_clk 上升沿后 2-5 ns 有效
+set_input_delay -clock [get_clocks adc_clk] -max 5.0 [get_ports {adc_data[*]}]
+set_input_delay -clock [get_clocks adc_clk] -min 2.0 [get_ports {adc_data[*]}]</code></pre>
+
+        <p><strong>set_output_delay：</strong>定义外部器件需要 FPGA 在输出引脚上提供数据的时间窗口。</p>
+
+        <pre><code># DAC 需要数据在 sys_clk 沿前 3 ns 稳定，之后保持 1 ns
+set_output_delay -clock [get_clocks sys_clk] -max 3.0 [get_ports {dac_data[*]}]
+set_output_delay -clock [get_clocks sys_clk] -min 1.0 [get_ports {dac_data[*]}]</code></pre>
+
+        <div class="warning">
+            <strong>I/O 约束中最大的坑：</strong>新手最容易犯的错误是把 <code>set_input_delay</code> 的值设成了 FPGA 内部触发器的 Tsetup——但这两个量描述的是完全不同的东西。<code>set_input_delay</code> 描述的是<strong>芯片外部</strong>的时序关系：外部器件在时钟沿后多久提供数据。如果你把 ADC 数据手册上的"2-5 ns data valid after clock"理解错了，设成了 <code>-max 2.0 -min 5.0</code>（把大小搞反了），那么工具计算出的 slack 将完全错误——你可能以为时序收敛了，但实际硬件根本不会工作。
+        </div>
+
+        <h3>14.4 时序违例诊断</h3>
+
+        <p>Vivado 的时序报告会提供四个关键指标来判断设计是否收敛：</p>
+
+        <table>
+            <tr><th>指标</th><th>含义</th><th>合格标准</th><th>典型修复方法</th></tr>
+            <tr><td><strong>WNS</strong></td><td>最差负 slack（所有路径中最差的 setup slack）</td><td>≥ 0 ns</td><td>最深组合路径中插入流水线寄存器</td></tr>
+            <tr><td><strong>TNS</strong></td><td>总负 slack（所有负 slack 路径的总和）</td><td>接近 0 ns</td><td>大量路径违例时需要从架构层面优化</td></tr>
+            <tr><td><strong>WHN</strong></td><td>最差 hold slack</td><td>≥ 0 ns</td><td>在数据路径中插入 buffer 或增加逻辑级数</td></tr>
+            <tr><td><strong>THN</strong></td><td>总 hold slack</td><td>接近 0 ns</td><td>通常先修复 WNS，再处理集中性的 hold 违例</td></tr>
+            <tr><td><strong>关键路径</strong></td><td>WNS 对应的具体路径</td><td>—</td><td>查看路径详情，找到组合逻辑最密集的节点</td></tr>
+        </table>
+
+        <p>以下是常见的时序违例原因和对应的修复策略：</p>
+
+        <table>
+            <tr><th>违例症状</th><th>常见原因</th><th>修复方法</th></tr>
+            <tr><td>Setup 违例（长组合路径）</td><td>深层加法器、乘法器、大 MUX 级联</td><td>插入流水线寄存器或使用 DSP slice</td></tr>
+            <tr><td>Setup 违例（高扇出网络）</td><td>复位信号、时钟使能驱动太多负载</td><td>手动复制寄存器（Duplicate），或使用 BUFG</td></tr>
+            <tr><td>Setup 违例（跨区域长线）</td><td>路径跨越芯片的远端区域</td><td>用 Pblock 将相关模块在 floorplan 中靠近放置</td></tr>
+            <tr><td>Hold 违例（数据路径太快）</td><td>寄存器之间有直接连线无组合逻辑</td><td>插入 LUT 延迟链或 <code>set_output_delay -min</code> 调整</td></tr>
+            <tr><td>大量违例（约束配置错误）</td><td>时钟约束错误或缺漏、异步时钟未分组</td><td>检查 <code>create_clock</code> 和 <code>set_clock_groups</code></td></tr>
+        </table>
+
+        <p><strong>多周期路径（set_multicycle_path）：</strong>有些路径不需要在一个时钟周期内完成。例如，一个计数器溢出后驱动的使能信号——下游在 2 个周期后收到也没问题：</p>
+
+        <pre><code># 允许使能信号 2 个周期后到达
+set_multicycle_path -setup 2 -from [get_pins cntr/overflow_reg/C] \
+    -to [get_pins en_reg/D]
+
+# Hold 检查的起始点需要对应偏移
+set_multicycle_path -hold 1 -from [get_pins cntr/overflow_reg/C] \
+    -to [get_pins en_reg/D]</code></pre>
+
+        <p><strong>假路径（set_false_path）：</strong>对于你确定不需要时序分析的路径（异步复位、测试模式、静态配置信号），使用假路径约束：</p>
+
+        <pre><code># 异步复位不需要时序分析
+set_false_path -to [get_pins *RST*]
+
+# 跨异步时钟域的路径（已由同步器处理）
+set_false_path -from [get_clocks clk_a] -to [get_clocks clk_b]
+
+# 测试模式信号
+set_false_path -from [get_ports test_mode]</code></pre>
+
+        <div class="highlight">
+            <strong>关于 false_path 和 multicycle_path 的警告：</strong>不要轻易使用它们来"消除"时序报告中的违例！每一条被你标记为 false 或 multicycle 的路径，都是你在用手动承诺代替工具的自动分析。如果你误标了一条实际需要一个周期的路径——比如把真正的关键路径标记为 false——那么你的设计可能在特定条件下失效。每次添加这类约束时，在 XDC 注释中写明理由（"为什么这条路径不需要一个周期"），并让另一位工程师 review 确认。
+        </div>
+
+        <h3>14.5 一个完整的 XDC 约束示例</h3>
+
+        <p>下面是实际项目中一个典型的 XDC 文件——涵盖了本节讨论的所有约束类型：</p>
+
+        <pre><code># ================================================================
+# timing_constraints.xdc — Data Acquisition System
+# Device: XC7A35T-CPG236-1
+# ================================================================
+
+# --- 1. Master Clock Definitions ---
+create_clock -name sys_clk  -period 10.000 [get_ports clk_100m]
+create_clock -name adc_clk  -period 20.000 [get_ports adc_clk_p]
+create_clock -name eth_ref  -period 8.000  [get_ports eth_refclk]
+
+# --- 2. Generated Clocks (PLL Outputs) ---
+create_generated_clock -name clk_200m \
+    -source [get_pins clk_gen/mmcm/CLKIN1] \
+    -multiply_by 2 -divide_by 1 \
+    [get_pins clk_gen/mmcm/CLKOUT0]
+
+create_generated_clock -name clk_50m \
+    -source [get_pins clk_gen/mmcm/CLKIN1] \
+    -multiply_by 1 -divide_by 2 \
+    [get_pins clk_gen/mmcm/CLKOUT1]
+
+# --- 3. Asynchronous Clock Groups ---
+set_clock_groups -asynchronous \
+    -group [get_clocks sys_clk] \
+    -group [get_clocks adc_clk]
+set_clock_groups -asynchronous \
+    -group [get_clocks clk_200m] \
+    -group [get_clocks eth_ref]
+
+# --- 4. Input Delays (ADC — 16-bit parallel @ 50 MHz) ---
+# ADC datasheet: tSU=2ns, tHD=1.5ns
+set_input_delay -clock adc_clk -max 5.0 [get_ports {adc_data[*]}]
+set_input_delay -clock adc_clk -min 1.5 [get_ports {adc_data[*]}]
+
+# --- 5. Output Delays (DAC — 12-bit parallel @ 100 MHz) ---
+# DAC datasheet: tSU=3ns, tHD=1ns
+set_output_delay -clock sys_clk -max 6.0 [get_ports {dac_data[*]}]
+set_output_delay -clock sys_clk -min 1.0 [get_ports {dac_data[*]}]
+
+# --- 6. False Paths ---
+set_false_path -to [get_pins *RST*]
+set_false_path -from [get_clocks clk_50m] -to [get_clocks sys_clk]
+
+# --- 7. Multicycle Paths (SPI SCK is slow) ---
+create_generated_clock -name spi_sck \
+    -source [get_pins spi_ctrl/sck_reg] \
+    -divide_by 100 [get_ports spi_sck]
+set_multicycle_path -setup 20 \
+    -from [get_clocks sys_clk] -to [get_clocks spi_sck]
+set_multicycle_path -hold 1 \
+    -from [get_clocks sys_clk] -to [get_clocks spi_sck]</code></pre>
+
+        <h3>14.6 踩坑：晶振漂移让时序"刚好没过"</h3>
+
+        <p>我曾参与一个项目，设计在实验室中通过了完整的验证——100 MHz 时钟、功能正确、温度循环（-20°C 到 +70°C）也没有问题。但客户部署到东南亚某地区后，大概每工作 3-4 天会出现一次数据错误。而且错误似乎和当地电网的电压波动有关。</p>
+
+        <p>我们把板卡从现场取回来，重新做了全面的时序分析。发现 setup slack 在最差工艺角（Worst-Case Slow, 0.95V, 85°C）下只有 +25 ps——虽然为正，但几乎为零。在实验室环境中（25°C, 1.0V），实际 slack 大于 500 ps，所以测不出问题。</p>
+
+        <p>但这不足以解释间歇性故障——slack 为正是正，即使只有 25 ps。继续深挖后发现：晶振供应商提供的规格为 ±50 ppm 精度，我们约束中使用了精确的 10.000 ns 周期（对应 100 MHz）。但实际振荡器的周期在 ±50 ppm 范围内变化——最坏情况是 10.0005 ns（99.995 MHz）。在 WCS corner 下仅剩 25 ps slack 时，这额外的 0.5 ps 周期偏差本身不致命。但现场的温度和电压波动叠加起来，使晶振的实际输出在 99.99 MHz 到 100.01 MHz 之间缓慢漂移——当漂移方向使周期变长时，slack 增加；当漂移方向使周期变短时，slack 变为负值——于是故障出现了。</p>
+
+        <p>修复方案很简单：在约束中将目标频率从 100 MHz（10.000 ns）改为 83 MHz（12.000 ns），等效于增加了 20% 的时序余量。但排查过程的关键教训是——<strong>约束中的时钟周期应当包含制造和温度余量</strong>：不要写 10.0 ns，而应写大约 9.0 ns（等效 111 MHz 目标）。这样即使晶振频率在 ±50 ppm 内漂移，温度电压变化影响内部延迟，设计仍然能容错。余量的大小取决于应用场景：消费级留 10%，工业级留 20%，航空/汽车级留 30-50%。</p>
+
+        <p>时序约束是 FPGA 开发中从"能跑"到"能可靠跑"的分界线。掌握了时钟约束、I/O 约束、违例诊断之后，你已经具备了进行工业级 FPGA 开发所需的时序分析能力。从下一章开始，我们将进入实战工具链部分——用 Vivado 完成一个完整的工程流程：从新建项目到生成比特流、再到板级验证。</p>
+
+        <div class="footer-nav">
+            <a href="13.html">← 上一章</a>
+            <a href="index.html">📖 返回目录</a>
+            <a href="15.html">下一章 →</a>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>
