@@ -8,7 +8,7 @@ module tb_detect101;
         input value;
         input expected;
         begin
-            @(negedge clk); bit_in=value;
+            bit_in=value; // called at the previous negedge
             @(negedge clk);
             if (match !== expected)
                 $fatal(1,"FSM input=%b expected=%b got=%b",value,expected,match);
