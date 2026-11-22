@@ -1,168 +1,35 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第23章 硬件调试方法论</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🔧 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
-            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
-            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
-            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
-            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
-            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
-            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
-            <li><a href="08.html">第8章 Testbench编写与仿真验证</a></li>
-            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
-            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
-            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
-            <li><a href="12.html">第12章 流水线设计技术</a></li>
-            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
-            <li><a href="14.html">第14章 时序约束与分析基础</a></li>
-            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
-            <li><a href="16.html">第16章 Quartus Prime与ModelSim</a></li>
-            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
-            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
-            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
-            <li><a href="20.html">第20章 软核处理器集成</a></li>
-            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
-            <li><a href="22.html">第22章 高速串行接口设计</a></li>
-            <li><a href="23.html" class="active">第23章 硬件调试方法论</a></li>
-            <li><a href="24.html">第24章 开源工具链实战</a></li>
-            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
-            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
-            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
-            <li><a href="28.html">第28章 综合项目：FPGA图像采集与处理系统</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第23章 硬件调试方法论</h2>
-
-        <p>大家好。前面几章我们讲了高速串行接口、RISC-V 处理器集成的实现——这些设计在仿真中可能波形漂亮、功能完美。但一旦下载到板上，遇到"现象不对"的时候，你怎么办？像软件工程师那样打 log？可 FPGA 内部连 CPU 都没有，printf 都打不出来——除非你自己建一个打印通道。</p>
-
-        <p>硬件调试是 FPGA 开发中最容易被低估的能力。写 RTL 时你觉得自己已经想清楚了所有 corner case；仿真通过时你觉得胜利在望；比特流下载到板子上，看到示波器上的信号不对劲——这才是噩梦的开始。本章我们从最原始的方法讲到最专业的调试手段，帮你建立一套完整的硬件调试方法论。</p>
-
-        <h3>23.1 FPGA 调试的层次化方法论</h3>
-
-        <p>FPGA 调试和软件调试最大的不同在于：<strong>内部信号不可见</strong>。没有 watch window，没有步步执行，只有芯片引脚上有限数量的 I/O。因此我们需要分层递进，从"能看到什么"开始，逐步增加可观测性。</p>
-
-        <p>下面按照从低到高、从简单到复杂的顺序梳理 FPGA 调试的五层手段：</p>
-
-        <table>
-            <tr><th>调试方法</th><th>侵入性</th><th>探测速度</th><th>信号可见性</th><th>适用场景</th></tr>
-            <tr><td>LED / GPIO 状态输出</td><td>极低</td><td>实时</td><td>仅 1 bit 每引脚</td><td>基本状态指示、复位确认、PLL lock 指示</td></tr>
-            <tr><td>UART printf 调试</td><td>低</td><td>近实时</td><td>文本消息（需自定义）</td><td>状态机状态、计数器值、错误码输出</td></tr>
-            <tr><td>片上逻辑分析仪（ILA / SignalTap）</td><td>中</td><td>捕获后分析</td><td>最多 1024 路数字信号</td><td>时序细节分析、总线协议解码、FSM 跳转检查</td></tr>
-            <tr><td>VIO 虚拟 I/O</td><td>中</td><td>JTAG 实时读写</td><td>指定寄存器读写</td><td>在线注入激励、修改寄存器值、边界条件测试</td></tr>
-            <tr><td>JTAG-to-AXI</td><td>高</td><td>中速（AXI 总线事务）</td><td>AXI 地址空间内任意位置</td><td>SoC 调试、处理器外设寄存器访问、DDR 读写验证</td></tr>
-        </table>
-
-        <p>在实际项目中，我的建议是：<strong>从最不侵入的方法开始</strong>。先用 LED 确认时钟、复位、PLL lock 基本正常；再看 UART 是否能正常输出；最后才上 ILA 抓波形。跳过前面的步骤直接上 ILA，有时反而会被大量波形数据淹没。</p>
-
-        <h3>23.2 状态机可视化调试</h3>
-
-        <p>有限状态机（FSM）是所有 FPGA 设计的核心控制结构。FSM 出问题是 FPGA 调试中最常见的情况——原因通常是状态跳转条件遗漏、状态编码冲突、或者组合逻辑产生了毛刺误触发了跳转。</p>
-
-        <p>FSM 调试的第一条铁律：<strong>把当前状态编码引出到 GPIO</strong>。无论你用的是一段式、两段式还是三段式写法，在顶层模块中加几条 assign 语句，把 <code>current_state</code> 直接用二进制赋值到未使用的 FPGA 引脚上（经过一个同步寄存器消除毛刺），然后用示波器或逻辑分析仪观测。</p>
-
-        <pre><code>// 将 FSM 当前状态编码输出到 GPIO（同步后输出，消除组合毛刺）
-reg [3:0] state_debug;
-always @(posedge clk) begin
-    state_debug &lt;= current_state;
-end
-
-assign dbg_state_led0 = state_debug[0];
-assign dbg_state_led1 = state_debug[1];
-assign dbg_state_led2 = state_debug[2];
-assign dbg_state_led3 = state_debug[3];</code></pre>
-
-        <p>有了这 4 个 GPIO，你就可以在示波器上 4 个通道同时看状态编码的二进制变化，直接确认 FSM 是按预期顺序跳转的，还是跳到了某个未定义的"死状态"。</p>
-
-        <p>如果示波器通道不够（通常只有 2-4 个），更实用的方法是把当前状态值通过 UART 打印出来。用一个简单的 printf 调试模块（通常在每个时钟沿检测状态变化时发送）来输出状态序列。这样你就可以看到完整的跳转历史——比如 "IDLE -> RD -> WR -> IDLE" 这样的字符串序列。</p>
-
-        <div class="tip">
-            <strong>FSM 调试检查清单：</strong>（1）确认复位后状态是否正确进入 IDLE 或 INIT 状态；（2）用 ILA 抓取状态编码和跳转条件的波形，确认条件是否正确；（3）检查是否有一段式写法中组合输出导致的毛刺进入了状态跳转组合逻辑；（4）确保 case 语句包含 <code>default</code> 分支，避免综合工具推断出锁存器。
-        </div>
-
-        <h3>23.3 ILA（Vivado）实战</h3>
-
-        <p>ILA（Integrated Logic Analyzer）是 Vivado 中最重要的片上调试 IP。它本质上是在 FPGA 内部例化了一个逻辑分析仪——你可以指定要探测的内部信号、设置触发条件、捕获一段波形，然后通过 JTAG 上传到 Vivado 的波形窗口查看。</p>
-
-        <p><strong>第一步：添加 ILA IP。</strong>在 IP Catalog 中搜索 "ILA"，双击配置。关键参数：探测信号数量（建议不超过 256 个）、每个信号的位宽、采样深度（1024~65536 可选）。采样深度越大，能捕获的连续时间窗口越长，但占用的 Block RAM 也越多。</p>
-
-        <p><strong>第二步：选择探测信号。</strong>拖动 RTL 层次的任意内部信号到 ILA 的 probe 端口列表。Vivado 会为每个信号自动计算位宽。这里有一个重要原则——<strong>先选你最怀疑的信号</strong>，而不是一股脑全拉进来。选中后可以在 ILA 配置中设置每个 probe 的触发条件。</p>
-
-        <p><strong>第三步：设置触发条件。</strong>ILA 支持多种触发模式：上升沿触发、下降沿触发、等于某个值触发（比较触发）、范围匹配（在某个区间内触发）。更高级的是 <strong>Advanced Trigger</strong> 模式——你可以设置组合条件，比如 "当状态等于 WR 并且 data_count 大于 64 并且 wr_error 为 1 时触发"。这种组合触发能精确定位到最可疑的时间点，避免捕获大量无关数据。</p>
-
-        <p><strong>第四步：波形分析技巧。</strong>捕获到波形后，不要只用肉眼对着每个信号看。Vivado 的波形窗口支持总线值、时钟沿对齐标记、光标测量。最实用的技巧是：把 ILA 的触发位置设为窗口中间（Position: Middle），这样你同时能看到触发前的"背景"和触发后的"事件响应"。另外，善用 ILA 的 Protocol Decoder 功能——可以直接解码 AXI、UART、SPI、I2C 等常见总线协议信号，省去手动逐 bit 分析的时间。</p>
-
-        <div class="warning">
-            <strong>踩坑：ILA 信号过多导致布局布线失败。</strong>我有一次给一个图像处理设计加 ILA，为了"看到所有可能出问题的地方"，一口气加了 512 个探测信号。ILA 本身用掉了大量 LUT 和 Block RAM，LUT 利用率从原来的 65% 暴涨到 92%。重新布局布线后，原来能满足 200 MHz 的时序完全崩塌——最差路径的 slack 从 +0.3 ns 直接变成 -2.1 ns。花了整整一天时间删除不必要的 probe、分批捕获才解决问题。<strong>核心教训：ILA 不是示波器——它本身也是需要消耗逻辑资源的硬件。先猜、再验证，不要试图一次性看到全部。</strong>
-        </div>
-
-        <h3>23.4 VIO 虚拟 I/O</h3>
-
-        <p>ILA 只能"看"不能"写"。当你想在调试过程中修改某个寄存器的值、给某个输入信号注入激励、或者改变 FSM 的一个状态而不重新综合下载时，就需要 VIO（Virtual Input/Output）。</p>
-
-        <p>VIO IP 通过 JTAG 在 Vivado Hardware Manager 中提供一个虚拟的 I/O 界面。你在 VIO 配置中定义好输入（输出到 FPGA 内部）和输出（从 FPGA 内部读取）信号的位宽，综合后就能在 Hardware Manager 中实时读写。</p>
-
-        <p>最典型的 VIO 调试场景：</p>
-
-        <ul>
-            <li><strong>在线修改寄存器值：</strong>比如你怀疑某个阈值参数设置不当，在 VIO 面板上直接修改，立即生效，不需要重新综合和下载。</li>
-            <li><strong>注入激励信号：</strong>手动产生一个单脉冲（仿真中你按一下按钮就能产生，但板上需要真实的按键），VIO 可以模拟按键的上升沿。</li>
-            <li><strong>测试 FSM 边界条件：</strong>把 FSM 的状态跳转条件通过 VIO 的输入端口暴露出来，手动触发某些极端跳转组合，验证 FSM 的鲁棒性。</li>
-        </ul>
-
-        <div class="highlight">
-            <strong>VIO 使用原则：</strong>VIO 是一个强大的调试工具，但它通过 JTAG 通信（通常在 10-30 MHz 左右），读写不是实时的。不要在时序敏感的场景（比如时钟抖动测量）依赖 VIO 的反馈。它最适合的是"慢速控制"——配置寄存器读取/写入、状态强制拉高/拉低、复位信号的产生。对于高速时序分析，还是要靠 ILA。
-        </div>
-
-        <h3>23.5 调试效率提升技巧</h3>
-
-        <p>硬件调试最痛苦的是迭代周期长——改一行 RTL → 重新综合 → 布局布线 → 生成比特流 → 下载 → 观察结果，一个循环 30 分钟甚至更久。下面几个技巧能帮你显著压缩这个周期。</p>
-
-        <p><strong>技巧一：增量编译保留 ILA 位置。</strong>在 Vivado 中启用 Incremental Compile，把 ILA 核设为"保留"（preserve），这样你只改了 RTL 逻辑后重新编译，ILA 的位置、布线不被破坏。综合和布局布线的时间可以从 30 分钟缩短到 5-10 分钟。具体设置：在 Synthesis Settings 中勾选 Incremental，指定参考的 checkpoint（.dcp）文件。</p>
-
-        <p><strong>技巧二：选择性探测——先怀疑，再加入。</strong>在调试前不要一股脑把所有信号都拉进 ILA。先基于代码审查和分析提出 2-3 个最可能出错的方向，只针对这些信号加 probe。如果确认了不是这些方向的问题，再扩展。这就像二分搜索——每次只探测最有可能的信号，而不是全量扫描。</p>
-
-        <p><strong>技巧三：Mark Debug 标记法。</strong>在 RTL 代码中直接用 <code>(* mark_debug = "true" *)</code> 综合属性标记要探测的信号。这样你不需要每次都手动添加 ILA IP，Vivado 在综合阶段会把这些标记的信号自动保留为 debug 信号。你可以随时在 Netlist 窗口的 Debug 标签页中，一键将这些信号连接到 ILA。</p>
-
-        <pre><code>// 在 RTL 中标记 debug 信号——综合后会保留
-(* mark_debug = "true" *) wire [31:0] debug_axi_wdata;
-(* mark_debug = "true" *) wire [3:0]  debug_axi_wstrb;
-(* mark_debug = "true" *) reg        debug_axi_wvalid;
-
-// 条件编译式调试信号复用——不使用时不影响时序
-`ifdef DEBUG_MODE
-    // 调试专用的信号监控逻辑
-    always @(posedge clk) begin
-        if (axi_error) dbg_error_count &lt;= dbg_error_count + 1;
-    end
-`endif</code></pre>
-
-        <div class="warning">
-            <strong>踩坑：调试信号复用 FPGA 引脚。</strong>在一个项目中，我需要同时调试 8 个内部信号，但板上空闲 GPIO 只剩 2 个。我写了一个 debug mux——用一个 3-bit 选择器，把 8 个信号分时复用到 2 个 GPIO 上。这样在调试时可以按按键切换观察哪个信号。当然这不能实时看全部，但在 GPIO 稀少的板上是非常实用的"穷人的逻辑分析仪"方案。
-        </div>
-
-        <p>调试方法论的核心就一句话：<strong>提前设计可调试性</strong>。不要等到出问题了再想怎么加 probe——在写 RTL 的时候就要规划好 debug 接口、预留 GPIO 连接、写好 mark_debug 标记。一个良好的可调试性设计，可以让后期调试时间缩短 10 倍。</p>
-
-        <p>下一章，我们换一个话题。前面所有调试都依赖于 Vivado 或 Quartus 这类商业工具——但 2026 年的今天，开源 FPGA 工具链已经走到了一个非常有意思的阶段：不仅能做"玩具级"的 demo，在部分场景下已经接近生产可用了。让我们去看看 Yosys、nextpnr、Verilator 这些开源工具到底能做什么、不能做什么。</p>
-
-        <div class="footer-nav">
-            <a href="22.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="24.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="建立从 LED/GPIO、事件计数器、UART trace 到 ILA、SignalTap、VIO 和 JTAG-to-AXI 的层次化调试方法，并验证调试逻辑本身对实现的影响。"><title>FPGA 硬件调试：从可观测性到 ILA / SignalTap 触发捕获 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 23 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#observability">01 / FPGA 调试的第一步：让内部状态可观察</a><a href="#state">02 / 状态机和错误事件：先记录“发生过什么”</a><a href="#ila">03 / ILA / SignalTap：按采样时钟捕获内部波形</a><a href="#controls">04 / VIO 与 JTAG-to-AXI：能在线控制，不代表实时控制</a><a href="#budget">05 / 调试探针会消耗资源，也可能改变时序</a><a href="#plan">06 / 把可调试性设计进 RTL：一份可执行检查清单</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 23 · FPGA engineering</p><h1>FPGA 硬件调试：从可观测性到 ILA / SignalTap 触发捕获</h1><p class="dek">建立从 LED/GPIO、事件计数器、UART trace 到 ILA、SignalTap、VIO 和 JTAG-to-AXI 的层次化调试方法，并验证调试逻辑本身对实现的影响。</p></header><section id="observability" aria-labelledby="observability-title"><h2 id="observability-title">01 / FPGA 调试的第一步：让内部状态可观察</h2>
+<p class="intro">仿真通过不等于板级运行正确。FPGA 上的故障可能来自时钟、复位、管脚、电源、CDC、总线协议、外设时序或软件配置。调试的目标不是一次性把所有内部信号都拉出来，而是把“现象”逐步缩小到可验证的假设。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/23-debug-layers.svg" alt="从 LED/GPIO 和事件计数器，到 ILA/SignalTap，再到 VIO 与 JTAG-to-AXI；每类工具适合不同观测与控制任务。" width="960" height="540" loading="lazy"></div><figcaption>选择工具前先确定要观察的是慢状态、事件统计、时钟周期级波形，还是软件可访问的寄存器。</figcaption></figure>
+<p>建议从外到内排查：先确认电源、配置完成、时钟存在、PLL lock 和复位释放；再检查输入管脚、电平标准和外设连线；随后确认 FSM 状态、计数器和错误标志；最后才用片上逻辑分析仪分析内部总线和周期级时序。这个顺序能避免把“没有时钟”误诊为复杂的协议 bug。</p>
+<p>LED/GPIO 适合显示少量慢状态；UART trace 或计数器适合输出事件摘要；ILA / SignalTap 适合按设计时钟采样内部信号；VIO 适合通过 JTAG 读写低速控制量；JTAG-to-AXI 可用于访问 AXI memory-mapped 从设备。它们不是同一种调试工具，也不具备相同的时间分辨率。</p></section><section id="state" aria-labelledby="state-title"><h2 id="state-title">02 / 状态机和错误事件：先记录“发生过什么”</h2>
+<p>把 FSM 状态编码、状态跳转条件、valid/ready、错误标志和计数器作为调试接口的一部分。对于低频错误，事件计数器往往比把一条脉冲直接接到 LED 更可靠：LED 可能在两个观察时刻之间闪过，而计数器会保留“发生过多少次”。</p>
+<p>仓库中的 <code>debug_event_counter</code> 是一个同步、饱和计数器。<code>event_pulse</code> 必须与 <code>clk</code> 同域且为单周期脉冲；计数达到全 1 后保持不再回绕；同步 clear 优先于 event。它不是跨时钟域脉冲同步器，异步事件必须先通过正确的 CDC 结构转换到该时钟域。</p>
+<pre><code>always @(posedge clk) begin
+    if (!rst_n)
+        count &lt;= '0;
+    else if (clear)
+        count &lt;= '0;
+    else if (event_pulse &amp;&amp; count != {WIDTH{1'b1}})
+        count &lt;= count + 1'b1;
+end</code></pre>
+<p>运行自检：</p>
+<pre><code>iverilog -g2012 -Wall -s tb_debug_event_counter \
+  -o /tmp/debug-counter.vvp \
+  examples/rtl/debug_event_counter.v \
+  examples/tb/tb_debug_event_counter.v
+vvp /tmp/debug-counter.vvp</code></pre>
+<p>测试检查复位、事件计数、饱和行为和 clear 优先级。若事件来自另一个时钟域，不要把异步脉冲直接连到该计数器；使用第 13 章讨论的 toggle/握手或异步 FIFO 等结构。</p></section><section id="ila" aria-labelledby="ila-title"><h2 id="ila-title">03 / ILA / SignalTap：按采样时钟捕获内部波形</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/23-ila-capture.svg" alt="触发前的环形历史、触发事件和触发后的采样共同构成一次 ILA 捕获窗口。" width="960" height="540" loading="lazy"></div><figcaption>触发条件应由待验证的故障假设导出，而不是无目的地采集全部信号。</figcaption></figure>
+<p>AMD Vivado ILA 和 Intel Signal Tap 都是片上逻辑分析仪：将 probe 连接到设计内部信号，选择采样时钟，设置触发条件和捕获深度，然后在硬件运行时捕获波形。ILA 能按系统时钟速率观察内部数字事件；它不是示波器，也不能直接测量模拟眼图、抖动或电源噪声。AMD UG908 描述了 ILA、VIO 和 JTAG-to-AXI 的硬件调试流程；Intel 的 Signal Tap 教程也强调采样时钟、buffer options 和 trigger conditions。</p>
+<p>一条可复现的 ILA 工作流：</p>
+<ol><li>先用仿真或代码审查提出假设，例如“BVALID 在 BREADY 拉低期间意外撤销”。</li><li>选择与被测接口同域的采样时钟，并确认该时钟已被正确约束。</li><li>只加入关键 probe：状态、valid/ready、地址/数据、错误标志和必要的握手控制。</li><li>设置触发条件，例如 <code>VALID && !READY</code> 连续维持多个周期，或错误计数器发生变化。</li><li>设置足够的 pre-trigger 与 post-trigger 深度，arm 后复现故障。</li><li>按时钟沿解释波形，核对握手、背压、复位和数据稳定性。</li></ol>
+<p>Signal Tap 的采样时钟也必须与要解释的信号域匹配。跨时钟域信号应明确观察同步器前后哪一侧；不能用一个无关时钟采样后，就把波形解释成目标域的真实时序。</p></section><section id="controls" aria-labelledby="controls-title"><h2 id="controls-title">04 / VIO 与 JTAG-to-AXI：能在线控制，不代表实时控制</h2>
+<p>VIO 可以通过 JTAG 读取内部状态或驱动低速控制信号；JTAG-to-AXI Master 可向 AXI memory-mapped 从设备发起事务。它们适合调试寄存器配置、阈值、软复位、状态快照和外设地址映射。</p>
+<p>JTAG 事务具有扫描、传输和软件交互延迟，不应拿它生成精确单周期脉冲、测量时钟抖动或控制高速握手。若需要确定时序的激励，应在 RTL 中加入同步测试寄存器、模式控制和硬件脉冲发生器，再由 VIO 修改这些低速配置。</p>
+<p>VIO 写入状态寄存器时，也要定义好合法值、清除条件和安全保护。不要通过调试接口任意强制 FSM 内部状态而破坏状态机不变量；如果确实需要故障注入，应设计单独的 debug mode，并在生产版本中移除或锁定。</p></section><section id="budget" aria-labelledby="budget-title"><h2 id="budget-title">05 / 调试探针会消耗资源，也可能改变时序</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/23-debug-budget.svg" alt="Debug build 中加入 ILA/probes/triggers；production build 去除调试核后必须重新检查利用率、时钟网络和关键路径。" width="960" height="540" loading="lazy"></div><figcaption>调试逻辑会增加采样存储、比较器、控制和路由负载；调试版通过时序不等于生产版通过时序。</figcaption></figure>
+<p>捕获数据的原始存储量可粗略估为 <code>probe_width × capture_depth</code> bit，但这只是数据位数，不是完整资源估算。实际 ILA 还需要触发比较器、控制逻辑、时钟资源、互连和 JTAG 调试基础设施。增加 probe 可能改变布局、布线、扇出和时序。</p>
+<p>不要照搬“最多可探测 N 路信号”或“加一批 ILA 必然损失某个固定百分比频率”这类没有器件和设计条件的结论。应当比较 debug build 与 production build 的 utilization、时序摘要、时钟报告和关键路径；调试结束后移除不需要的 probe 并重新实现。</p></section><section id="plan" aria-labelledby="plan-title"><h2 id="plan-title">06 / 把可调试性设计进 RTL：一份可执行检查清单</h2>
+<ul class="checklist"><li>每个主要 FSM 有可读的状态编码或状态摘要。</li><li>协议接口有错误计数、超时计数和关键握手观测点。</li><li>跨时钟域边界有明确的源域/目的域标记和同步结构。</li><li>复位、PLL lock、配置完成和外设 ready 有独立观测点。</li><li>ILA/SignalTap 的采样时钟、probe 列表、触发条件和深度写入调试计划。</li><li>调试版本和生产版本分别做实现与时序检查。</li></ul>
+<div class="callout warn">本章提供可运行的同步事件计数器和调试设计方法；没有声称实际连接硬件、捕获 ILA/SignalTap 波形或测量板级信号。</div></section><section id="references"><h2>一手资料与版本范围</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design" target="_blank" rel="noopener noreferrer">AMD UG908 2024.1 · Using Vivado Logic Analyzer</a></li><li><a href="https://docs.amd.com/r/en-US/ug908-vivado-programming-debugging/ILA" target="_blank" rel="noopener noreferrer">AMD UG908 · ILA overview</a></li><li><a href="https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html" target="_blank" rel="noopener noreferrer">Intel FPGA · Signal Tap Logic Analyzer training</a></li><li><a href="https://docs.amd.com/r/en-US/ug908-vivado-programming-debugging/System-ILA" target="_blank" rel="noopener noreferrer">AMD UG908 · System ILA and AXI monitoring</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="22.html">← 上一章</a><a href="../index.html">全部章节</a><a href="24.html">下一章 →</a></nav></article></main></div></body></html>
