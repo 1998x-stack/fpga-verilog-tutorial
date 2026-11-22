@@ -1,36 +1,48 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="把 RTL、约束、IP 配置、软件、工具版本和构建报告纳入可追溯的工程输入，避免把缓存和 bitstream 当作源代码。"><title>FPGA 工程组织：版本管理与可复现构建 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 18 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#problem">01 / 为什么“final_final_v7”不是工程版本管理策略？</a><a href="#layout">02 / 先定义哪些文件是输入，哪些是产物</a><a href="#manifest">03 / Build Manifest：把源码、器件和工具版本绑定起来</a><a href="#review">04 / Git 分支、代码审查与硬件版本标签</a><a href="#exercise">05 / 检查一个工程是否真的可复现</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 18 · FPGA engineering</p><h1>FPGA 工程组织：版本管理与可复现构建</h1><p class="dek">把 RTL、约束、IP 配置、软件、工具版本和构建报告纳入可追溯的工程输入，避免把缓存和 bitstream 当作源代码。</p></header><section id="problem" aria-labelledby="problem-title"><h2 id="problem-title">01 / 为什么“final_final_v7”不是工程版本管理策略？</h2>
-<p class="intro">FPGA 项目除了 HDL，还包含器件型号、管脚、电压标准、时钟约束、IP 配置、仿真脚本和工具版本。只保存一个最终 RTL 文件夹，无法说明这个文件究竟对应哪块板、哪版 IP、哪套约束和哪次实现结果。</p>
-<p>可复现工程的目标不是把所有输出文件塞进 Git，而是让团队能追溯构建输入、重建工程、复核报告，并在交付时知道某个配置文件来自哪个提交和工具版本。</p>
-<figure><div class="diagram-scroll"><img src="../assets/svg/18-project-tree.svg" alt="建议将 RTL、仿真、约束、IP 配置、脚本和软件固件分开；编译缓存和本地临时波形不属于设计源输入。" width="960" height="520" loading="lazy"></div><figcaption>建议将 RTL、仿真、约束、IP 配置、脚本和软件固件分开；编译缓存和本地临时波形不属于设计源输入。</figcaption></figure>
-<p>工程目录不是唯一的组织方式，但边界应清晰：手写源文件和生成文件分离；板卡约束和通用逻辑分离；IP 的可配置输入与可再生 output products 分离。</p></section><section id="layout" aria-labelledby="layout-title"><h2 id="layout-title">02 / 先定义哪些文件是输入，哪些是产物</h2>
-<p>建议结构如下：</p>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="理解 IP Core 接口契约、Platform Designer 与 IP Integrator、IP 封装、工程输入边界和版本化构建。"><title>IP Core 与 Platform Designer：接口、封装与可复现集成 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 18 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#problem">01 / IP Core 不是一个 RTL 文件：它是一份可连接的接口契约</a><a href="#interfaces">02 / Platform Designer 与 IP Integrator：先定义接口，再建立系统</a><a href="#package">03 / 封装自定义 IP：顶层、时钟、复位、参数和版本</a><a href="#layout">04 / 工程目录：保存输入，不把缓存误当成 IP 源文件</a><a href="#manifest">05 / Build Manifest：将源码、IP、器件和工具版本绑定</a><a href="#release">06 / IP 升级和工程发布：变更必须重新验证</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 18 · IP integration</p><h1>IP Core 与 Platform Designer：接口、封装与可复现集成</h1><p class="dek">从一个 RTL 模块走向可复用 IP：定义接口契约、时钟复位、地址块、版本依赖和系统互连，并建立可追溯的工程输入。</p></header><section id="problem" aria-labelledby="problem-title"><h2 id="problem-title">01 / IP Core 不是一个 RTL 文件：它是一份可连接的接口契约</h2>
+<p class="intro">把一个 Verilog module 放进 IP Catalog 并不自动意味着它能正确连接。可复用 IP 至少还需要顶层端口、总线接口类型、信号角色、参数、地址空间、时钟/复位关联、约束、依赖和版本信息。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-ip-package.svg" alt="IP 包含 HDL、接口元数据、参数、约束和示例设计；Packager 将这些输入组织成可供系统工具识别的组件。" width="960" height="520" loading="lazy"></div><figcaption>IP 包含 HDL、接口元数据、参数、约束和示例设计；Packager 将这些输入组织成可供系统工具识别的组件。</figcaption></figure>
+<p>IP 的可复用边界不是“端口名字看起来相似”，而是机器可识别的接口语义。例如 AXI4-Lite subordinate 必须把 AW、W、B、AR、R 信号归属到正确接口，并把 ACLK/ARESETN 与接口关联；地址空间和寄存器映射也必须与 RTL 行为一致。</p>
+<p>在 AMD IP Packager 中，IP 的识别信息采用 Vendor / Library / Name / Version（VLNV）等元数据。一个可编译的 RTL 模块如果没有正确的接口识别和依赖信息，仍可能无法被 IP Integrator 正确实例化或连接。<a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction">AMD UG1118 · Creating and Packaging Custom IP</a>。</p></section><section id="interfaces" aria-labelledby="interfaces-title"><h2 id="interfaces-title">02 / Platform Designer 与 IP Integrator：先定义接口，再建立系统</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-platform-designer.svg" alt="Platform Designer 将处理器 host、互连和 memory-mapped agent 连接起来，并要求显式处理时钟与复位域。" width="960" height="520" loading="lazy"></div><figcaption>Platform Designer 将处理器 host、互连和 memory-mapped agent 连接起来，并要求显式处理时钟与复位域。</figcaption></figure>
+<p>Altera Platform Designer 支持 Avalon Memory-Mapped、Avalon Streaming、AMBA AXI、AXI-Lite、AXI-Stream 和 APB 等接口；互连逻辑可以在不同接口类型之间插入适配和协议转换。协议转换不是“把几根线连起来”，而是要理解事务顺序、延迟、数据宽度、突发和背压规则。<a href="https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect">Quartus Prime 26.3 Platform Designer Interconnect</a> 与 <a href="https://docs.altera.com/r/docs/683609/26.1/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interface-support">接口支持表</a>。</p>
+<p>AMD Vivado IP Integrator 是另一套系统集成工具，主要使用 AMD IP Catalog、Block Design、Connection Automation、Address Editor 和 IP Packager。它与 Altera Platform Designer 的文件格式和工具流程不同，但同样依赖机器可识别的接口元数据。</p>
+<p>跨接口连接时必须确认：时钟频率/相位是否一致；复位极性和释放时序是否正确；是否需要 clock-crossing bridge；数据宽度和地址宽度是否匹配；读写响应与背压是否保留。自动连接完成后仍需 Validate Design 和 DRC。</p></section><section id="package" aria-labelledby="package-title"><h2 id="package-title">03 / 封装自定义 IP：顶层、时钟、复位、参数和版本</h2>
+<p>以第 19 章的 <code>axi4lite_regs</code> 为例，封装时应把 <code>s_axi_aclk</code> 识别为 AXI 接口时钟，把 <code>s_axi_aresetn</code> 识别为 active-low reset，并将 AW/W/B/AR/R 信号与 AXI4-Lite 从接口关联。还需要定义地址块、寄存器偏移、参数、约束和示例设计。</p>
+<p>典型封装检查顺序：</p>
+<ol><li>确认 top-level HDL 与所有源文件依赖。</li><li>识别 bus interface 和 signal mapping，避免把响应通道方向声明反。</li><li>推断/关联 clock 与 reset interface，核对 reset polarity。</li><li>定义参数范围、地址块、寄存器空间与数据宽度。</li><li>加入 example design / testbench，并在目标工具版本中验证 IP。</li><li>设置 VLNV/version，保存兼容性和升级说明。</li></ol>
+<p>AMD UG1118 明确覆盖 AXI 信号识别、时钟/复位接口推断、约束处理、IP 升级和版本控制。不要只改 RTL 而不更新打包后的 IP 元数据。<a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Inferring-Clock-and-Reset-Interfaces">时钟与复位接口</a> · <a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Versioning-and-Revision-Control">版本与修订管理</a>。</p>
+<pre><code># IP 变更记录建议
+vendor: example.org
+library: user
+name: axi4lite_regs
+version: 1.1
+interface: AXI4-Lite subordinate, 32-bit data
+register_map: CTRL@0x00, STATUS@0x04, SCRATCH@0x08, ID@0x0C
+clock_reset: s_axi_aclk / active-low s_axi_aresetn
+compatibility: requires system re-validation after interface changes</code></pre></section><section id="layout" aria-labelledby="layout-title"><h2 id="layout-title">04 / 工程目录：保存输入，不把缓存误当成 IP 源文件</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-project-tree.svg" alt="将 RTL、约束、仿真、IP 配置、固件和脚本分开；工具生成的缓存与输出产品按交付策略管理。" width="960" height="520" loading="lazy"></div><figcaption>将 RTL、约束、仿真、IP 配置、固件和脚本分开；工具生成的缓存与输出产品按交付策略管理。</figcaption></figure>
+<p>建议工程结构：</p>
 <pre><code>fpga-project/
-├── src/                 # RTL：Verilog / VHDL / SystemVerilog
-├── sim/                 # Testbench、do 文件、断言、覆盖率配置
-├── constraints/         # QSF / XDC / SDC / board pin map
-├── ip/                  # IP 配置、版本、custom IP source
-├── software/            # firmware、BSP、linker script
+├── src/                 # 手写 RTL
+├── sim/                 # testbench / Questa .do / assertions
+├── constraints/         # QSF / XDC / SDC / pin map
+├── ip/                  # IP 配置、component metadata、custom IP source
+├── software/            # firmware / BSP / linker script
 ├── scripts/             # create / build / report / manifest
-├── reports/             # 选定并审查过的签核报告
-├── releases/            # 交付说明与发布元数据
-├── fpga-project.yml     # part、tool、IP、build 参数
-└── .gitignore</code></pre>
-<p><strong>需要跟踪的输入：</strong>RTL、testbench、QSF/QPF、XDC/SDC、Vivado XPR、IP-XACT/组件描述、XCI/QSYS 等工程配置和 IP 参数文件（具体按工具流确认）。</p>
-<p><strong>通常忽略的生成物：</strong>Quartus <code>db/</code>、<code>incremental_db/</code>、<code>output_files/</code>，Vivado <code>.Xil/</code>、<code>.runs/</code>、<code>.cache/</code>，以及本地仿真临时波形、日志和缓存。不能用 <code>*.qsf</code>、<code>*.sdc</code> 或 <code>*.xci</code> 这类宽泛规则把真正的设计输入一起忽略。</p>
-<div class="callout note">生成文件并不都应删除：某些交付需要保存签核报告、bitstream、ELF 或归档文件。把它们放在版本化 release / CI artifact 中，附上构建元数据和校验和，而不是把本地缓存当成源代码提交。</div></section><section id="manifest" aria-labelledby="manifest-title"><h2 id="manifest-title">03 / Build Manifest：把源码、器件和工具版本绑定起来</h2>
-<figure><div class="diagram-scroll"><img src="../assets/svg/18-reproducible-build.svg" alt="一次构建的输入不只有 HDL：目标器件、工具版本、约束、IP 配置和构建种子共同决定结果。" width="960" height="520" loading="lazy"></div><figcaption>一次构建的输入不只有 HDL：目标器件、工具版本、约束、IP 配置和构建种子共同决定结果。</figcaption></figure>
-<p>本仓库新增 <code>scripts/build_manifest.py</code>，对输入文件计算 SHA-256，并记录目标器件、工具版本和 Git revision：</p>
+├── reports/             # 经过审查的 sign-off 报告
+├── releases/            # 交付元数据和构建校验和
+└── fpga-project.yml     # part / tool / IP / build contract</code></pre>
+<p>通常应跟踪 QPF/QSF、SDC/XDC、XPR、XCI、QSYS 或其他实际工程所需的配置文件。生成数据库如 Quartus <code>db/</code>、<code>incremental_db/</code> 和 Vivado <code>.Xil/</code>、<code>.runs/</code>、IP cache 则通常可以再生。不要使用 <code>*.sdc</code>、<code>*.qsf</code> 或 <code>*.xci</code> 这类宽泛 ignore 规则误删输入。</p></section><section id="manifest" aria-labelledby="manifest-title"><h2 id="manifest-title">05 / Build Manifest：将源码、IP、器件和工具版本绑定</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-reproducible-build.svg" alt="源码、目标器件、工具版本、约束和 IP 配置一起决定构建结果；Manifest 记录输入校验和与 revision。" width="960" height="520" loading="lazy"></div><figcaption>源码、目标器件、工具版本、约束和 IP 配置一起决定构建结果；Manifest 记录输入校验和与 revision。</figcaption></figure>
+<p>本仓库新增 <code>scripts/build_manifest.py</code>，为源文件计算 SHA-256，并记录器件、工具版本与 Git revision：</p>
 <pre><code>python3 scripts/build_manifest.py \
   --root . \
   --output build/manifest.json \
   --device "$FPGA_DEVICE" \
   --tool-version "$FPGA_TOOL_VERSION" \
   --revision "$(git rev-parse HEAD)"</code></pre>
-<p>Manifest 用于回答“这份报告/产物来自哪些输入”。它不是完整的可复现构建系统：仍需固定工具安装包、许可证、IP 版本、环境变量、器件数据库、脚本和实现参数。部分 EDA 工具可能存在实现随机性或版本差异，因此“同样输入”也不应未经验证就承诺 bitstream 字节完全一致。</p>
-<p>正确的复现验收应比较输入清单、工具版本、资源报告、时序报告和必要的硬件行为；如果业务确实要求 bit-for-bit reproducible，应单独验证该工具链和实现配置能否满足这一要求。</p></section><section id="review" aria-labelledby="review-title"><h2 id="review-title">04 / Git 分支、代码审查与硬件版本标签</h2>
-<figure><div class="diagram-scroll"><img src="../assets/svg/18-release-gates.svg" alt="开发分支经过 PR、自动化回归和工程报告审查后再打 release tag；板级验收记录与 CI 绿灯分开管理。" width="960" height="520" loading="lazy"></div><figcaption>开发分支经过 PR、自动化回归和工程报告审查后再打 release tag；板级验收记录与 CI 绿灯分开管理。</figcaption></figure>
-<p>建议每个变更围绕一个明确目的：修复 RTL、调整约束、升级 IP、更新工具版本，避免把多个不相关修改揉成一个巨大提交。PR 描述至少包含：修改目的、目标器件、受影响 IP、仿真结果、约束变化、时序/资源报告以及未完成的硬件验证。</p>
-<p>发布标签应绑定 Git commit，而不是仅写“v1.0 final”。交付包可以包含 bitstream、软件 ELF、XSA 或 Quartus 输出文件，但要同时保留 source revision、完整器件型号、工具版本、约束摘要、IP 版本和 SHA-256。</p></section><section id="exercise" aria-labelledby="exercise-title"><h2 id="exercise-title">05 / 检查一个工程是否真的可复现</h2>
-<p>在一台干净机器上，按 README 从 Git clone 开始重建，不要复制旧的 <code>db/</code>、<code>.runs/</code> 或 IP cache。然后确认：</p>
-<ul><li>是否有明确的 top、family、part、package、speed grade 与 board revision？</li><li>是否存在所有必要的 SDC/XDC/QSF 和管脚映射？</li><li>IP 配置是否能重新生成，版本和依赖是否可追踪？</li><li>仿真是否能通过，失败时是否有 watchdog 和清晰日志？</li><li>报告与发布文件是否带有 Git revision 和构建清单？</li></ul>
-<details class="exercise"><summary>为什么不能只提交 .sof 或 .bit 就称工程可复现？</summary><p>配置文件只描述一次构建的结果，不包含完整的 HDL、约束、IP 配置和工具参数。它可以作为交付物，但无法代替工程源输入和构建说明。</p></details></section><section id="references"><h2>一手资料与版本范围</h2><ol class="source-list"><li><a href="https://git-scm.com/docs/gitignore" target="_blank" rel="noopener noreferrer">Git · Ignoring files</a></li><li><a href="https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases" target="_blank" rel="noopener noreferrer">GitHub · Managing releases</a></li><li><a href="https://docs.altera.com/r/docs/683143/25.1.1/quartus-prime-pro-edition-user-guide/constraining-designs" target="_blank" rel="noopener noreferrer">Altera Quartus · QSF and SDC assignments</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="17.html">← 上一章</a><a href="../index.html">全部章节</a><a href="19.html">下一章 →</a></nav></article></main></div></body></html>\n
+<p>Manifest 能帮助回答“这个报告来自哪个提交和哪些源输入”，但不自动锁定工具安装、IP 许可、设备数据库、环境变量、实现种子和所有生成依赖。不能仅凭输入 hash 就承诺不同机器/工具版本一定生成字节完全相同的 bitstream。</p></section><section id="release" aria-labelledby="release-title"><h2 id="release-title">06 / IP 升级和工程发布：变更必须重新验证</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-release-gates.svg" alt="IP 版本、参数、接口和约束发生变化时，经过 PR、仿真、系统检查与时序审查后再发布。" width="960" height="520" loading="lazy"></div><figcaption>IP 版本、参数、接口和约束发生变化时，经过 PR、仿真、系统检查与时序审查后再发布。</figcaption></figure>
+<p>任何接口变更都可能影响下游 Block Design、Address Editor、驱动和固件。修改 IP 的接口、参数、地址块、clock/reset 关联或依赖版本后，应重新生成 output products、重新验证 block design、检查 DRC/时序，并用系统级 testbench 或硬件回归确认兼容性。</p>
+<p>发布标签应绑定 Git commit，并保留工具版本、目标 part、IP VLNV/version、约束摘要、资源/时序报告和文件校验和。不要只把一个 <code>.bit</code> 或 <code>.sof</code> 放进仓库后就称工程可复现。</p>
+<details class="exercise"><summary>一个 AXI4-Lite IP 只改了寄存器地址，为什么固件也必须重新构建？</summary><p>固件使用地址偏移和硬件平台生成的 base-address 宏访问寄存器。地址块或寄存器偏移改变后，驱动代码和生成的硬件描述必须同步更新，否则软件可能访问到错误寄存器。</p></details></section><section id="references"><h2>一手资料与版本范围</h2><ol class="source-list"><li><a href="https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect" target="_blank" rel="noopener noreferrer">Altera Quartus Prime 26.3 · Platform Designer Interconnect</a></li><li><a href="https://docs.altera.com/r/docs/683609/26.1/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interface-support" target="_blank" rel="noopener noreferrer">Altera Quartus Prime 26.1 · Platform Designer Interface Support</a></li><li><a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction" target="_blank" rel="noopener noreferrer">AMD Vivado 2026.1 · Creating and Packaging Custom IP</a></li><li><a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Inferring-Clock-and-Reset-Interfaces" target="_blank" rel="noopener noreferrer">AMD UG1118 · Inferring Clock and Reset Interfaces</a></li><li><a href="https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Versioning-and-Revision-Control" target="_blank" rel="noopener noreferrer">AMD UG1118 · Versioning and Revision Control</a></li><li><a href="https://git-scm.com/docs/gitignore" target="_blank" rel="noopener noreferrer">Git · gitignore</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="17.html">← 上一章</a><a href="../index.html">全部章节</a><a href="19.html">下一章 →</a></nav></article></main></div></body></html>\n
