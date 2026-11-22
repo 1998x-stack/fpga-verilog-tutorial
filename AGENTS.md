@@ -86,7 +86,7 @@
 ## 2026-11-23 第二轮复审补充（26—28 与质量门禁）
 - Ready/Valid testbench 的源端也必须遵守握手契约：若 `s_valid && !s_ready`，下一拍必须保持 VALID 与 DATA，直到握手。drain 阶段不得直接撤销尚未接受的 pending 项；测试必须覆盖 full+stall、同拍 dequeue/enqueue、source stability、output stability、最终 drain。
 - 视频流 testbench 必须同时检查输入端和输出端的 DATA/SOF/EOL 停顿稳定性，并统计输出 SOF 数等于帧数、EOL 数等于帧数×行数。
-- 帧缓存预算同时报告 `active_pixel_write_bytes_per_second` 与 stride-based `write_bytes_per_second`；帧存储按 stride×height 计算，DDR/AXI 传输预算按 fps×height×stride 计算。不可将有效像素字节速率冒充 padded-stride DMA 速率。
+- 帧缓存预算同时报告 `active_pixel_stride_write_bytes_per_second` 与 stride-based `stride_write_bytes_per_second`；帧存储按 stride×height 计算，DDR/AXI 传输预算按 fps×height×stride 计算。不可将有效像素字节速率冒充 padded-stride DMA 速率。
 - MathML：所有公式必须有可访问名称；`mfrac` 恰好两个子元素；矩阵用 `mtable/mtr/mtd`；公式区必须 keyboard focusable，实际溢出时必须能用方向键横向滚动。浏览器检查要比较分子/分母几何位置，不可只检查 DOM 存在。
 - HTML 静态门禁：检查跨页面 fragment、figure media + nonempty figcaption、SVG title/desc/aria-labelledby、MathML 结构与 evidence schema v2。证据状态只允许 `verified`、`derived`、`illustrative`、`unverified`；未复核的历史 claim 应标 unverified，不可自造 supported。
 - 官方来源复核日期 2026-11-23：UG1399 2026.2、UG1387 2026.1、PG278 3.1、PG043 5.0、PG044 4.0、Arm AMBA AXI、NVIDIA VerilogEval、RTLLM、Yosys 0.70、NIST AI 600-1。若产品文档 URL 有版本化/非版本化 canonical 差异，以可打开的官方页面 URL 为准。

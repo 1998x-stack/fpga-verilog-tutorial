@@ -10,10 +10,10 @@ class FrameBudget:
     stride_bytes: int
     bytes_per_frame: int
     allocated_bytes: int
-    active_pixel_write_bytes_per_second: int
-    active_pixel_read_write_bytes_per_second: int
-    write_bytes_per_second: int
-    read_write_bytes_per_second: int
+    active_pixel_stride_write_bytes_per_second: int
+    active_pixel_stride_read_stride_write_bytes_per_second: int
+    stride_write_bytes_per_second: int
+    stride_read_stride_write_bytes_per_second: int
 
 def estimate(width: int, height: int, bytes_per_pixel: int,
              fps: int, buffers: int=2, stride_bytes: int | None=None) -> FrameBudget:
@@ -34,10 +34,10 @@ def estimate(width: int, height: int, bytes_per_pixel: int,
         stride_bytes=stride_bytes,
         bytes_per_frame=frame_bytes,
         allocated_bytes=frame_bytes*buffers,
-        active_pixel_write_bytes_per_second=active_write,
-        active_pixel_read_write_bytes_per_second=2*active_write,
-        write_bytes_per_second=stride_write,
-        read_write_bytes_per_second=2*stride_write,
+        active_pixel_stride_write_bytes_per_second=active_write,
+        active_pixel_stride_read_stride_write_bytes_per_second=2*active_write,
+        stride_write_bytes_per_second=stride_write,
+        stride_read_stride_write_bytes_per_second=2*stride_write,
     )
 
 def main() -> None:

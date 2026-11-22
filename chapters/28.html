@@ -52,10 +52,10 @@ vvp /tmp/video.vvp
 # stride_bytes: 5888
 # bytes_per_frame: 6359040
 # allocated_bytes: 12718080
-# active_pixel_write_bytes_per_second: 373248000
-# active_pixel_read_write_bytes_per_second: 746496000
-# write_bytes_per_second: 381542400
-# read_write_bytes_per_second: 763084800</code></pre>
+# active_pixel_stride_write_bytes_per_second: 373248000
+# active_pixel_stride_read_stride_write_bytes_per_second: 746496000
+# stride_write_bytes_per_second: 381542400
+# stride_read_stride_write_bytes_per_second: 763084800</code></pre>
 <p>双缓冲安全切换需要至少三个状态条件：frame writer 彻底完成当前帧写入、reader 不再访问将被覆盖的 buffer、以及显示端在安全帧边界切换 base address。仅凭 VSYNC 高电平替换地址无法证明 DDR 中的帧已全部可用。若读者落后而下一帧必须到达，应选择三缓冲或显式丢帧策略，而不是覆盖正在读取的图像。</p></section><section id="display" aria-labelledby="display-title"><h2 id="display-title">07 / 输出 VGA/HDMI：像素数据与 blanking 时序不可混合</h2>
 <p>显示器需要总水平周期、总垂直行数、同步极性、front porch、back porch 和 active video 的一致配置。水平、垂直总周期都包含 active 区域和 blanking 区域；像素时钟由完整总周期与刷新率共同决定：</p>
 <div class="math-scroll" tabindex="0" role="region" aria-label="显示器水平垂直总周期和像素时钟关系，可横向滚动"><math display="block" aria-label="H total equals H active plus H front porch plus H sync plus H back porch. V total equals V active plus V front porch plus V sync plus V back porch. Pixel clock equals H total times V total times refresh rate."><mtable><mtr><mtd><mrow><msub><mi>H</mi><mi>total</mi></msub><mo>=</mo><msub><mi>H</mi><mi>active</mi></msub><mo>+</mo><msub><mi>H</mi><mi>front</mi></msub><mo>+</mo><msub><mi>H</mi><mi>sync</mi></msub><mo>+</mo><msub><mi>H</mi><mi>back</mi></msub></mrow></mtd></mtr><mtr><mtd><mrow><msub><mi>V</mi><mi>total</mi></msub><mo>=</mo><msub><mi>V</mi><mi>active</mi></msub><mo>+</mo><msub><mi>V</mi><mi>front</mi></msub><mo>+</mo><msub><mi>V</mi><mi>sync</mi></msub><mo>+</mo><msub><mi>V</mi><mi>back</mi></msub></mrow></mtd></mtr><mtr><mtd><mrow><msub><mi>f</mi><mi>pixel</mi></msub><mo>=</mo><msub><mi>H</mi><mi>total</mi></msub><mo>×</mo><msub><mi>V</mi><mi>total</mi></msub><mo>×</mo><msub><mi>f</mi><mi>refresh</mi></msub></mrow></mtd></mtr></mtable></math></div>
