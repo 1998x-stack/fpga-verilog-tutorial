@@ -91,7 +91,7 @@ python3 scripts/browser_check.py               # 需要 Playwright + Chromium
 - **21 RV32I：** `examples/rtl/rv32i_frontend_units.v` 提供 I/S/B/U/J 立即数生成器、EX/MEM 优先的 Forwarding 和 load-use stall；`tb_rv32i_frontend_units.v` 对编码与冒险规则做定向自检。它不是完整 CPU。
 - **22 SerDes：** `scripts/serdes_budget.py` 计算 NRZ 线编码后的单向吞吐上界；正文区分 PCIe Gen1/2 8b/10b、Gen3–5 128b/130b NRZ 和 Gen6 PAM4/FLIT/FEC。
 - **23 调试：** `debug_event_counter.v` 提供同域饱和事件计数器；正文覆盖 ILA、SignalTap、VIO、JTAG-to-AXI、采样时钟和 probe 成本。
-- **24 开源工具：** `examples/open-source/ice40/` 给出 iCEstick + iCE40-HX1K-TQ144 的 Yosys / nextpnr / icepack Makefile。CI 只检查命令和引脚契约，不声称生成 bitstream 或完成板级测试。
+- **24 开源工具：** `examples/open-source/ice40/` 给出 iCEstick + iCE40-HX1K-TQ144 的 Yosys / nextpnr / icepack Makefile；nextpnr 的 Nexus 后端为 alpha，NG-Ultra bitstream 还依赖专有 Impulse。CI 只检查命令和引脚契约，不声称生成 bitstream 或完成板级测试。
 - **25 时序与功耗：** `scripts/timing_power_budget.py` 提供简化 setup slack 和动态功耗公式；不替代 Vivado/TimeQuest STA 或器件功耗分析。
 
 本批新增 15 幅 SVG、2 组 RTL 自检、2 个 Python 计算工具和一个 iCEstick 构建入口。15 组 Icarus 回归、Python 单元测试、静态 HTML/SVG 检查与 Playwright 浏览器检查只对各自覆盖范围负责；真实 CPU、SerDes、ILA、bitstream、时序和功耗测量仍需目标器件及厂商工具/硬件。

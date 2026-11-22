@@ -358,7 +358,7 @@
       "chapters": [
         "24"
       ],
-      "claim": "nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; Cyclone V, MachXO2 and Xilinx 7-Series are experimental.",
+      "claim": "nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; Nexus, Cyclone V, MachXO2 and Xilinx 7-Series are experimental; NG-Ultra bitstream creation requires proprietary Impulse.",
       "source": "https://github.com/YosysHQ/nextpnr",
       "status": "supported"
     },
@@ -409,6 +409,38 @@
       "claim": "Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separate frontend when installed.",
       "source": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding is approximately 63 GB/s per direction before protocol overhead.",
+      "source": "https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lanes; CSI-2 is a higher-layer protocol.",
+      "source": "https://www.mipi.org/groups/d-phy",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream generation requires NanoXplore Impulse.",
+      "source": "https://github.com/YosysHQ/nextpnr",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while read_verilog -sv supports only a small subset.",
+      "source": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -428,6 +460,7 @@
     "Chapter 22 calculator covers NRZ line coding ratios and a user-supplied protocol factor; it does not model PAM4/FEC, PCIe packet overhead or real SerDes behavior.",
     "Chapter 23 includes a synchronous event counter; no ILA/SignalTap hardware capture was performed.",
     "Chapter 24 CI checks the iCEstick flow statically; no Yosys/nextpnr bitstream build, programmer run or board test is claimed.",
-    "Chapter 25 timing/power calculators are mathematical teaching aids; no vendor STA engine, implementation report or device power measurement was run."
+    "Chapter 25 timing/power calculators are mathematical teaching aids; no vendor STA engine, implementation report or device power measurement was run.",
+    "The nextpnr support table is a snapshot; the Nexus backend is experimental/alpha, and NanoXplore NG-Ultra binary bitstream generation requires proprietary Impulse."
   ]
 }
