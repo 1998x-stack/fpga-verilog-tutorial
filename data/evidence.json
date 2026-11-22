@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-fifteen-2026-11",
+  "scope": "first-twenty-2026-11",
   "checks": [
     {
       "chapters": [
@@ -168,6 +168,119 @@
       "claim": "Non-project Tcl supports read_verilog/read_xdc, synthesis, place, route, reporting and bitstream commands.",
       "source": "https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "16"
+      ],
+      "claim": "Quartus Prime QSF stores project/entity assignments while SDC stores timing constraints; project assignment precedence includes CLI, QSF, compiler database and defaults.",
+      "source": "https://docs.altera.com/r/docs/683143/25.1.1/quartus-prime-pro-edition-user-guide/constraining-designs",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "16"
+      ],
+      "claim": "Quartus Prime Pro compiler supports full compilation flows including synthesis, fitter, timing analysis and programming-file generation.",
+      "source": "https://docs.altera.com/r/docs/683236/25.3/quartus-prime-pro-edition-user-guide/compilation-flows",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "16"
+      ],
+      "claim": "TimeQuest create_clock defines clock period and targets; PLL clock derivation behavior is family/IP dependent.",
+      "source": "https://docs.altera.com/r/docs/683243/26.3/quartus-prime-pro-edition-user-guide-timing-analyzer/create-clock-create_clock",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "17"
+      ],
+      "claim": "Questa-Altera FPGA Starter Edition is free but requires a no-cost license for elaboration and simulation.",
+      "source": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/simulator-versions-and-licensing",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "17"
+      ],
+      "claim": "Questa-Altera command line supports vsim -c and vsim -do run.do invocation.",
+      "source": "https://docs.altera.com/r/docs/730191/26.1/questa-altera-fpga-edition-simulation-user-guide/commands-to-invoke-questa-altera-fpga-edition",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "A source manifest with file hashes, device, tool version and revision aids traceability but does not itself prove bitstream reproducibility.",
+      "source": "https://git-scm.com/docs/gitignore",
+      "status": "derived"
+    },
+    {
+      "chapters": [
+        "19"
+      ],
+      "claim": "AXI transaction channels use VALID/READY; transfer occurs only when both are high at a rising edge and source payload stays stable until handshake.",
+      "source": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "19"
+      ],
+      "claim": "AXI4-Lite supports single-beat 32-bit or 64-bit memory-mapped accesses and does not support burst or exclusive accesses.",
+      "source": "https://developer.arm.com/-/media/Arm%20Developer%20Community/PDF/IHI0022H_amba_axi_protocol_spec.pdf?hash=6325311012DDADF238C35A6C0FD734E520754F82&la=en&revision=71bd7c57-2ed7-487b-bc3e-68c4ab56fa5f",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "MicroBlaze V is a configurable RISC-V processor with separate instruction/data interfaces and supports LMB, AXI4/AXI4-Lite and AXI4-Stream interfaces.",
+      "source": "https://docs.amd.com/r/en-US/ug1629-microblaze-v-user-guide/MicroBlaze-V-I/O-Overview",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "MicroBlaze V embedded design flow uses Vivado IP Integrator, address editor, XSA export and Vitis software platform.",
+      "source": "https://docs.amd.com/r/en-US/ug1711-microblaze-v-embedded-design/Using-a-MicroBlaze-V-Processor-in-an-Embedded-Design",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "Xil_Out32 writes a 32-bit value to a specified memory-mapped address.",
+      "source": "https://docs.amd.com/r/2026.1-English/oslib_rm/Xil_Out32",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18",
+        "20"
+      ],
+      "claim": "Nios V has its own Platform Designer and software developer workflow; it should not be conflated with MicroBlaze V.",
+      "source": "https://docs.altera.com/r/docs/743810/current",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "Platform Designer supports Avalon MM/Streaming, AXI, AXI-Lite, AXI-Stream and APB interfaces and generates interconnect to bridge protocol differences.",
+      "source": "https://docs.altera.com/r/docs/683609/26.3/quartus-prime-pro-edition-user-guide-platform-designer/platform-designer-interconnect",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "Vivado IP Packager documents AXI signal inference, clock/reset interfaces, constraints, dependencies, and IP version/revision management.",
+      "source": "https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -176,6 +289,12 @@
     "No synthesis resource usage, power or Fmax benchmark is asserted.",
     "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP.",
     "Chapter 14 STA numbers are arithmetic examples, not measured or Vivado-reported slack.",
-    "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed."
+    "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed.",
+    "Chapter 16 Quartus project is generic; no board-specific pin assignment or Quartus compilation is claimed.",
+    "Chapter 17 Questa run.do is provided but public CI runs Icarus; no Questa license or simulation run is claimed.",
+    "Chapter 19 AXI4-Lite subordinate is 32-bit and single-outstanding; it is not a full AXI4 interconnect or DMA.",
+    "Chapter 20 MicroBlaze V block design is a system contract and firmware example; no board-specific XSA, ELF, bitstream or hardware run is claimed.",
+    "Build Manifest hashes input files but does not guarantee identical bitstreams across tool versions, seeds or machine environments.",
+    "Chapter 18 explains IP packaging and system integration contracts but does not claim that the sample AXI peripheral has been packaged into a vendor-specific IP archive."
   ]
 }
