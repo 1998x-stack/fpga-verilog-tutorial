@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" role="img" aria-labelledby="dbg23 dbg23d">
+  <title id="dbg23">FPGA 调试中可观测性与资源开销的权衡</title>
+  <desc id="dbg23d">从左到右依次是 LED/GPIO 状态输出、UART 文本输出、片上逻辑分析仪 ILA/SignalTap、VIO 虚拟 I/O、JTAG-to-AXI。越往右能看到的内部信号越多、可交互性越强，但占用器件资源越多、对时序和布局布线的影响也越大；片上调试逻辑本身也是需要消耗 LUT 与 Block RAM 的硬件。</desc>
+  <rect width="960" height="470" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">可观测性越强，侵入性越高</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="24" y="96" width="168" height="150" rx="13" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="108" y="132" font-size="18" font-weight="750" fill="#203035">LED / GPIO</text>
+    <text x="108" y="166" font-size="14" font-weight="500" fill="#203035">每引脚 1 bit</text>
+    <text x="108" y="192" font-size="14" font-weight="500" fill="#203035">实时、几乎零开销</text>
+    <text x="108" y="222" font-size="13" font-weight="700" fill="#147f80">确认时钟/复位/锁定</text>
+
+    <rect x="208" y="96" width="168" height="150" rx="13" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="292" y="132" font-size="18" font-weight="750" fill="#203035">UART 文本</text>
+    <text x="292" y="166" font-size="14" font-weight="500" fill="#203035">自定义打印通道</text>
+    <text x="292" y="192" font-size="14" font-weight="500" fill="#203035">近实时、低开销</text>
+    <text x="292" y="222" font-size="13" font-weight="700" fill="#147f80">状态序列、错误码</text>
+
+    <rect x="392" y="96" width="176" height="150" rx="13" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="480" y="132" font-size="18" font-weight="750" fill="#203035">ILA / SignalTap</text>
+    <text x="480" y="166" font-size="14" font-weight="500" fill="#203035">抓取多路内部信号</text>
+    <text x="480" y="192" font-size="14" font-weight="500" fill="#203035">占 LUT 与 Block RAM</text>
+    <text x="480" y="222" font-size="13" font-weight="700" fill="#7564b8">时序与协议分析</text>
+
+    <rect x="584" y="96" width="168" height="150" rx="13" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="668" y="132" font-size="18" font-weight="750" fill="#203035">VIO</text>
+    <text x="668" y="166" font-size="14" font-weight="500" fill="#203035">经 JTAG 读写寄存器</text>
+    <text x="668" y="192" font-size="14" font-weight="500" fill="#203035">慢速、非实时</text>
+    <text x="668" y="222" font-size="13" font-weight="700" fill="#7564b8">在线改配置/注入激励</text>
+
+    <rect x="768" y="96" width="168" height="150" rx="13" fill="#fbf4dd" stroke="#9c742c" stroke-width="2"/>
+    <text x="852" y="132" font-size="18" font-weight="750" fill="#203035">JTAG-to-AXI</text>
+    <text x="852" y="166" font-size="14" font-weight="500" fill="#203035">访问地址空间</text>
+    <text x="852" y="192" font-size="14" font-weight="500" fill="#203035">需 AXI 基础设施</text>
+    <text x="852" y="222" font-size="13" font-weight="700" fill="#9c742c">SoC/外设寄存器</text>
+  </g>
+  <g stroke="#c6674b" stroke-width="3" stroke-linecap="round" fill="none">
+    <path d="M192 171H204"/><path d="M376 171H388"/><path d="M568 171H580"/><path d="M752 171H764"/>
+  </g>
+  <rect x="24" y="300" width="912" height="86" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="480" y="336" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">开源流程也有对应手段：Verilator/iverilog 仿真 + VCD 波形，可视为“离线 ILA”</text>
+  <text x="480" y="366" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="500" text-anchor="middle" fill="#203035">先仿真定位，再上板验证，能显著减少硬件迭代次数</text>
+</svg>
