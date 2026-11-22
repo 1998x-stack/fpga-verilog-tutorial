@@ -1,4 +1,4 @@
-timescale 1ns/1ps
+`timescale 1ns/1ps
 module tb_ready_valid_slice;
     reg clk=0,rst_n=0,s_valid=0,m_ready=0;
     reg [15:0] s_data=0;
