@@ -42,3 +42,6 @@
 - AMD PG043 v5.0 / PG044 v4.0：Video In 与 Video Out AXI4-Stream 接口。
 - Arm AMBA AXI Protocol Specification：VALID/READY 握手及 payload 保持。
 - NVIDIA VerilogEval（156 个 HDLBits-derived tasks）、RTLLM 项目、2026 arXiv 2603.11287、Yosys 0.70 symbolic model checking、NIST AI 600-1。
+
+
+**补充 HLS 复审：** UG1399 2026.2 的 *Limitations of Pipelining with Static Variables* 明确说明 static state 的读写依赖可能阻止达到请求 II，示例可导致最小 II=2。FIR4 保留 static delay history，因此将 II=1 明确标为优化目标；不得预期、宣称或记录 achieved II，直到 Vitis HLS scheduling report / RTL Co-Sim 提供证据。

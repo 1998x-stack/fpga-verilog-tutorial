@@ -919,6 +919,19 @@
       "locator": "Chapter 28 · #buffer — Active-pixel versus stride transfer equations",
       "status": "derived",
       "notes": "Derived by comparing active_line_bytes = width × bytes_per_pixel with stride_bytes; frame-buffer transfer estimate uses stride × height × fps."
+    },
+    {
+      "id": "ch26-07",
+      "chapters": [
+        "26"
+      ],
+      "claim": "Static variables in pipelined HLS functions can create read/write dependencies that prevent the requested II; the documented example can require minimum II=2.",
+      "kind": "vendor_documentation",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Limitations-of-Pipelining-with-Static-Variables",
+      "source_url": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/Limitations-of-Pipelining-with-Static-Variables",
+      "locator": "Chapter 26 · #model — Static state and initiation-interval limitations",
+      "status": "verified",
+      "notes": "Rechecked against AMD UG1399 2026.2. The warning is applied conservatively to the FIR example: its actual II is unknown until synthesis."
     }
   ],
   "limitations": [
