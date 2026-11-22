@@ -31,7 +31,7 @@
 
 ### 证据账本与质量门禁
 - `data/evidence.json` 升级为 schema v2，所有记录具备 id、kind、source_url、locator、status 和 notes。
-- Chapters 26–28 的 15 条来源/派生记录标为 verified/derived；01–25 的 53 条旧记录保留 claim/source，但迁移为 unverified，直到下一轮逐条复查。避免把历史状态误称为本轮重新验证。
+- Chapters 26–28 的 17 条来源/派生记录标为 verified/derived；01–25 的 53 条旧记录保留 claim/source，但迁移为 unverified，直到下一轮逐条复查。避免把历史状态误称为本轮重新验证。
 - `scripts/check_site.py` 新增跨页面锚点、figure caption、MathML accessible name、mfrac 子元素数量、SVG id/aria-labelledby 与 evidence schema 检查。
 - `scripts/browser_check.py` 新增图注、离线资源、MathML fraction 真实布局、键盘滚动、MathML namespace 和 SVG 内嵌 MathML 检查。
 
