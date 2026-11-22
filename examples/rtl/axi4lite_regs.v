@@ -1,3 +1,4 @@
+`timescale 1ns/1ps
 // Minimal single-outstanding AXI4-Lite subordinate (32-bit data, 6-bit address).
 // 0x00 CTRL RW; 0x04 STATUS RO; 0x08 SCRATCH RW; 0x0C ID RO.
 // AW and W are accepted independently and joined before a write commits.
