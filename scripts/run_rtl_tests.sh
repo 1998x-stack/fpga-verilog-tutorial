@@ -22,4 +22,6 @@ run tb_sync_fifo examples/rtl/sync_fifo.v examples/tb/tb_sync_fifo.v
 run tb_pipe3_calc examples/rtl/pipe3_calc.v examples/tb/tb_pipe3_calc.v
 run tb_cdc_toggle_event examples/rtl/cdc_toggle_event.v examples/tb/tb_cdc_toggle_event.v
 run tb_axi4lite_regs examples/rtl/axi4lite_regs.v examples/tb/tb_axi4lite_regs.sv
-echo "PASS: thirteen RTL testbenches"
+run tb_rv32i_frontend_units examples/rtl/rv32i_frontend_units.v examples/tb/tb_rv32i_frontend_units.v
+run tb_debug_event_counter examples/rtl/debug_event_counter.v examples/tb/tb_debug_event_counter.v
+echo "PASS: fifteen RTL testbenches"

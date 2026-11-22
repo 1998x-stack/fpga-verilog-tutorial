@@ -17,5 +17,5 @@ for token in ("synth_ice40", "nextpnr-ice40 --hx1k --package tq144",
               "icepack", 'CONFIRM_FLASH) = "YES"', "iceprog"):
     if token not in makefile: errors.append("Makefile missing " + token)
 if errors:
-    print("\\n".join("ERROR " + e for e in errors)); sys.exit(1)
+    print("\n".join("ERROR " + e for e in errors)); sys.exit(1)
 print("PASS iCEstick open-source flow contract (static only; no bitstream built)")

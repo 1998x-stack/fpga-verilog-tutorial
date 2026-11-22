@@ -14,7 +14,7 @@ jobs:
         run: python3 scripts/check_site.py
       - name: Install Icarus Verilog
         run: sudo apt-get update && sudo apt-get install -y iverilog
-      - name: Self-checking Verilog regression (13 testbenches)
+      - name: Self-checking Verilog regression (15 testbenches)
         run: bash scripts/run_rtl_tests.sh
       - name: Python unit tests (STA budget and build manifest)
         run: python3 -m unittest discover -s tests -v
@@ -22,6 +22,8 @@ jobs:
         run: python3 scripts/check_quartus_example.py
       - name: Vivado Tcl source contract (no Vivado installed)
         run: python3 scripts/check_vivado_example.py
+      - name: Open-source iCEstick flow contract (no FPGA tools installed)
+        run: python3 scripts/check_open_source_example.py
   browser:
     runs-on: ubuntu-latest
     steps:

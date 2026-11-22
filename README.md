@@ -4,7 +4,7 @@
 
 28 章中文 FPGA / Verilog 教程：硬件架构、数字逻辑、Verilog 语言、FSM、仿真、通信接口、RAM、流水线、CDC、时序分析、EDA 工具、总线、处理器、HLS 和综合项目。
 
-**当前重构范围：01—20。** 21—28 篇仍保留原版正文，后续逐章技术审计。GitHub Pages 由 main 分支的 Actions 工作流发布。
+**当前重构范围：01—25。** 26—28 篇仍保留原版正文，后续逐章技术审计。GitHub Pages 由 main 分支的 Actions 工作流发布。
 
 ## 五阶段学习路径
 1. 01—05：数字硬件、时钟和 Verilog 逻辑基础
@@ -29,6 +29,8 @@ examples/quartus/              # Quartus 工程与 SDC 示例
 examples/softcore/             # MicroBlaze V SoC 与 MMIO 固件示例
 examples/project-template/     # 工程结构与版本清单模板
 scripts/check_site.py         # HTML/链接/SVG 静态检查
+scripts/serdes_budget.py      # NRZ 线编码链路预算上界
+scripts/timing_power_budget.py # 教学版 Setup / 动态功耗算术
 scripts/build_manifest.py      # 源输入 SHA-256 清单
 .github/workflows/            # CI 与 Pages
 AGENTS.md                     # 内容与工程规范
@@ -62,11 +64,12 @@ iverilog -g2012 -Wall -s tb_alu4 -o /tmp/alu4.vvp examples/rtl/alu4.v examples/t
 - **15 Vivado：** `examples/vivado/build.tcl` 和 `blink_top.v`，必须自行提供真实 `FPGA_PART` 和 `BOARD_XDC`。未安装 Vivado/缺少板卡时仅运行静态 Tcl 契约检查，不能宣称生成 bitstream。
 
 ```bash
-bash scripts/run_rtl_tests.sh                  # 13 组 Icarus Verilog 自检
+bash scripts/run_rtl_tests.sh                  # 15 组 Icarus Verilog 自检
 python3 scripts/check_site.py                  # 全站链接与 SVG
 python3 -m unittest discover -s tests -v        # STA + Build Manifest 单元测试
 python3 scripts/check_quartus_example.py       # 仅检查 Quartus 工程模板
 python3 scripts/check_vivado_example.py        # 仅检查 Vivado Tcl 契约
+python3 scripts/check_open_source_example.py    # 仅检查 iCEstick 工具链契约
 python3 scripts/browser_check.py               # 需要 Playwright + Chromium
 ```
 
@@ -81,3 +84,14 @@ python3 scripts/browser_check.py               # 需要 Playwright + Chromium
 - **20 MicroBlaze V：** 以 2026.1 文档中的 RISC-V MicroBlaze V 为主线，提供 SoC 集成契约与 MMIO C 示例。IP Integrator、XSA、Vitis 和真实地址映射需要在目标板工具环境完成。
 
 本批的 RTL 仿真通过不等于 Quartus/Questa/Vivado 工具构建，也不等于 FPGA 上板验证。真实器件、管脚、时钟、IP 许可与软件 BSP 必须由使用者按具体板卡配置。
+
+
+## 第五批（21—25）：RISC-V、SerDes、调试、开源工具与时序功耗
+
+- **21 RV32I：** `examples/rtl/rv32i_frontend_units.v` 提供 I/S/B/U/J 立即数生成器、EX/MEM 优先的 Forwarding 和 load-use stall；`tb_rv32i_frontend_units.v` 对编码与冒险规则做定向自检。它不是完整 CPU。
+- **22 SerDes：** `scripts/serdes_budget.py` 计算 NRZ 线编码后的单向吞吐上界；正文区分 PCIe Gen1/2 8b/10b、Gen3–5 128b/130b NRZ 和 Gen6 PAM4/FLIT/FEC。
+- **23 调试：** `debug_event_counter.v` 提供同域饱和事件计数器；正文覆盖 ILA、SignalTap、VIO、JTAG-to-AXI、采样时钟和 probe 成本。
+- **24 开源工具：** `examples/open-source/ice40/` 给出 iCEstick + iCE40-HX1K-TQ144 的 Yosys / nextpnr / icepack Makefile。CI 只检查命令和引脚契约，不声称生成 bitstream 或完成板级测试。
+- **25 时序与功耗：** `scripts/timing_power_budget.py` 提供简化 setup slack 和动态功耗公式；不替代 Vivado/TimeQuest STA 或器件功耗分析。
+
+本批新增 15 幅 SVG、2 组 RTL 自检、2 个 Python 计算工具和一个 iCEstick 构建入口。15 组 Icarus 回归、Python 单元测试、静态 HTML/SVG 检查与 Playwright 浏览器检查只对各自覆盖范围负责；真实 CPU、SerDes、ILA、bitstream、时序和功耗测量仍需目标器件及厂商工具/硬件。

@@ -5,7 +5,7 @@ import sys
 from playwright.sync_api import sync_playwright
 
 root=Path(__file__).resolve().parent.parent
-pages=["index.html"]+[f"chapters/{i:02}.html" for i in range(1,21)]
+pages=["index.html"]+[f"chapters/{i:02}.html" for i in range(1,26)]
 out=root/"qa"/"screens"
 out.mkdir(parents=True,exist_ok=True)
 issues=[]
@@ -40,4 +40,4 @@ with sync_playwright() as p:
 if issues:
     print("\n".join("FAIL "+s for s in issues))
     sys.exit(1)
-print("PASS browser checks: 21 pages x 3 widths; screenshots: qa/screens")
+print("PASS browser checks: 26 pages x 3 widths; screenshots: qa/screens")
