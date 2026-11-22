@@ -9,3 +9,7 @@ section{margin-top:4.1rem;scroll-margin-top:25px}h2{font-size:clamp(1.45rem,2.5v
 .diagram-scroll img{display:block;width:100%;height:auto;max-width:none}
 @media(max-width:650px){.diagram-scroll img{width:650px;max-width:none}}
 @media print{.diagram-scroll{overflow:visible}.diagram-scroll img{width:100%}}
+
+
+.math-scroll:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.math-scroll math{white-space:nowrap}

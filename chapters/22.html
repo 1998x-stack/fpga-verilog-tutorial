@@ -10,12 +10,12 @@
 <p>8b/10b 将 8 bit 数据映射为 10 bit 符号，编码效率为 80%；它有利于控制运行差异并提供足够跳变，但带来 20% 编码开销。PCIe Gen1/2 使用 8b/10b。PCIe Gen3/4/5 使用 128b/130b，编码效率约 98.46%，但 TLP、DLLP、流控、空闲序列等仍占用链路容量。</p>
 <p><strong>重要更正：</strong>PCIe Gen5 的 32 GT/s 使用 NRZ 与 128b/130b；PAM4 不是 Gen5 的信令方式。PCIe 6.0 引入 64 GT/s PAM4，并配套 FLIT 模式、低延迟 FEC 和 CRC。PCI-SIG 的 Gen5 FAQ 与 Gen6 说明明确区分了两代技术。<a href="https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations">PCI-SIG · PCIe 5.0 line rates</a>；<a href="https://pcisig.com/pci-express-6.0-specification">PCI-SIG · PCIe 6.0 features</a>。</p>
 <figure><div class="diagram-scroll"><img src="../assets/svg/22-link-budget.svg" alt="单向有效吞吐上界由每 lane 原始速率、lane 数、线编码效率和协议效率共同决定。" width="960" height="540" loading="lazy"></div><figcaption>双向链路需要分别计算每个方向；不能把全双工两个方向相加后称为单向带宽。</figcaption></figure>
-<p>本仓库提供一个 NRZ 链路预算小工具。以 PCIe Gen5 x16 为例，使用 32 Gbit/s/lane、128b/130b，得到编码后约 503.385 Gbit/s，即约 62.923 GB/s/方向；这仍未扣除 TLP/DLLP 等协议开销，也不是应用实际吞吐。</p>
+<p>本仓库提供一个 NRZ 链路预算小工具。以 PCIe Gen5 x16 为例，使用 32 Gbit/s/lane、128b/130b，得到编码后约 504.123 Gbit/s，即约 63.015 GB/s/方向；这仍未扣除 TLP/DLLP 等协议开销，也不是应用实际吞吐。</p>
 <pre><code>python3 scripts/serdes_budget.py \
   --line-rate-gbps 32 --lanes 16 --coding 128b130b
 # raw_gbps_per_direction: 512.000000
-# after_line_coding_gbps: 503.384615
-# after_protocol_overhead_gBps: 62.923077</code></pre>
+# after_line_coding_gbps: 504.123077
+# after_protocol_overhead_gBps: 63.015385</code></pre>
 <p>该工具只处理 NRZ 原始 bit rate、8b/10b 或 128b/130b 线编码和用户给定的协议效率折减；不模拟 PAM4、FEC、链路训练、重传、TLP 结构或真实 PHY。</p></section><section id="device" aria-labelledby="device-title"><h2 id="device-title">04 / FPGA 收发器选型：看器件数据表，而不是记一张过期速率表</h2>
 <p>AMD UltraScale+ Portfolio 文档给出的范围是：GTH 约 0.5–16.3 Gb/s NRZ，GTY 约 0.5–32.75 Gb/s NRZ；但不同 FPGA 型号、speed grade、电压和参考时钟会进一步约束可用工作点。应当回到目标器件 datasheet 与对应 Transceiver User Guide，检查 PLL 选择、refclk 输入、通道位置、TX/RX 支持、均衡模式、lane bonding 和 PCB 要求。</p>
 <p>高速链路 bring-up 通常先验证参考时钟和复位顺序，再检查 PLL lock、CDR lock、PRBS 误码、均衡、lane polarity、lane alignment、协议训练状态和最终数据完整性。IBERT 等工具可帮助检查收发器眼图/误码，但具体能力由器件与工具版本决定。</p>

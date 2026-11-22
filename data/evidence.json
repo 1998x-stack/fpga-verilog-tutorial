@@ -350,7 +350,7 @@
       "chapters": [
         "24"
       ],
-      "claim": "Current upstream Yosys includes broad Verilog-2005 support and uses sv-elab/slang for a synthesizable SystemVerilog subset.",
+      "claim": "Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog -sv remains a small subset and read_slang availability depends on the build.",
       "source": "https://github.com/YosysHQ/yosys",
       "status": "supported"
     },
@@ -358,7 +358,7 @@
       "chapters": [
         "24"
       ],
-      "claim": "nextpnr lists family-specific backends and marks Xilinx 7-Series and Cyclone V experimental in its upstream README.",
+      "claim": "nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; Cyclone V, MachXO2 and Xilinx 7-Series are experimental.",
       "source": "https://github.com/YosysHQ/nextpnr",
       "status": "supported"
     },
@@ -400,6 +400,14 @@
       ],
       "claim": "AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separate frontend when installed.",
+      "source": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
       "status": "supported"
     }
   ],

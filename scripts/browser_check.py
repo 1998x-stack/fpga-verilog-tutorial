@@ -38,6 +38,10 @@ with sync_playwright() as p:
                     if tab.locator("details.exercise").evaluate("(el)=>el.open"):
                         issues.append(f"{rel}: exercise disclosure did not close")
             tab.screenshot(path=str(out/(rel.replace("/","-").replace(".html",f"-{width}.png"))), full_page=True)
+            if rel=="chapters/25.html":
+                math_info=tab.locator(".math-scroll").evaluate("(el)=>({tabIndex:el.tabIndex,role:el.getAttribute('role'),label:el.getAttribute('aria-label'),namespace:el.querySelector('math')?.namespaceURI,height:el.getBoundingClientRect().height})")
+                if math_info["tabIndex"]!=0 or math_info["role"]!="region" or not math_info["label"] or math_info["namespace"]!="http://www.w3.org/1998/Math/MathML" or math_info["height"]<=0:
+                    issues.append(f"{width}px {rel}: MathML region failed accessibility/render checks {math_info}")
             if width==1440 and rel=="chapters/21.html":
                 tab.emulate_media(media="print")
                 tab.screenshot(path=str(out/"chapter-21-print.png"),full_page=True)

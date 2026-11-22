@@ -5,8 +5,8 @@ class SerdesBudgetTests(unittest.TestCase):
     def test_pcie5_x16_line_coding_upper_bound(self):
         result = estimate(32.0, 16, "128b130b")
         self.assertAlmostEqual(result["raw_gbps_per_direction"], 512.0)
-        self.assertAlmostEqual(result["after_line_coding_gbps"], 503.3846153846)
-        self.assertAlmostEqual(result["after_protocol_overhead_gBps"], 62.9230769231)
+        self.assertAlmostEqual(result["after_line_coding_gbps"], 504.1230769231)
+        self.assertAlmostEqual(result["after_protocol_overhead_gBps"], 63.0153846154)
 
     def test_8b10b_efficiency(self):
         result = estimate(5.0, 1, "8b10b")
