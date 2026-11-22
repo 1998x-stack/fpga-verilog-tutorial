@@ -35,6 +35,7 @@ module rv32i_hazard_unit (
     input  wire [4:0] ex_rs1,
     input  wire [4:0] ex_rs2,
     input  wire       ex_mem_regwrite,
+    input  wire       ex_mem_is_load,
     input  wire [4:0] ex_mem_rd,
     input  wire       mem_wb_regwrite,
     input  wire [4:0] mem_wb_rd,
@@ -46,7 +47,7 @@ module rv32i_hazard_unit (
     // EX/MEM has priority when both pipeline stages match the same source.
     always @* begin
         forward_a = 2'b00;
-        if (ex_mem_regwrite && (ex_mem_rd != 5'd0) &&
+        if (ex_mem_regwrite && !ex_mem_is_load && (ex_mem_rd != 5'd0) &&
             (ex_mem_rd == ex_rs1))
             forward_a = 2'b10;
         else if (mem_wb_regwrite && (mem_wb_rd != 5'd0) &&

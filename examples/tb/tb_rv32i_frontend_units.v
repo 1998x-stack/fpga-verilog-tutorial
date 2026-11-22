@@ -5,7 +5,7 @@ module tb_rv32i_frontend_units;
     wire [31:0] imm;
     reg [4:0] id_rs1, id_rs2, id_ex_rd, ex_rs1, ex_rs2, ex_mem_rd, mem_wb_rd;
     reg id_uses_rs1, id_uses_rs2, id_ex_is_load;
-    reg ex_mem_regwrite, mem_wb_regwrite;
+    reg ex_mem_regwrite, ex_mem_is_load, mem_wb_regwrite;
     wire [1:0] forward_a, forward_b;
     wire load_use_stall;
     integer checks = 0;
@@ -16,7 +16,7 @@ module tb_rv32i_frontend_units;
         .id_uses_rs1(id_uses_rs1), .id_uses_rs2(id_uses_rs2),
         .id_ex_is_load(id_ex_is_load), .id_ex_rd(id_ex_rd),
         .ex_rs1(ex_rs1), .ex_rs2(ex_rs2),
-        .ex_mem_regwrite(ex_mem_regwrite), .ex_mem_rd(ex_mem_rd),
+        .ex_mem_regwrite(ex_mem_regwrite), .ex_mem_is_load(ex_mem_is_load), .ex_mem_rd(ex_mem_rd),
         .mem_wb_regwrite(mem_wb_regwrite), .mem_wb_rd(mem_wb_rd),
         .forward_a(forward_a), .forward_b(forward_b),
         .load_use_stall(load_use_stall)
@@ -68,7 +68,7 @@ module tb_rv32i_frontend_units;
         id_rs1=0; id_rs2=0; id_ex_rd=0; ex_rs1=0; ex_rs2=0;
         ex_mem_rd=0; mem_wb_rd=0;
         id_uses_rs1=0; id_uses_rs2=0; id_ex_is_load=0;
-        ex_mem_regwrite=0; mem_wb_regwrite=0;
+        ex_mem_regwrite=0; ex_mem_is_load=0; mem_wb_regwrite=0;
 
         // ADDI x1,x0,-1; SW x2,-4(x3); BEQ x0,x0,-4;
         // LUI x1,0xABCDE; JAL x1,-4.
@@ -92,6 +92,15 @@ module tb_rv32i_frontend_units;
         // x0 never forwards, even if a write-enable is accidentally asserted.
         ex_rs1=0; ex_rs2=0; ex_mem_rd=0; mem_wb_rd=0;
         expect_forward(2'b00, 2'b00);
+
+        // A load address is not the load result; do not forward it from EX/MEM.
+        ex_rs1=5'd7; ex_mem_rd=5'd7; ex_mem_regwrite=1; ex_mem_is_load=1;
+        mem_wb_regwrite=0;
+        expect_forward(2'b00, 2'b00);
+        // Once the load reaches MEM/WB, the loaded value may be forwarded.
+        mem_wb_regwrite=1; mem_wb_rd=5'd7;
+        expect_forward(2'b01, 2'b00);
+        ex_mem_is_load=0;
 
         // Load-use stall only if a source actually used by the ID instruction matches.
         id_ex_is_load=1; id_ex_rd=5'd5;

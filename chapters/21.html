@@ -15,10 +15,10 @@
 <table><caption>无停顿时的五级流水线时间表（I1–I5 为连续独立指令）</caption><thead><tr><th>指令</th><th>C1</th><th>C2</th><th>C3</th><th>C4</th><th>C5</th><th>C6</th><th>C7</th><th>C8</th><th>C9</th></tr></thead><tbody><tr><td>I1</td><td>IF</td><td>ID</td><td>EX</td><td>MEM</td><td>WB</td><td></td><td></td><td></td><td></td></tr><tr><td>I2</td><td></td><td>IF</td><td>ID</td><td>EX</td><td>MEM</td><td>WB</td><td></td><td></td><td></td></tr><tr><td>I3</td><td></td><td></td><td>IF</td><td>ID</td><td>EX</td><td>MEM</td><td>WB</td><td></td><td></td></tr><tr><td>I4</td><td></td><td></td><td></td><td>IF</td><td>ID</td><td>EX</td><td>MEM</td><td>WB</td><td></td></tr><tr><td>I5</td><td></td><td></td><td></td><td></td><td>IF</td><td>ID</td><td>EX</td><td>MEM</td><td>WB</td></tr></tbody></table>
 <p>PC、指令、源操作数、目的寄存器编号、写使能、访存控制和异常状态都必须与同一条指令一起穿过流水线。控制信号与数据错位，是教学 CPU 中很常见的结构性 bug。</p></section><section id="hazards" aria-labelledby="hazards-title"><h2 id="hazards-title">04 / 数据冒险：Forwarding、load-use stall 与分支冲刷</h2>
 <figure><div class="diagram-scroll"><img src="../assets/svg/21-hazards.svg" alt="EX/MEM 结果优先于更旧的 MEM/WB 结果；load-use 在数据真正可用之前冻结前端并注入 bubble。" width="960" height="540" loading="lazy"></div><figcaption>旁路只解决数据已经产生但尚未写回寄存器堆的 RAW 依赖；load 数据通常需要额外停顿。</figcaption></figure>
-<p>考虑相邻两条指令：<code>add x5, x1, x2</code> 后面紧跟 <code>sub x6, x5, x3</code>。第二条指令在 ID 读寄存器时，x5 可能仍是旧值。若等到第一条指令 WB 再读取，流水线必须停很多周期。Forwarding（旁路）在 EX 输入端加入 MUX：若 EX/MEM 的 rd 匹配当前 rs1/rs2 且 RegWrite 有效，选择 EX/MEM；否则若 MEM/WB 匹配，选择 MEM/WB；否则选择寄存器堆读值。若两级都匹配，优先选择更新的 EX/MEM。</p>
+<p>考虑相邻两条指令：<code>add x5, x1, x2</code> 后面紧跟 <code>sub x6, x5, x3</code>。第二条指令在 ID 读寄存器时，x5 可能仍是旧值。若等到第一条指令 WB 再读取，流水线必须停很多周期。Forwarding（旁路）在 EX 输入端加入 MUX：若 EX/MEM 的 rd 匹配当前 rs1/rs2、RegWrite 有效且该级不是尚未取回数据的 load，选择 EX/MEM；否则若 MEM/WB 匹配，选择 MEM/WB；否则选择寄存器堆读值。若两级都匹配，优先选择更新的 EX/MEM。</p>
 <p>但 <code>lw x5, 0(x1)</code> 后紧跟 <code>add x6, x5, x2</code> 时，load 数据直到 MEM 阶段后才可用，紧接的 EX 阶段不能从普通 EX/MEM ALU 结果旁路得到正确数据。典型五级流水线需要停一拍：冻结 PC 与 IF/ID，向 ID/EX 注入无副作用 bubble，然后再从可用阶段前推 load 数据。</p>
 <p>控制冒险是另一类问题。若分支在 EX 才决定 taken，预测不跳转的设计在分支成立时必须冲刷已经取入的错误路径指令。分支比较放在 ID 或增加预测器会改变时序、冒险检测和恢复逻辑；不要把“数据前推”误认为已经解决所有流水线冒险。</p></section><section id="lab" aria-labelledby="lab-title"><h2 id="lab-title">05 / 可运行实验：立即数生成器与冒险检测单元</h2>
-<p>本仓库提供两个范围明确的 RTL 单元：<code>rv32i_imm_gen</code> 负责 I/S/B/U/J 立即数重组；<code>rv32i_hazard_unit</code> 负责 EX/MEM、MEM/WB 前推优先级和 load-use 检测。它们是 CPU 子模块，不是完整 RV32I 核；没有指令译码、寄存器堆、分支冲刷、异常、总线或缓存。</p>
+<p>本仓库提供两个范围明确的 RTL 单元：<code>rv32i_imm_gen</code> 负责 I/S/B/U/J 立即数重组；<code>rv32i_hazard_unit</code> 负责 EX/MEM（排除尚未返回数据的 load）、MEM/WB 前推优先级和 load-use 检测。它们是 CPU 子模块，不是完整 RV32I 核；没有指令译码、寄存器堆、分支冲刷、异常、总线或缓存。</p>
 <pre><code>// B-type immediate: sign-extend and reassemble the split fields
 IMM_B: imm = {{19{instr[31]}}, instr[31], instr[7],
               instr[30:25], instr[11:8], 1'b0};
@@ -35,7 +35,7 @@ else if (mem_wb_regwrite &amp;&amp; mem_wb_rd != 0 &amp;&amp; mem_wb_rd == ex_rs
   examples/tb/tb_rv32i_frontend_units.v
 vvp /tmp/rv32i.vvp
 # PASS tb_rv32i_frontend_units (...)</code></pre>
-<p>测试覆盖负立即数、S/B/J 分散字段、U 型高位立即数、默认选择、EX/MEM 优先、MEM/WB 旁路、x0 不旁路，以及只对实际使用的源寄存器触发 load-use stall。完整回归由 <code>bash scripts/run_rtl_tests.sh</code> 统一执行。</p></section><section id="verification" aria-labelledby="verification-title"><h2 id="verification-title">06 / 从子模块测试走向 ISA 验证与 FPGA SoC</h2>
+<p>测试覆盖负立即数、S/B/J 分散字段、U 型高位立即数、默认选择、EX/MEM 优先、load 不从 EX/MEM 错误前推、MEM/WB 旁路、x0 不旁路，以及只对实际使用的源寄存器触发 load-use stall。完整回归由 <code>bash scripts/run_rtl_tests.sh</code> 统一执行。</p></section><section id="verification" aria-labelledby="verification-title"><h2 id="verification-title">06 / 从子模块测试走向 ISA 验证与 FPGA SoC</h2>
 <p>完整 CPU 验证至少分成三层。第一层是模块级定向测试：立即数、ALU、寄存器堆、load/store 对齐、分支比较、前推和 stall。第二层是流水线程序测试：连续 RAW、load-use、分支 taken/not-taken、跳转、x0 写入、非法指令与复位。第三层才是 ISA 级测试和系统级软件：用与实现能力一致的配置编译测试程序，检查架构状态和内存副作用。</p>
 <p><a href="https://github.com/riscv/riscv-arch-test">RISC-V Architectural Certification Tests</a> 提供架构认证测试，但项目明确说明这些测试并不替代完整处理器验证。它们也要求 DUT 配置、linker script、参考模型和平台宏一致。还应补充随机指令测试、差分参考模型、形式属性（例如 x0 恒为零、写回只对有效指令发生）和覆盖率分析。</p>
 <p>要把 C 程序放进 FPGA，必须先确定 reset vector、指令存储器和数据存储器地址范围、字节寻址与端序、UART MMIO 地址、启动代码、栈和链接脚本，再使用与 ISA/ABI 匹配的交叉编译器。例如 RV32I + ILP32 应明确设置 <code>-march=rv32i -mabi=ilp32</code>，不能让工具链默认启用 DUT 未实现的扩展。</p>
