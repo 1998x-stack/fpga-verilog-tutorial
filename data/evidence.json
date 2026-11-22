@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-twenty-2026-11",
+  "scope": "first-twenty-five-2026-11",
   "checks": [
     {
       "chapters": [
@@ -281,6 +281,126 @@
       "claim": "Vivado IP Packager documents AXI signal inference, clock/reset interfaces, constraints, dependencies, and IP version/revision management.",
       "source": "https://docs.amd.com/r/2026.1-English/ug1118-vivado-creating-packaging-custom-ip/Introduction",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "21"
+      ],
+      "claim": "RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J immediate variants.",
+      "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "21"
+      ],
+      "claim": "RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and encode offsets in multiples of two bytes.",
+      "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "21"
+      ],
+      "claim": "RISC-V Architectural Certification Tests are not a substitute for additional processor verification.",
+      "source": "https://github.com/riscv/riscv-arch-test",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC.",
+      "source": "https://pcisig.com/pci-express-6.0-specification",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direction.",
+      "source": "https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed grade.",
+      "source": "https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "23"
+      ],
+      "claim": "Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI serve distinct debug roles.",
+      "source": "https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "23"
+      ],
+      "claim": "Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition buffer options.",
+      "source": "https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "Current upstream Yosys includes broad Verilog-2005 support and uses sv-elab/slang for a synthesizable SystemVerilog subset.",
+      "source": "https://github.com/YosysHQ/yosys",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "nextpnr lists family-specific backends and marks Xilinx 7-Series and Cyclone V experimental in its upstream README.",
+      "source": "https://github.com/YosysHQ/nextpnr",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow and iCEstick PCF pins.",
+      "source": "https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, SDF or mixed-signal simulator use case.",
+      "source": "https://verilator.org/guide/latest/",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "25"
+      ],
+      "claim": "Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed timing paths.",
+      "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Timing-Summary",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "25"
+      ],
+      "claim": "Vivado power analysis depends on device operating conditions and switching activity; simulation activity files can improve estimation accuracy.",
+      "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Power",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "25"
+      ],
+      "claim": "AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks.",
+      "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -295,6 +415,11 @@
     "Chapter 19 AXI4-Lite subordinate is 32-bit and single-outstanding; it is not a full AXI4 interconnect or DMA.",
     "Chapter 20 MicroBlaze V block design is a system contract and firmware example; no board-specific XSA, ELF, bitstream or hardware run is claimed.",
     "Build Manifest hashes input files but does not guarantee identical bitstreams across tool versions, seeds or machine environments.",
-    "Chapter 18 explains IP packaging and system integration contracts but does not claim that the sample AXI peripheral has been packaged into a vendor-specific IP archive."
+    "Chapter 18 explains IP packaging and system integration contracts but does not claim that the sample AXI peripheral has been packaged into a vendor-specific IP archive.",
+    "Chapter 21 tests RV32I immediate generation and hazard-control helpers only; it is not a complete CPU or ISA-certified implementation.",
+    "Chapter 22 calculator covers NRZ line coding ratios and a user-supplied protocol factor; it does not model PAM4/FEC, PCIe packet overhead or real SerDes behavior.",
+    "Chapter 23 includes a synchronous event counter; no ILA/SignalTap hardware capture was performed.",
+    "Chapter 24 CI checks the iCEstick flow statically; no Yosys/nextpnr bitstream build, programmer run or board test is claimed.",
+    "Chapter 25 timing/power calculators are mathematical teaching aids; no vendor STA engine, implementation report or device power measurement was run."
   ]
 }
