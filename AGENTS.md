@@ -8,7 +8,7 @@
 每章按以下顺序写作：具体现象/反例 → 最小逻辑模型 → 信号流与时钟波形 → 精确 Verilog → 运行和验证 → 适用条件与边界 → 一手参考。
 新增 SVG 应为独立文件，包含 xmlns、viewBox、title、desc；每张图只能表达可由正文验证的机制，色彩、信号名、位宽、箭头方向保持一致。禁止装饰性假图。
 每章只有一个 H1，严格按照 H2/H3 层级；正文不出现“SVG/CSS/AI 生产过程/Olah 风格”之类的制作说明。
-宽度 360 / 390 / 1440px 逐页验证文本溢出、图片、键盘焦点、链接、代码块与交互；未经实际测试不得写“通过浏览器验收”。
+宽度 360 / 390 / 768 / 1440px 逐页验证文本溢出、图片、键盘焦点、链接、代码块与交互；未经实际测试不得写“通过浏览器验收”。
 
 ## 技术审计
 - 分清 IEEE Verilog 语言语义、仿真事件调度、综合推断、约束后的时序以及 FPGA 厂商专用原语。不能从一段 RTL 唯一推断门数、频率或芯片功耗。
@@ -39,7 +39,7 @@
 - `spi_master_mode0.v` 只支持 CPOL=0、CPHA=0；禁止称为四模式 SPI Master。
 - `i2c_bit_cell.v` 仅为单个 bit 的 data/SCL 时序单元，无 START/STOP/ACK/多主仲裁；示例顶层需明确开漏输出与管脚上拉。
 - 将 24LC256 的内部写周期忙碌与一般 I²C stretching 分开：官方数据手册的 ACK polling 是 NACK 检测，不得编造该器件将 SCL 长时间拉低。
-- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—25。
+- CI 必须运行 `bash scripts/run_rtl_tests.sh`、`python3 -m unittest discover -s tests -v`、站点静态检查和示例契约检查；浏览器覆盖首页与 01—25，四种宽度，并对新章节的原生 details 与 MathML 做交互/渲染验收。
 
 ## 第三批存储、CDC、时序、工具链边界
 - `ram_sp_read_first.v` 明确单时钟、同一端口 READ_FIRST 语义；跨端口、跨时钟碰撞必须依据器件原语 datasheet，不得从此例推论。
@@ -48,7 +48,7 @@
 - CDC：2FF 用于慢变化单 bit 电平，toggle 事件握手用于接受后应答；任意多 bit 总线不可逐位同步替代协议。Gray 总线需 max-delay/bus-skew 约束并检查与异步分组例外的优先级。
 - STA 示例 `sta_budget.py` 的所有数字是数学演示。真实 WNS/TNS/时序收敛需具体 FPGA part、工具版本、XDC 和实现报告。
 - Vivado：非工程模式须指定真实 `FPGA_PART`、`BOARD_XDC`，不可硬编码虚构引脚、禁止跳过 DRC。GitHub Pages 的成功与 FPGA bitstream 无关。
-- CI：`bash scripts/run_rtl_tests.sh`（15 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—25。
+- CI：`bash scripts/run_rtl_tests.sh`（15 组），`python3 -m unittest discover -s tests -v`，`python3 scripts/check_quartus_example.py`，`python3 scripts/check_vivado_example.py`，`python3 scripts/check_open_source_example.py`，Playwright 首页与 01—25。
 
 ## 第四批工程工具、IP、AXI 与软核边界
 - Quartus：QSF/QPF 属于工程输入，SDC 是独立时序模型；不能用一份通用时钟周期替代板级 I/O 延迟和 pin/IOSTANDARD。项目脚本必须要求真实 `FPGA_FAMILY` 与完整 `FPGA_DEVICE`，不允许猜测开发板型号。
@@ -67,7 +67,7 @@
 - SerDes：区分 NRZ raw bit rate、GT/s、line coding efficiency 与 protocol payload。PCIe Gen5 32 GT/s 是 NRZ + 128b/130b；PAM4 / FLIT / FEC 属于 PCIe 6.0。AMD GTH/GTY line rate 由具体 part/speed grade 限定，不可跨家族泛化。链路预算脚本只覆盖 NRZ 与简单编码比例。
 - MIPI：D-PHY 电气层与 CSI-2/DSI 协议层分开；不能把 D-PHY 简化成通用 LVDS 或无条件电阻网络。无目标器件/原理图时不声明 MIPI PHY 可实现。
 - 调试：ILA/SignalTap 按目标时钟域采样；VIO/JTAG-to-AXI 是慢速 JTAG 控制/事务，不是确定性高速激励。probe width × depth 仅是原始样本位数估算，不是实际 BRAM/LUT 资源报告。
-- 开源工具：Yosys、nextpnr、Verilator、packer 和 programmer 职责分离。nextpnr backend 支持列表需标记 experimental；不能声称开源工具对所有器件、PLL、SerDes、DDR 或 IP 都完整支持。
+- 开源工具：Yosys、nextpnr、Verilator、packer 和 programmer 职责分离。nextpnr backend 支持列表需标记 alpha/experimental；Nexus 属 alpha，NG-Ultra bitstream 需专有 Impulse；不能声称开源工具对所有器件、PLL、SerDes、DDR 或 IP 都完整支持。
 - iCEstick example 使用 upstream nextpnr iCE40 blinky 的板级 pin mapping。其他开发板必须核对原理图、封装和引脚；CI 只做静态契约检查，不声称生成 bitstream、下载或上板运行。
 - Timing/power：setup slack 教学公式不替代 min/max STA、clock latency、OCV、I/O delay 或 CDC 审计；动态功耗公式不替代实现网表、活动文件、器件电压与热条件驱动的 power report。禁止虚构 WNS、TNS、Fmax、功耗比例或资源占用。
 - CI：15 组 Icarus RTL 回归；`python3 -m unittest discover -s tests -v`；静态 HTML/SVG、Quartus/Vivado/Open-source 示例契约；Playwright 首页 + 01—25。

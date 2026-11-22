@@ -28,6 +28,7 @@ sim/questa/                    # Questa-Altera 本地仿真脚本
 examples/quartus/              # Quartus 工程与 SDC 示例
 examples/softcore/             # MicroBlaze V SoC 与 MMIO 固件示例
 examples/project-template/     # 工程结构与版本清单模板
+examples/open-source/ice40/    # iCEstick Yosys/nextpnr/icepack 示例
 scripts/check_site.py         # HTML/链接/SVG 静态检查
 scripts/serdes_budget.py      # NRZ 线编码链路预算上界
 scripts/timing_power_budget.py # 教学版 Setup / 动态功耗算术

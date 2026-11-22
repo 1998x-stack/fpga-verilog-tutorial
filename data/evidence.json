@@ -288,7 +288,11 @@
       ],
       "claim": "RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J immediate variants.",
       "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch21-01",
+      "kind": "standard",
+      "source_url": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
+      "locator": "Chapter 21 · RV32I has 32 integer registers x0-x31 with x0 hardwired to zero; base formats are R/I/S/U with B/J i"
     },
     {
       "chapters": [
@@ -296,7 +300,11 @@
       ],
       "claim": "RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and encode offsets in multiples of two bytes.",
       "source": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch21-02",
+      "kind": "standard",
+      "source_url": "https://docs.riscv.org/reference/isa/unpriv/rv32.html",
+      "locator": "Chapter 21 · RV32I immediates are sign-extended from instruction bit 31; B/J immediate fields are rearranged and "
     },
     {
       "chapters": [
@@ -304,7 +312,11 @@
       ],
       "claim": "RISC-V Architectural Certification Tests are not a substitute for additional processor verification.",
       "source": "https://github.com/riscv/riscv-arch-test",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch21-03",
+      "kind": "standard",
+      "source_url": "https://github.com/riscv/riscv-arch-test",
+      "locator": "Chapter 21 · RISC-V Architectural Certification Tests are not a substitute for additional processor verification."
     },
     {
       "chapters": [
@@ -312,7 +324,11 @@
       ],
       "claim": "PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC.",
       "source": "https://pcisig.com/pci-express-6.0-specification",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch22-01",
+      "kind": "standard",
+      "source_url": "https://pcisig.com/pci-express-6.0-specification",
+      "locator": "Chapter 22 · PCIe Gen5 supports 32 GT/s per lane; Gen6 adds 64 GT/s PAM4 with FLIT mode, FEC and CRC."
     },
     {
       "chapters": [
@@ -320,7 +336,11 @@
       ],
       "claim": "PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direction.",
       "source": "https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch22-02",
+      "kind": "standard",
+      "source_url": "https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations",
+      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b and Gen3/4/5 use 128b/130b; PCIe 5.0 rate figures are per lane and per direct"
     },
     {
       "chapters": [
@@ -328,7 +348,11 @@
       ],
       "claim": "AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed grade.",
       "source": "https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch22-03",
+      "kind": "vendor_documentation",
+      "source_url": "https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers",
+      "locator": "Chapter 22 · AMD UltraScale+ GTH and GTY transceiver ranges differ; actual support depends on device and speed gr"
     },
     {
       "chapters": [
@@ -336,7 +360,11 @@
       ],
       "claim": "Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI serve distinct debug roles.",
       "source": "https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch23-01",
+      "kind": "vendor_documentation",
+      "source_url": "https://docs.amd.com/r/2024.1-English/ug908-vivado-programming-debugging/Using-Vivado-Logic-Analyzer-to-Debug-the-Design",
+      "locator": "Chapter 23 · Vivado ILA captures internal signals using a design clock and trigger controls; VIO and JTAG-to-AXI "
     },
     {
       "chapters": [
@@ -344,7 +372,11 @@
       ],
       "claim": "Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition buffer options.",
       "source": "https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch23-02",
+      "kind": "vendor_documentation",
+      "source_url": "https://www.intel.com/content/www/us/en/content-details/653118/signal-tap-logic-analyzer-basic-configuration-trigger-conditions.html",
+      "locator": "Chapter 23 · Intel Signal Tap supports user-defined trigger conditions, a selected sampling clock and acquisition"
     },
     {
       "chapters": [
@@ -352,7 +384,11 @@
       ],
       "claim": "Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog -sv remains a small subset and read_slang availability depends on the build.",
       "source": "https://github.com/YosysHQ/yosys",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-01",
+      "kind": "project_documentation",
+      "source_url": "https://github.com/YosysHQ/yosys",
+      "locator": "Chapter 24 · Yosys README describes sv-elab/slang-based synthesizable SystemVerilog support; default read_verilog"
     },
     {
       "chapters": [
@@ -360,7 +396,11 @@
       ],
       "claim": "nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; Nexus, Cyclone V, MachXO2 and Xilinx 7-Series are experimental; NG-Ultra bitstream creation requires proprietary Impulse.",
       "source": "https://github.com/YosysHQ/nextpnr",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-02",
+      "kind": "project_documentation",
+      "source_url": "https://github.com/YosysHQ/nextpnr",
+      "locator": "Chapter 24 · nextpnr current README lists iCE40, ECP5, Nexus, Gowin, NanoXplore NG-Ultra and GateMate backends; N"
     },
     {
       "chapters": [
@@ -368,7 +408,11 @@
       ],
       "claim": "The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow and iCEstick PCF pins.",
       "source": "https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-03",
+      "kind": "project_documentation",
+      "source_url": "https://github.com/YosysHQ/nextpnr/tree/main/ice40/examples/blinky",
+      "locator": "Chapter 24 · The iCE40 nextpnr example documents a Yosys synth_ice40 -> nextpnr-ice40 -> icepack -> iceprog flow "
     },
     {
       "chapters": [
@@ -376,7 +420,11 @@
       ],
       "claim": "Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, SDF or mixed-signal simulator use case.",
       "source": "https://verilator.org/guide/latest/",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-04",
+      "kind": "vendor_documentation",
+      "source_url": "https://verilator.org/guide/latest/",
+      "locator": "Chapter 24 · Verilator compiles HDL models and provides lint; it is not a full replacement for every four-state, "
     },
     {
       "chapters": [
@@ -384,7 +432,11 @@
       ],
       "claim": "Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed timing paths.",
       "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Timing-Summary",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch25-01",
+      "kind": "vendor_documentation",
+      "source_url": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Timing-Summary",
+      "locator": "Chapter 25 · Vivado Timing Summary and Timing Closure reports are the documented workflow for examining analyzed "
     },
     {
       "chapters": [
@@ -392,7 +444,11 @@
       ],
       "claim": "Vivado power analysis depends on device operating conditions and switching activity; simulation activity files can improve estimation accuracy.",
       "source": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Power",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch25-02",
+      "kind": "vendor_documentation",
+      "source_url": "https://docs.amd.com/r/en-US/ug906-vivado-design-analysis/Report-Power",
+      "locator": "Chapter 25 · Vivado power analysis depends on device operating conditions and switching activity; simulation acti"
     },
     {
       "chapters": [
@@ -400,7 +456,11 @@
       ],
       "claim": "AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch25-03",
+      "kind": "vendor_documentation",
+      "source_url": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology/Use-Clock-Enable-Pins-of-Dedicated-Clock-Buffers",
+      "locator": "Chapter 25 · AMD recommends using dedicated clock buffer enable pins rather than LUT logic to gate clocks."
     },
     {
       "chapters": [
@@ -408,7 +468,11 @@
       ],
       "claim": "Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separate frontend when installed.",
       "source": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-05",
+      "kind": "project_documentation",
+      "source_url": "https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/verilog.rst",
+      "locator": "Chapter 24 · Yosys default read_verilog -sv supports only a small SystemVerilog subset; read_slang offers a separ"
     },
     {
       "chapters": [
@@ -416,7 +480,11 @@
       ],
       "claim": "PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding is approximately 63 GB/s per direction before protocol overhead.",
       "source": "https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch22-04",
+      "kind": "vendor_documentation",
+      "source_url": "https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/",
+      "locator": "Chapter 22 · PCIe Gen1/2 use 8b/10b while Gen3/4/5 use 128b/130b; Gen5 theoretical x16 bandwidth after encoding i"
     },
     {
       "chapters": [
@@ -424,7 +492,11 @@
       ],
       "claim": "MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lanes; CSI-2 is a higher-layer protocol.",
       "source": "https://www.mipi.org/groups/d-phy",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch22-05",
+      "kind": "standard",
+      "source_url": "https://www.mipi.org/groups/d-phy",
+      "locator": "Chapter 22 · MIPI D-PHY is a clock-forwarded synchronous PHY with a dedicated clock lane and one or more data lan"
     },
     {
       "chapters": [
@@ -432,7 +504,11 @@
       ],
       "claim": "nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream generation requires NanoXplore Impulse.",
       "source": "https://github.com/YosysHQ/nextpnr",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-06",
+      "kind": "project_documentation",
+      "source_url": "https://github.com/YosysHQ/nextpnr",
+      "locator": "Chapter 24 · nextpnr's all+alpha build currently includes the Nexus backend as experimental; NG-Ultra bitstream g"
     },
     {
       "chapters": [
@@ -440,7 +516,11 @@
       ],
       "claim": "Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while read_verilog -sv supports only a small subset.",
       "source": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
-      "status": "supported"
+      "status": "supported",
+      "id": "ch24-07",
+      "kind": "project_documentation",
+      "source_url": "https://yosyshq.readthedocs.io/projects/yosys/en/stable/cmd/index_frontends.html",
+      "locator": "Chapter 24 · Yosys 0.67+ integrates sv-elab/slang; read_slang supports a synthesizable SystemVerilog subset while"
     }
   ],
   "limitations": [

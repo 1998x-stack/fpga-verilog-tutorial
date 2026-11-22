@@ -17,7 +17,7 @@ with sync_playwright() as p:
         for rel in pages:
             tab=context.new_page()
             tab.on("pageerror",lambda error:issues.append("JS error: "+str(error)))
-            tab.on("console",lambda msg: issues.append(f"console error {rel}: {msg.text}") if msg.type=="error" else None)
+            tab.on("console",lambda msg, rel=rel: issues.append(f"console error {rel}: {msg.text}") if msg.type=="error" else None)
             tab.goto((root/rel).as_uri(),wait_until="load")
             tab.locator("img").evaluate_all(
                 "(imgs) => Promise.all(imgs.map(img => { img.loading = 'eager'; return img.decode().catch(() => null); }))"
