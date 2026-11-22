@@ -1,206 +1,27 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-    <title>第22章 高速串行接口设计</title>
-    <link rel="stylesheet" href="theme.css">
-</head>
-<body>
-<div class="double-border">
-<div class="container">
-    <div class="sidebar">
-        <h3>🔧 课程目录</h3>
-        <ul class="chapter-list">
-            <li><a href="01.html">第1章 课程导论与FPGA发展史</a></li>
-            <li><a href="02.html">第2章 数字电路基础回顾</a></li>
-            <li><a href="03.html">第3章 Verilog HDL语法精要（上）</a></li>
-            <li><a href="04.html">第4章 Verilog HDL语法精要（下）</a></li>
-            <li><a href="05.html">第5章 组合逻辑设计实战</a></li>
-            <li><a href="06.html">第6章 时序逻辑设计实战</a></li>
-            <li><a href="07.html">第7章 有限状态机（FSM）设计</a></li>
-            <li><a href="08.html">第8章 Testbench编写与仿真验证</a></li>
-            <li><a href="09.html">第9章 常用通信接口实现（一）：UART与SPI</a></li>
-            <li><a href="10.html">第10章 常用通信接口实现（二）：I2C</a></li>
-            <li><a href="11.html">第11章 存储器设计与Block RAM</a></li>
-            <li><a href="12.html">第12章 流水线设计技术</a></li>
-            <li><a href="13.html">第13章 跨时钟域（CDC）处理</a></li>
-            <li><a href="14.html">第14章 时序约束与分析基础</a></li>
-            <li><a href="15.html">第15章 Vivado工程实战全流程</a></li>
-            <li><a href="16.html">第16章 Quartus Prime与ModelSim</a></li>
-            <li><a href="17.html">第17章 常用IP核集成与应用</a></li>
-            <li><a href="18.html">第18章 工程目录规范与版本管理</a></li>
-            <li><a href="19.html">第19章 AXI4总线协议深度解析</a></li>
-            <li><a href="20.html">第20章 软核处理器集成</a></li>
-            <li><a href="21.html">第21章 RISC-V处理器FPGA实现</a></li>
-            <li><a href="22.html" class="active">第22章 高速串行接口设计</a></li>
-            <li><a href="23.html">第23章 硬件调试方法论</a></li>
-            <li><a href="24.html">第24章 开源工具链实战</a></li>
-            <li><a href="25.html">第25章 时序收敛与功耗优化</a></li>
-            <li><a href="26.html">第26章 高层次综合（HLS）入门</a></li>
-            <li><a href="27.html">第27章 AI时代的FPGA开发</a></li>
-            <li><a href="28.html">第28章 综合项目：FPGA图像采集与处理系统</a></li>
-        </ul>
-    </div>
-    <div class="main-content">
-        <h2>第22章 高速串行接口设计</h2>
-
-        <p>前几章我们讨论的接口（UART、SPI、I2C）最高不过几十 MHz，但在今天的数据中心、5G 基站和 AI 加速器中，FPGA 需要以 Gbps 级别速率与外部世界通信。打开一块现代 FPGA 开发板的原理图，你会看到几组特殊的差分信号对——它们以 "GTP_X_Y_P/N" 或 "GXB_X_Y_P/N" 命名，连接到 SFP+ 笼子、SMA 连接器或 PCIe 金手指上。这些就是 FPGA 的<strong>高速串行收发器（SerDes）</strong>通道。本章我们理解它们的原理，并学习如何在 FPGA 上实现常见的 Gbps 级串行协议。</p>
-
-        <h3>22.1 从并行到串行：为什么要用高速串行</h3>
-
-        <p>在 1990 年代，系统内部互连的主流是并行总线——32/64 位宽，几十到几百 MHz。但随着速率提升，并行总线遇到了一个根本性的物理限制：<strong>信号歪斜（SKEW）</strong>。32 根数据线在 PCB 上的走线长度不可能完全相等，加上各层介电常数差异、通孔阻抗不连续、温度梯度导致的延时差——接收端看到的是 32 个信号在不同时间到达。当数据速率超过 200 MHz 时，并行总线的时序裕量几乎为零。</p>
-
-        <p><strong>SerDes（Serializer / Deserializer）</strong>的解决方案：把宽度为 N 的并行数据串化成单比特（或差分对）的高速串行流。只需要一对差分线（P/N），配合时钟数据恢复（CDR）从串行流中提取时钟——完美消除了 SKEW 问题。单条 SerDes 通道的速率从 1 Gbps 到 32 Gbps 不等，相当于数百条并行 CMOS I/O 线的总带宽。代价是 SerDes 需要复杂的模拟前端（PLL、CDR、均衡器）——这也是 FPGA 厂商最核心的技术壁垒。</p>
-
-        <div class="highlight">
-            <strong>为什么 SerDes 用差分信号？</strong>差分信号有两个优势：（1）共模噪声抑制——外部噪声同时耦合到 P 和 N，接收端取差值时抵消；（2）更低的电磁辐射——两根线上的电流方向相反，近场辐射相互抵消。对于超过 1 Gbps 的信号，LVDS 或 CML 差分对是唯一可行的方案。PCIe Gen3 的差分摆幅只有 800-1200 mV，而 GTY 收发器的差分摆幅可以低至 400 mV。
-        </div>
-
-        <h3>22.2 SerDes 基础：8b/10b 编码与均衡</h3>
-
-        <p>一个典型的 SerDes 通道包含以下关键模块：</p>
-
-        <p><strong>8b/10b 编码：</strong>将每 8 位数据映射到 10 位码字。目的是：保证 DC 平衡（数据流中的 0 和 1 数量大致相等），以及提供足够的电平跳变密度用于时钟数据恢复（CDR）。8b/10b 编码由 IBM 的 Widmer 和 Franaszek 在 1983 年发明，广泛应用于 PCIe Gen1/Gen2、SATA 6G、USB 3.0、千兆以太网。</p>
-
-        <pre><code>// Simplified 8b/10b Encoder — Lookup Table Approach
-// 3b/4b encoding for lower nibble, 5b/6b encoding for upper nibble
-// Running Disparity (RD) tracking for DC balance
-module enc_8b10b (
-    input  wire       clk,
-    input  wire       rst_n,
-    input  wire [7:0] data_in,
-    input  wire       data_valid,
-    output reg  [9:0] data_out,
-    output reg        out_valid
-);
-    reg rd;  // Running disparity: 0 = negative, 1 = positive
-
-    // 5b/6b encoding table (partial — 8 entries for illustration)
-    function [5:0] encode_5b6b;
-        input [4:0] symbol;
-        input       cur_rd;
-        case (symbol)
-            5'b00000: encode_5b6b = cur_rd ? 6'b011000 : 6'b100111;
-            5'b00001: encode_5b6b = cur_rd ? 6'b100010 : 6'b011101;
-            5'b00010: encode_5b6b = cur_rd ? 6'b010010 : 6'b101101;
-            5'b00011: encode_5b6b = 6'b110001;   // RD-neutral
-            5'b00100: encode_5b6b = cur_rd ? 6'b001010 : 6'b110101;
-            5'b00101: encode_5b6b = 6'b101001;
-            5'b00110: encode_5b6b = cur_rd ? 6'b011010 : 6'b100101;
-            5'b00111: encode_5b6b = 6'b111000;   // RD-neutral
-            default:  encode_5b6b = {symbol[0], symbol[1], symbol[2],
-                                     symbol[3], symbol[4], 1'b0};
-        endcase
-    endfunction
-
-    // 3b/4b encoding table (partial)
-    function [3:0] encode_3b4b;
-        input [2:0] symbol;
-        input       cur_rd;
-        case (symbol)
-            3'b000: encode_3b4b = cur_rd ? 4'b0100 : 4'b1011;
-            3'b001: encode_3b4b = 4'b1001;       // RD-neutral
-            3'b010: encode_3b4b = 4'b0101;
-            3'b011: encode_3b4b = 4'b0011;       // RD-neutral
-            3'b100: encode_3b4b = cur_rd ? 4'b0010 : 4'b1101;
-            3'b101: encode_3b4b = 4'b1010;
-            3'b110: encode_3b4b = cur_rd ? 4'b0110 : 4'b1001;
-            3'b111: encode_3b4b = cur_rd ? 4'b0001 : 4'b1110;
-            default: encode_3b4b = 4'b0000;
-        endcase
-    endfunction
-
-    always @(posedge clk) begin
-        if (!rst_n) begin
-            rd        &lt;= 1'b0;
-            data_out  &lt;= 10'd0;
-            out_valid &lt;= 1'b0;
-        end else begin
-            out_valid &lt;= data_valid;
-            if (data_valid) begin
-                data_out[9:4] &lt;= encode_5b6b(data_in[7:3], rd);
-                // Update running disparity based on 5b/6b result
-                rd &lt;= rd ^ (^data_out[9:4]);  // XOR reduction
-                data_out[3:0] &lt;= encode_3b4b(data_in[2:0], rd);
-            end
-        end
-    end
-endmodule</code></pre>
-
-        <div class="tip">
-            <strong>工程实务：</strong>上面的代码是教学简化版——完整的 8b/10b 编码需要 32 个 5b/6b 条目和 8 个 3b/4b 条目，以及严格的 Running Disparity 更新规则。在实际 FPGA 工程中，你几乎不需要自己实现 8b/10b——GTP/GTX 收发器内部已经集成了硬件 8b/10b 编码器/解码器，配置向导中勾选一个选项即可启用。需要你亲自写 8b/10b 的场景通常是自定义 SERDES 或低成本 FPGA（如 iCE40）。
-        </div>
-
-        <p><strong>预加重（Pre-Emphasis）与去加重（De-Emphasis）：</strong>传输线对信号的高频分量衰减大于低频分量（趋肤效应和介电损耗）。为了补偿这种衰减，发送端在跳变后的第一个 bit 加大幅度（预加重），或在后续 bit 降低幅度（去加重）。GTP/GTX 收发器通常提供 4-8 级可编程的预加重强度。</p>
-
-        <p><strong>接收均衡：</strong>接收端通过 <strong>CTLE（连续时间线性均衡器）</strong>和 <strong>DFE（判决反馈均衡器）</strong>恢复信号眼图。CTLE 是一个模拟高通滤波器，补偿通道的低通特性；DFE 是一个数字反馈滤波器，消除码间干扰（ISI）。在 10 Gbps 以上速率时，DFE 是必须的——CTLE 单独无法补偿长走线的 ISI。</p>
-
-        <h3>22.3 FPGA 收发器系列：从 GTP 到 GTY</h3>
-
-        <p>Xilinx（AMD）的 7 系列及后续 FPGA 提供了四个档次的 SerDes 收发器：</p>
-
-        <table>
-            <tr><th>收发器</th><th>最大线速率</th><th>工艺节点</th><th>典型器件</th><th>典型协议</th></tr>
-            <tr><td><strong>GTP</strong></td><td>3.75 Gbps</td><td>28nm</td><td>Artix-7, Zynq-7000</td><td>PCIe Gen2, SATA 3G, 1GbE</td></tr>
-            <tr><td><strong>GTX</strong></td><td>12.5 Gbps</td><td>28nm</td><td>Kintex-7, Virtex-7</td><td>PCIe Gen3, 10GbE, SATA 6G</td></tr>
-            <tr><td><strong>GTH</strong></td><td>16.3 Gbps</td><td>20nm/16nm</td><td>Kintex US, Virtex US</td><td>PCIe Gen4, 25GbE, Interlaken</td></tr>
-            <tr><td><strong>GTY</strong></td><td>32.75 Gbps</td><td>16nm</td><td>Kintex US+, Virtex US+</td><td>PCIe Gen5, 100GbE, 112G PAM4</td></tr>
-        </table>
-
-        <p>Intel (Altera) 的对应产品线是 GX（Arria/Cyclone/Stratix GX）和 SX（Stratix 10 TX）。Lattice 的 ECP5 和 CertusPro-NX 也集成了 5-10 Gbps 级别的 SerDes。选型时要知道：<strong>收发器数量和速度是决定 FPGA 成本的主要因素</strong>——如果你只需要 PCIe Gen2，选择仅有 GTP 的 Artix-7（每个 GTP 通道约 $1-2 的裸片成本）比 GTY 的 Kintex US+（每个 GTY 通道约 $10-20）经济得多。</p>
-
-        <h3>22.4 PCIe 接口：从 Gen1 到 Gen5</h3>
-
-        <p><strong>PCI Express（PCIe）</strong>是 FPGA 连接主机 CPU 的最常用高速串行接口。PCIe 拓扑结构中有两个角色：<strong>Root Complex（根复合体）</strong>和 <strong>Endpoint（端点）</strong>——通常主机 CPU 是 Root Complex，FPGA 是 Endpoint。PCIe 链路结构分为三层：</p>
-
-        <ul>
-            <li><strong>物理层（PHY）：</strong>使用 FPGA 的 GTP/GTX 收发器，负责编码（Gen1/Gen2 用 8b/10b，Gen3+ 用 128b/130b）、串并行转换、链路训练状态机（LTSSM）。</li>
-            <li><strong>数据链路层（Data Link Layer）：</strong>提供 Ack/Nak 重传机制，保证事务层包（TLP）的可靠传输。</li>
-            <li><strong>事务层（Transaction Layer）：</strong>处理 Memory Read/Write、Completion、I/O 和 Configuration 请求的封装与解析。</li>
-        </ul>
-
-        <p>在 FPGA 上实现 PCIe 最常用的方式是 Xilinx 的 <strong>XDMA IP 核</strong>。XDMA 将 PCIe 事务层抽象为 AXI4-Stream 或 AXI4-Full 接口，提供了 DMA 描述符引擎，允许主机 CPU 通过 DMA 直接读写 FPGA 的内存空间。PCIe 规格的演化：</p>
-
-        <table>
-            <tr><th>接口协议</th><th>每通道速率</th><th>通道数</th><th>编码</th><th>典型元器件</th></tr>
-            <tr><td>PCIe Gen3</td><td>8 GT/s</td><td>x1 / x4 / x8 / x16</td><td>128b/130b</td><td>GTP/GTX + XDMA IP</td></tr>
-            <tr><td>SATA 6G</td><td>6 Gbps</td><td>1</td><td>8b/10b</td><td>GTP + SATA AHCI IP</td></tr>
-            <tr><td>USB 3.0</td><td>5 Gbps</td><td>1</td><td>8b/10b</td><td>GTP + USB3 IP 或外部 PHY</td></tr>
-            <tr><td>10GbE</td><td>10.3125 Gbps</td><td>1 / 4</td><td>64b/66b</td><td>GTX/GTH + 10G MAC IP</td></tr>
-            <tr><td>MIPI D-PHY</td><td>~1.5 Gbps</td><td>1 ~ 4 lane</td><td>DDR 差分</td><td>SelectIO + 电阻网络</td></tr>
-            <tr><td>JESD204B</td><td>~12.5 Gbps</td><td>1 ~ 8</td><td>8b/10b</td><td>GTX/GTH + JESD204 IP</td></tr>
-        </table>
-
-        <div class="highlight">
-            <strong>PCIe Gen5 展望：</strong>截至 2026 年，Virtex UltraScale+ 和 Versal ACAP 已经支持 PCIe Gen5（32 GT/s，128b/130b 编码，PAM4 信令）。Gen5 x16 的单向带宽约 63 GB/s——足以支撑 AI 推理加速器、高速数据采集和网络处理器。但 Gen5 对 PCB 设计的要求极其严格：走线长度误差需要控制在 ±5 mil 以内，阻抗容差 ±5%，插损在 16 GHz 处不超过 -20 dB。这已经不是 FPGA 设计的问题，而是 PCB 和信号完整性（SI）设计的领域了。
-        </div>
-
-        <h3>22.5 MIPI DSI/CSI 在 FPGA 上的实现</h3>
-
-        <p><strong>MIPI（Mobile Industry Processor Interface）</strong>是移动设备中最常用的摄像头和显示器接口。DSI 用于显示，CSI-2 用于摄像头。MIPI D-PHY 的电气层比较特殊——它使用<strong>DDR 双沿采样</strong>和<strong>LP（低功耗）/ HS（高速）双模工作</strong>。在 HS 模式下，每 lane 的速率可达 1.5-2.5 Gbps。</p>
-
-        <p>FPGA 的普通 I/O BANK 很难直接满足 MIPI 的 HS 模式时序要求（因为 MIPI 的差分摆幅只有 200 mV，而 FPGA 的标准 LVDS 要求 350 mV）。常见的两种实现方案：</p>
-        <ul>
-            <li><strong>电阻网络方案（低成本）：</strong>用 FPGA 的 HP（High Performance）BANK + 外部电阻分压网络将 MIPI 差分信号转换为 LVDS 电平。速率上限约 1 Gbps。</li>
-            <li><strong>专用 IP 方案（高可靠）：</strong>使用 Xilinx MIPI D-PHY IP 或 Lattice MIPI D-PHY，消耗 SerDes 通道和专用 I/O 资源，支持完整的 CSI-2 / DSI 协议栈。</li>
-        </ul>
-
-        <p>对于工业视觉应用，MIPI CSI-2 接 FPGA 做实时图像处理是一个很常见的方案。将 MIPI 摄像头信号接入 FPGA，经过 Bayer 格式转换、白平衡校正、边缘检测等图像处理流水线后，通过 PCIe 或千兆以太网传输到主机——整个过程使用小于 10W 的功率，远低于 GPU 方案。</p>
-
-        <div class="warning">
-            <strong>踩坑——PCIe 链路温度漂移导致 Gen3→Gen1 降速：</strong>有一次我们的 FPGA 加速卡在实验室中通过了所有功能测试——PCIe Gen3 x4 在 25°C 下稳定性测试超过 72 小时无错误。但送到客户环境后，客户报告卡在运行几小时后性能突然大幅下降。使用「lspci -vvv」检查发现链路速率从 8 GT/s（Gen3）降到了 2.5 GT/s（Gen1）。调试流程：第一步，怀疑 PCIe 金手指接触不良——用酒精清洁后问题依旧。第二步，使用 Vivado 的 IBERT 工具测量眼图——在启动时眼图张开度正常，运行约 30 分钟后眼图开始闭合。第三步，用热电偶测量 FPGA 附近的 PCB 温度——在满负荷运行 30 分钟后温度达到 78°C。根因是参考时钟晶振的温度稳定性不达标——晶振规格为 ±100 ppm（PCIe Gen3 要求），但实测在 0°C 到 85°C 范围内漂移达到了 200 ppm。PCIe 的链路训练过程会测量参考时钟精度，一旦发现 PPM 超标，LTSSM 会将链路降级到 Gen1（Gen1 要求 ±300 ppm，更宽松）。修复方案：将普通石英晶振更换为 TCXO（温度补偿晶振），温漂控制在 ±50 ppm 以内，并在 PCB 布局中使参考时钟走线远离大功率电源模块。教训：<strong>高速串行接口的性能极度依赖于参考时钟的质量——晶振的 PPM 规格局限不仅仅是"精度问题"，而是系统能否稳定运行在目标速率的关键参数</strong>。在项目选型阶段，参考时钟的成本（普通晶振 $0.1 vs TCXO $1-2 vs OCXO $10-50）应该是 BOM 评审的必要项目。
-        </div>
-
-        <p>高速串行接口是 FPGA 连接真实世界的桥梁——从 PCIe 到 MIPI，从千兆以太网到 JESD204B，每一类协议都依赖 FPGA 的 SerDes 硬核。掌握这些知识后，你已经具备了构建高性能 FPGA 系统的核心能力。下一章我们将回到设计流程中更接地气的环节——硬件调试方法论：从仿真波形到 ILA 在线调试，怎样系统性地定位和修复 RTL 设计中的 Bug。</p>
-
-        <div class="footer-nav">
-            <a href="21.html">← 上一章</a>
-            <a href="index.html">📖 返回目录</a>
-            <a href="23.html">下一章 →</a>
-        </div>
-    </div>
-</div>
-</div>
-</body>
-</html>
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="从差分物理信道和收发器内部结构出发，理解编码效率、CDR、均衡、PCIe Gen1–Gen6 与 MIPI D-PHY 的实现边界。"><title>高速串行接口：SerDes、均衡、PCIe 代际与链路预算 · FPGA/Verilog 教程</title><link rel="stylesheet" href="../assets/css/article.css"></head><body><a class="skip-link" href="#content">跳转至正文</a><header class="topbar"><a href="../index.html">← FPGA / VERILOG 课程</a><span>第 22 / 28 章</span></header><div class="layout"><nav class="toc" aria-label="本章目录"><details open><summary>本章目录</summary><strong>Contents</strong><a href="#why">01 / 为什么用 SerDes：并行总线的时序预算变得昂贵</a><a href="#blocks">02 / 收发器内部：PLL、Serializer、CDR 与均衡器</a><a href="#coding">03 / 编码效率与 PCIe 代际：Gen5 仍是 NRZ，PAM4 从 Gen6 开始</a><a href="#device">04 / FPGA 收发器选型：看器件数据表，而不是记一张过期速率表</a><a href="#mipi">05 / MIPI CSI-2 / DSI：电气层与协议层必须分开</a><a href="#bringup">06 / 高速链路 Bring-up 清单与边界</a></details></nav><main id="content"><article><header class="article-header"><p class="meta">Chapter 22 · FPGA engineering</p><h1>高速串行接口：SerDes、均衡、PCIe 代际与链路预算</h1><p class="dek">从差分物理信道和收发器内部结构出发，理解编码效率、CDR、均衡、PCIe Gen1–Gen6 与 MIPI D-PHY 的实现边界。</p></header><section id="why" aria-labelledby="why-title"><h2 id="why-title">01 / 为什么用 SerDes：并行总线的时序预算变得昂贵</h2>
+<p class="intro">高速串行链路并不是把并行线简单减少成一对差分线。它把问题从“许多数据线必须同时到达”转换成“单条高速模拟信道能否在抖动、插损、反射和噪声下可靠恢复时钟与数据”。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-serdes-path.svg" alt="发送端将并行字编码并串行化，经差分驱动和 PCB 通道到达接收端；接收端先均衡与时钟数据恢复，再并行化和解码。" width="960" height="540" loading="lazy"></div><figcaption>SerDes 同时包含数字逻辑与高速模拟前端；普通 FPGA fabric RTL 不能代替收发器模拟电路。</figcaption></figure>
+<p>并行总线的位宽越大，越需要控制 lane-to-lane skew、走线长度、时钟偏斜和同时开关噪声。SerDes 通过高速串行化减少高速数据对数量，但每一条 lane 都要面对通道损耗、反射、串扰、随机/确定性抖动和接收采样相位问题。它没有“消除物理层问题”，而是用差分传输、时钟恢复、均衡和链路训练来管理这些问题。</p>
+<p>差分接收器比较 P/N 两端电压，能抑制一部分共模噪声；但差分阻抗、回流路径、连接器、过孔、参考时钟质量和 PCB stack-up 仍然决定链路质量。高速接口设计必须把 FPGA、封装、PCB、连接器和对端 PHY 当作一个完整 channel。</p></section><section id="blocks" aria-labelledby="blocks-title"><h2 id="blocks-title">02 / 收发器内部：PLL、Serializer、CDR 与均衡器</h2>
+<p>发送路径通常包括并行用户接口、编码/gearbox、serializer、TX driver 和可配置发射均衡；接收路径包含模拟前端、CTLE/DFE（器件支持时）、CDR、deserializer、解码和用户接口。PLL 由参考时钟合成高速发送时钟；CDR 则从接收数据的边沿信息恢复采样时钟。两者职责不同，不能把 CDR 当作普通 fabric PLL。</p>
+<p>通道插入损耗会让高频分量衰减更明显，造成码间干扰（ISI）和眼图闭合。TX pre-emphasis / de-emphasis 调整发送端符号幅度；RX CTLE 提升高频成分，DFE 利用已判决符号估计后游标干扰。均衡参数不是“越强越好”，需要在实际 channel、速率、编码和误码率条件下调试。</p>
+<p>AMD UltraScale+ 资料列出 GTH、GTY、GTM 等不同收发器类型及各自线速率范围；例如 UG1192 给出的 GTH 与 GTY 上限不同，而具体器件 speed grade 和电源条件还会进一步限制可用速率。不要把一个家族某个型号的数据表上限写成所有 FPGA 的通用值。<a href="https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers">AMD UG1192 · UltraScale+ Portfolio Transceivers</a>。</p></section><section id="coding" aria-labelledby="coding-title"><h2 id="coding-title">03 / 编码效率与 PCIe 代际：Gen5 仍是 NRZ，PAM4 从 Gen6 开始</h2>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-pcie-generations.svg" alt="PCIe Gen1/2 使用 8b/10b；Gen3/4/5 使用 128b/130b NRZ；Gen6 使用 PAM4、FLIT 模式和 FEC/CRC。" width="960" height="540" loading="lazy"></div><figcaption>线编码效率只是链路开销的一部分；协议层还会消耗带宽。</figcaption></figure>
+<p>8b/10b 将 8 bit 数据映射为 10 bit 符号，编码效率为 80%；它有利于控制运行差异并提供足够跳变，但带来 20% 编码开销。PCIe Gen1/2 使用 8b/10b。PCIe Gen3/4/5 使用 128b/130b，编码效率约 98.46%，但 TLP、DLLP、流控、空闲序列等仍占用链路容量。</p>
+<p><strong>重要更正：</strong>PCIe Gen5 的 32 GT/s 使用 NRZ 与 128b/130b；PAM4 不是 Gen5 的信令方式。PCIe 6.0 引入 64 GT/s PAM4，并配套 FLIT 模式、低延迟 FEC 和 CRC。PCI-SIG 的 Gen5 FAQ 与 Gen6 说明明确区分了两代技术。<a href="https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations">PCI-SIG · PCIe 5.0 line rates</a>；<a href="https://pcisig.com/pci-express-6.0-specification">PCI-SIG · PCIe 6.0 features</a>。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-link-budget.svg" alt="单向有效吞吐上界由每 lane 原始速率、lane 数、线编码效率和协议效率共同决定。" width="960" height="540" loading="lazy"></div><figcaption>双向链路需要分别计算每个方向；不能把全双工两个方向相加后称为单向带宽。</figcaption></figure>
+<p>本仓库提供一个 NRZ 链路预算小工具。以 PCIe Gen5 x16 为例，使用 32 Gbit/s/lane、128b/130b，得到编码后约 504.123 Gbit/s，即约 63.015 GB/s/方向；这仍未扣除 TLP/DLLP 等协议开销，也不是应用实际吞吐。</p>
+<pre><code>python3 scripts/serdes_budget.py \
+  --line-rate-gbps 32 --lanes 16 --coding 128b130b
+# raw_gbps_per_direction: 512.000000
+# after_line_coding_gbps: 504.123077
+# after_protocol_overhead_gBps: 63.015385</code></pre>
+<p>该工具只处理 NRZ 原始 bit rate、8b/10b 或 128b/130b 线编码和用户给定的协议效率折减；不模拟 PAM4、FEC、链路训练、重传、TLP 结构或真实 PHY。</p></section><section id="device" aria-labelledby="device-title"><h2 id="device-title">04 / FPGA 收发器选型：看器件数据表，而不是记一张过期速率表</h2>
+<p>AMD UltraScale+ Portfolio 文档给出的范围是：GTH 约 0.5–16.3 Gb/s NRZ，GTY 约 0.5–32.75 Gb/s NRZ；但不同 FPGA 型号、speed grade、电压和参考时钟会进一步约束可用工作点。应当回到目标器件 datasheet 与对应 Transceiver User Guide，检查 PLL 选择、refclk 输入、通道位置、TX/RX 支持、均衡模式、lane bonding 和 PCB 要求。</p>
+<p>高速链路 bring-up 通常先验证参考时钟和复位顺序，再检查 PLL lock、CDR lock、PRBS 误码、均衡、lane polarity、lane alignment、协议训练状态和最终数据完整性。IBERT 等工具可帮助检查收发器眼图/误码，但具体能力由器件与工具版本决定。</p>
+<p>PCIe 也不是“接上 GTP 就有 PCIe”。需要 PCIe PHY、Data Link、Transaction 层和相应 Endpoint/Root Complex IP，外加参考时钟、复位、lane 配置、板级连接与主机驱动。DMA IP 只是系统数据搬运方案之一，并不自动替代协议栈与软件验证。</p></section><section id="mipi" aria-labelledby="mipi-title"><h2 id="mipi-title">05 / MIPI CSI-2 / DSI：电气层与协议层必须分开</h2>
+<p>MIPI CSI-2 用于摄像头数据输入，DSI 用于显示输出；D-PHY 是 clock-forwarded synchronous PHY，包含专用 clock lane 和一个或多个 data lane，并定义 HS/LP 电气状态与时序；CSI-2/DSI 则定义上层 packet 与传输语义。不要把 D-PHY 简化成“LVDS 差分对”，也不要假设一个通用电阻网络就能替代符合规范的 PHY。</p>
+<p>在 FPGA 项目中，应确认目标器件是否提供对应 MIPI D-PHY 接收/发送能力、是否有官方或第三方 PHY IP、I/O bank 电压和管脚是否满足要求，以及是否需要外部桥接芯片。还要分别验证 lane 数、速率、clock mode、LP/HS 转换、lane mapping、packet ECC/CRC 和图像格式。</p>
+<p>最终选择取决于 FPGA 型号、板卡原理图、传感器/显示器接口、数据率和工具/IP 许可。没有目标板和完整电气设计时，不应给出“某电阻网络可稳定跑到某 Gbps”的通用结论。</p></section><section id="bringup" aria-labelledby="bringup-title"><h2 id="bringup-title">06 / 高速链路 Bring-up 清单与边界</h2>
+<ol><li>从器件数据表确认收发器类型、速率范围、refclk、供电和可用通道。</li><li>从板级原理图确认差分对、参考时钟、连接器、极性、走线和 AC coupling。</li><li>先用 PRBS/IBERT 检查物理链路，再进入协议训练。</li><li>逐项确认 CDR/PLL lock、lane alignment、均衡、误码计数和协议状态。</li><li>最后才验证 PCIe enumeration、DMA、驱动或 CSI-2/DSI 图像数据。</li></ol>
+<div class="callout warn">本章提供的是链路预算计算与架构解释，不包含可综合的 SerDes 模拟前端，也没有声称完成 PCIe/MIPI IP 构建、误码率测试或板级眼图测量。SerDes 原语和参数必须按目标 FPGA 家族配置。</div><details class="exercise"><summary>自测：为什么 128b/130b 编码后的带宽仍不等于应用层吞吐？</summary><p>128/130 只扣除了 block coding 的两 bit 开销；协议还要传输包头、链路层控制、流控、空闲序列以及可能的重传/FEC 信息。应用有效吞吐还取决于 payload 大小和协议效率。</p></details></section><section id="references"><h2>一手资料与版本范围</h2><ol class="source-list"><li><a href="https://docs.amd.com/r/en-US/conversion-methodology/UltraScale-Portfolio-Transceivers" target="_blank" rel="noopener noreferrer">AMD UG1192 · UltraScale+ transceiver portfolio</a></li><li><a href="https://docs.amd.com/r/en-US/ug578-ultrascale-gty-transceivers" target="_blank" rel="noopener noreferrer">AMD UG578 · UltraScale Architecture GTY Transceivers</a></li><li><a href="https://pcisig.com/what-bit-rates-does-pcie-50-specification-support-and-how-does-it-compare-prior-pcie-generations" target="_blank" rel="noopener noreferrer">PCI-SIG · PCIe 5.0 signaling rates</a></li><li><a href="https://pcisig.com/pci-express-6.0-specification" target="_blank" rel="noopener noreferrer">PCI-SIG · PCIe 6.0 PAM4 / FLIT / FEC</a></li><li><a href="https://edc.intel.com/content/www/us/en/design/products/platforms/details/raptor-lake-s/13th-generation-core-processors-datasheet-volume-1-of-2/005/006/pci-express-support/" target="_blank" rel="noopener noreferrer">Intel · PCIe Gen1–Gen5 encoding and theoretical bandwidth table</a></li><li><a href="https://pcisig.com/specification-overview/pci-express-base" target="_blank" rel="noopener noreferrer">PCI-SIG · PCI Express Base Specifications</a></li><li><a href="https://www.mipi.org/specifications/d-phy" target="_blank" rel="noopener noreferrer">MIPI Alliance · D-PHY specification</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="21.html">← 上一章</a><a href="../index.html">全部章节</a><a href="23.html">下一章 →</a></nav></article></main></div></body></html>
