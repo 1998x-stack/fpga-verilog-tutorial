@@ -81,3 +81,15 @@
 - 图像系统：本仓库仅实现 RGB888 到加权 gray8 / Binary8 的单像素流水线（带 SOF/EOL），testbench 只有合成 7x4 帧。3x3 Sobel、camera PHY、DDR DMA、CDC、frame ownership、显示 timing / PHY 均为详细设计指南而非已完成硬件。
 - DDR 裸像素预算公式是吞吐下界；必须注明像素格式、stride、帧数、fps、读写方向及总线开销。不得宣称实际 DDR 带宽达到工具输出的裸像素值。
 - 回归：17 组 Icarus、Python unittest、FIR4 portable C++ test、HTML/SVG/link、工具链静态契约和 Playwright 首页 + 01—28 在四种宽度；新章节原生 details 和 MathML 可访问性须验收。GitHub Pages 成功不是板级签核。
+
+
+## 2026-11-23 第二轮复审补充（26—28 与质量门禁）
+- Ready/Valid testbench 的源端也必须遵守握手契约：若 `s_valid && !s_ready`，下一拍必须保持 VALID 与 DATA，直到握手。drain 阶段不得直接撤销尚未接受的 pending 项；测试必须覆盖 full+stall、同拍 dequeue/enqueue、source stability、output stability、最终 drain。
+- 视频流 testbench 必须同时检查输入端和输出端的 DATA/SOF/EOL 停顿稳定性，并统计输出 SOF 数等于帧数、EOL 数等于帧数×行数。
+- 帧缓存预算同时报告 `active_pixel_write_bytes_per_second` 与 stride-based `stride_write_bytes_per_second`；帧存储按 stride×height 计算，DDR/AXI 传输预算按 fps×height×stride 计算。不可将有效像素字节速率冒充 padded-stride DMA 速率。
+- MathML：所有公式必须有可访问名称；`mfrac` 恰好两个子元素；矩阵用 `mtable/mtr/mtd`；公式区必须 keyboard focusable，实际溢出时必须能用方向键横向滚动。浏览器检查要比较分子/分母几何位置，不可只检查 DOM 存在。
+- HTML 静态门禁：检查跨页面 fragment、figure media + nonempty figcaption、SVG title/desc/aria-labelledby、MathML 结构与 evidence schema v2。证据状态只允许 `verified`、`derived`、`illustrative`、`unverified`；未复核的历史 claim 应标 unverified，不可自造 supported。
+- 官方来源复核日期 2026-11-23：UG1399 2026.2、UG1387 2026.1、PG278 3.1、PG043 5.0、PG044 4.0、Arm AMBA AXI、NVIDIA VerilogEval、RTLLM、Yosys 0.70、NIST AI 600-1。若产品文档 URL 有版本化/非版本化 canonical 差异，以可打开的官方页面 URL 为准。
+- Chapter 28 bandwidth figure 明确假设无行填充 stride=5760；实际 stride 必须通过 `--stride-bytes` 输入并重新计算。任何 1080p 带宽数字必须注明 RGB888、fps、stride、读/写方向。
+
+- HLS static state：函数间持久化的 `static` 变量可能形成跨调用读写依赖，Vitis HLS 文档明确说明它们会让流水函数无法达到目标 II（示例可到最小 II=2）。任何含 static delay/history 的示例都必须将 pragma II 标为 target request，除非有当前器件/工具的 scheduling report，否则不得称为 achieved II。
