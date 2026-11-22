@@ -21,7 +21,7 @@
 - `index.html` 是 GitHub Pages 唯一门户。
 - `chapters/01.html` 到 `chapters/28.html` 为规范章节；根目录同名路径是兼容跳转，**不得删除**。
 - `assets/css/site.css` 维护首页，`assets/css/article.css` 维护重写文章，`assets/svg/` 保存全部独立图，`assets/js/` 为渐进增强交互。
-- `chapters/theme.css` 是 11–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
+- `chapters/theme.css` 是 16–28 章迁移期的兼容样式；不要求一轮强行重写所有课程。
 - `data/` 存储课程目录、证据账本；`examples/rtl/` 与 `examples/tb/` 放可综合样例及自检 testbench；`scripts/` 与 `.github/workflows/` 是验收和发布入口。
 
 ## 每一篇完成定义
@@ -39,4 +39,13 @@
 - `spi_master_mode0.v` 只支持 CPOL=0、CPHA=0；禁止称为四模式 SPI Master。
 - `i2c_bit_cell.v` 仅为单个 bit 的 data/SCL 时序单元，无 START/STOP/ACK/多主仲裁；示例顶层需明确开漏输出与管脚上拉。
 - 将 24LC256 的内部写周期忙碌与一般 I²C stretching 分开：官方数据手册的 ACK polling 是 NACK 检测，不得编造该器件将 SCL 长时间拉低。
-- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—10。
+- CI 必须运行 `bash scripts/run_rtl_tests.sh`；浏览器覆盖首页与 01—15。
+
+## 第三批存储、CDC、时序、工具链边界
+- `ram_sp_read_first.v` 明确单时钟、同一端口 READ_FIRST 语义；跨端口、跨时钟碰撞必须依据器件原语 datasheet，不得从此例推论。
+- `sync_fifo.v` 是单时钟 FIFO；full 下同时读写只读，empty 下同时读写只写。不要直接复用为异步 FIFO。
+- `pipe3_calc.v` 是全局 CE 停顿的三个寄存级；data/valid 同步推进，消费者在 ce=0 时不得重复消费；不是 AXI-Stream ready/valid IP。
+- CDC：2FF 用于慢变化单 bit 电平，toggle 事件握手用于接受后应答；任意多 bit 总线不可逐位同步替代协议。Gray 总线需 max-delay/bus-skew 约束并检查与异步分组例外的优先级。
+- STA 示例 `sta_budget.py` 的所有数字是数学演示。真实 WNS/TNS/时序收敛需具体 FPGA part、工具版本、XDC 和实现报告。
+- Vivado：非工程模式须指定真实 `FPGA_PART`、`BOARD_XDC`，不可硬编码虚构引脚、禁止跳过 DRC。GitHub Pages 的成功与 FPGA bitstream 无关。
+- CI：`bash scripts/run_rtl_tests.sh`（12 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—15。
