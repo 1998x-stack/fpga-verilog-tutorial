@@ -1,4 +1,4 @@
-\`timescale 1ns/1ps
+`timescale 1ns/1ps
 module tb_rv32i_frontend_units;
     reg [31:0] instr;
     reg [2:0] imm_sel;

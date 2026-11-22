@@ -48,7 +48,7 @@
 - CDC：2FF 用于慢变化单 bit 电平，toggle 事件握手用于接受后应答；任意多 bit 总线不可逐位同步替代协议。Gray 总线需 max-delay/bus-skew 约束并检查与异步分组例外的优先级。
 - STA 示例 `sta_budget.py` 的所有数字是数学演示。真实 WNS/TNS/时序收敛需具体 FPGA part、工具版本、XDC 和实现报告。
 - Vivado：非工程模式须指定真实 `FPGA_PART`、`BOARD_XDC`，不可硬编码虚构引脚、禁止跳过 DRC。GitHub Pages 的成功与 FPGA bitstream 无关。
-- CI：`bash scripts/run_rtl_tests.sh`（15 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—15。
+- CI：`bash scripts/run_rtl_tests.sh`（15 组），`python3 -m unittest discover -s tests -p test_sta_budget.py`，`python3 scripts/check_vivado_example.py`，Playwright 首页与 01—25。
 
 ## 第四批工程工具、IP、AXI 与软核边界
 - Quartus：QSF/QPF 属于工程输入，SDC 是独立时序模型；不能用一份通用时钟周期替代板级 I/O 延迟和 pin/IOSTANDARD。项目脚本必须要求真实 `FPGA_FAMILY` 与完整 `FPGA_DEVICE`，不允许猜测开发板型号。
@@ -58,7 +58,7 @@
 - Softcore：本章以 MicroBlaze V（RISC-V）为例，必须与 classic MicroBlaze 区分。地址宏来自生成的 `xparameters.h`，固件 ABI 与 RV32/RV64 配置一致；不能把示例 base address 当成板级固定地址。
 - 工程可复现：提交 QSF/SDC/XPR/XCI/QSYS 等真实输入（按实际 flow 选择），忽略可再生数据库与缓存；build manifest 记录 SHA-256、part、工具版本和 Git revision，但不自动保证 bitstream 字节级重现。
 - 本批不虚构 Quartus Fitter、TimeQuest、Questa、Vivado bitstream、LUT/FF/Fmax 或板级测试结果。GitHub Actions 的 RTL/静态/浏览器通过只能证明对应检查范围。
-- CI：15 组 Icarus RTL 回归、`python3 -m unittest discover -s tests -v`、Quartus/Vivado 静态脚本检查、首页及 01—20 Playwright。
+- CI：15 组 Icarus RTL 回归、`python3 -m unittest discover -s tests -v`、Quartus/Vivado 静态脚本检查、首页及 01—25 Playwright。
 
 
 ## 第五批 RISC-V、SerDes、调试、开源工具与时序功耗边界

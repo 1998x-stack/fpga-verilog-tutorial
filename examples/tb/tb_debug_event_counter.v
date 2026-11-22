@@ -1,4 +1,4 @@
-\`timescale 1ns/1ps
+`timescale 1ns/1ps
 module tb_debug_event_counter;
     reg clk=0, rst_n=0, clear=0, event_pulse=0;
     wire [3:0] count;

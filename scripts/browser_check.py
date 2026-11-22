@@ -27,9 +27,9 @@ with sync_playwright() as p:
             if bad:issues.append(f"{width}px {rel}: broken images {bad}")
             tab.screenshot(path=str(out/(rel.replace("/","-").replace(".html",f"-{width}.png"))), full_page=True)
             if rel=="index.html" and width==1440:
-                tab.locator("#chapter-search").fill("AXI")
+                tab.locator("#chapter-search").fill("AXI4-Lite")
                 n=tab.locator("#visible-count").inner_text()
-                if n!="1":issues.append("catalog search AXI should match one chapter; got "+n)
+                if n!="1":issues.append("catalog search AXI4-Lite should match one chapter; got "+n)
                 tab.locator("#chapter-search").fill("")
                 tab.locator('[data-filter="1"]').click()
                 n=tab.locator("#visible-count").inner_text()
