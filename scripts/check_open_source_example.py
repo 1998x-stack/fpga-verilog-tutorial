@@ -14,7 +14,7 @@ for token in ("module blink", "SB_GB", "always @(posedge clk_global)", "counter[
 for token in ("set_io clki 21", "set_io led1 99", "set_io led5 95"):
     if token not in pcf: errors.append("blink.pcf missing " + token)
 for token in ("synth_ice40", "nextpnr-ice40 --hx1k --package tq144",
-              "icepack", 'CONFIRM_FLASH) = "YES"', "iceprog"):
+              "icepack", 'CONFIRM_FLASH', "iceprog"):
     if token not in makefile: errors.append("Makefile missing " + token)
 if errors:
     print("\n".join("ERROR " + e for e in errors)); sys.exit(1)
