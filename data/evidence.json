@@ -288,6 +288,30 @@
       "claim": "AMD UG949 treats clock-domain-crossing and design constraints as explicit methodology items rather than something synthesis auto-corrects.",
       "source": "https://docs.amd.com/r/en-US/ug949-vivado-design-methodology",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "28"
+      ],
+      "claim": "The conventional 640x480@60 display timing uses a 25.175 MHz pixel clock with 800 total pixels per line and 525 total lines per frame, as tabulated by VESA display timing standards.",
+      "source": "https://www.vesa.org/vesa-standards/",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "28"
+      ],
+      "claim": "Luma coefficients for RGB to grayscale conversion are defined in ITU-R BT.601 as approximately 0.299R + 0.587G + 0.114B, which the fixed-point weights 77/150/29 scaled by 256 approximate.",
+      "source": "https://www.itu.int/rec/R-REC-BT.601",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "28"
+      ],
+      "claim": "External DDR memory interfaces on 7 series FPGAs are implemented with the Memory Interface Generator as documented in UG586.",
+      "source": "https://docs.amd.com/r/en-US/ug586_7Series_MIS",
+      "status": "supported"
     }
   ],
   "limitations": [

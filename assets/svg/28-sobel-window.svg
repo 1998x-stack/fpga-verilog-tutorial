@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" role="img" aria-labelledby="w28t w28d">
+  <title id="w28t">Sobel 边缘检测的 3×3 滑动窗口</title>
+  <desc id="w28d">3×3 窗口由上一行缓存、当前行缓存与移位链拼成，包含 p[0][0] 到 p[2][2] 九个像素。Gx 用右列减左列（加权 1,2,1），Gy 用下行减上行（加权 1,2,1）。梯度幅值用 |Gx| 加 |Gy| 近似，避免开方。</desc>
+  <rect width="960" height="460" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="21" font-weight="750" fill="#203035">3×3 窗口 = 两行缓存 + 一条移位链</text>
+  <g font-family="ui-monospace,SFMono-Regular,Consolas,monospace" text-anchor="middle" font-size="13">
+    <g stroke="#203035" stroke-width="1.5">
+      <rect x="60" y="90" width="90" height="70" fill="#e8f4ef"/><rect x="150" y="90" width="90" height="70" fill="#e8f4ef"/><rect x="240" y="90" width="90" height="70" fill="#e8f4ef"/>
+      <rect x="60" y="160" width="90" height="70" fill="#fbf4dd"/><rect x="150" y="160" width="90" height="70" fill="#fbf4dd"/><rect x="240" y="160" width="90" height="70" fill="#fbf4dd"/>
+      <rect x="60" y="230" width="90" height="70" fill="#f1edfa"/><rect x="150" y="230" width="90" height="70" fill="#f1edfa"/><rect x="240" y="230" width="90" height="70" fill="#f1edfa"/>
+    </g>
+    <text x="105" y="132" fill="#203035">p[0][0]</text><text x="195" y="132" fill="#203035">p[0][1]</text><text x="285" y="132" fill="#203035">p[0][2]</text>
+    <text x="105" y="202" fill="#203035">p[1][0]</text><text x="195" y="202" fill="#203035">p[1][1]</text><text x="285" y="202" fill="#203035">p[1][2]</text>
+    <text x="105" y="272" fill="#203035">p[2][0]</text><text x="195" y="272" fill="#203035">p[2][1]</text><text x="285" y="272" fill="#203035">p[2][2]</text>
+  </g>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif">
+    <text x="60" y="86" font-size="12" fill="#147f80">上一行</text>
+    <text x="60" y="320" font-size="12" fill="#7564b8">当前行</text>
+    <rect x="400" y="90" width="240" height="90" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="1.5"/>
+    <text x="520" y="120" font-size="14" font-weight="750" text-anchor="middle" fill="#203035">Gx（垂直边缘）</text>
+    <text x="520" y="146" font-size="12" text-anchor="middle" fill="#203035">(右列) − (左列)</text>
+    <text x="520" y="168" font-size="12" text-anchor="middle" fill="#566066">权重 1,2,1</text>
+    <rect x="400" y="200" width="240" height="90" rx="10" fill="#fbf4dd" stroke="#9c742c" stroke-width="1.5"/>
+    <text x="520" y="230" font-size="14" font-weight="750" text-anchor="middle" fill="#203035">Gy（水平边缘）</text>
+    <text x="520" y="256" font-size="12" text-anchor="middle" fill="#203035">(下行) − (上行)</text>
+    <text x="520" y="278" font-size="12" text-anchor="middle" fill="#566066">权重 1,2,1</text>
+    <rect x="690" y="90" width="230" height="200" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="805" y="160" font-size="14" font-weight="750" text-anchor="middle" fill="#203035">幅值近似</text>
+    <text x="805" y="190" font-size="15" text-anchor="middle" fill="#203035">|Gx| + |Gy|</text>
+    <text x="805" y="218" font-size="12" text-anchor="middle" fill="#566066">避免开方</text>
+    <text x="805" y="244" font-size="12" text-anchor="middle" fill="#566066">再与阈值比较</text>
+    <path d="M330 135H396" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M330 245H396" stroke="#9c742c" stroke-width="2.5"/>
+    <path d="M640 135H686" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M640 245H686" stroke="#9c742c" stroke-width="2.5"/>
+  </g>
+  <text x="480" y="350" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" text-anchor="middle" fill="#203035">连续流式处理时，每来一个新像素，窗口向右滑一列；到行尾整体下移一行。</text>
+  <text x="480" y="390" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" text-anchor="middle" fill="#566066">阈值不是通用常数：它随传感器噪声与光照变化，必须按实际图像调。</text>
+  <text x="480" y="424" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="12" text-anchor="middle" fill="#566066">Sobel 核的定义见文末来源；本图仅表达窗口与两类梯度的关系。</text>
+</svg>
