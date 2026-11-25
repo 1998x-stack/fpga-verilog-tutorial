@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" role="img" aria-labelledby="ip17t ip17d">
+  <title id="ip17t">IP 核的三种交付形态及其可修改层级</title>
+  <desc id="ip17d">顶层是用户 RTL 与例化，向下依次是软核（可移植 RTL，时序由实现报告决定）、固核（绑定器件家族的网表）与硬核（位置固定的硅电路，只暴露接口）。越往下可修改的自由度越小，时序保证越强。</desc>
+  <rect width="960" height="500" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">交付形态决定你能改到哪一层</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif">
+    <rect x="120" y="66" width="720" height="56" rx="10" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="480" y="92" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">用户 RTL · 顶层例化 · 连接与约束</text>
+    <text x="480" y="112" font-size="12.5" text-anchor="middle" fill="#147f80">你完全掌握这一层</text>
+
+    <path d="M480 122V148" stroke="#c6674b" stroke-width="3" fill="none"/>
+    <path d="M480 148l-7-10h14z" fill="#c6674b"/>
+
+    <rect x="120" y="150" width="720" height="70" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="2"/>
+    <text x="150" y="178" font-size="16" font-weight="750" fill="#203035">软核 Soft IP · RTL 源码</text>
+    <text x="150" y="202" font-size="13" fill="#203035">可移植到支持该 RTL 的器件；端口名、资源与时序由你的实现决定</text>
+
+    <rect x="120" y="234" width="720" height="70" rx="10" fill="#f7f3ea" stroke="#9c742c" stroke-width="2"/>
+    <text x="150" y="262" font-size="16" font-weight="750" fill="#203035">固核 Firm IP · 器件家族网表（.edf/.ngc 等）</text>
+    <text x="150" y="286" font-size="13" fill="#203035">已综合到指定器件层，布局仍由工具决定；不可移植到别的家族</text>
+
+    <rect x="120" y="318" width="720" height="70" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="150" y="346" font-size="16" font-weight="750" fill="#203035">硬核 Hard IP · 硅上固定电路</text>
+    <text x="150" y="370" font-size="13" fill="#203035">位置与结构在制造时固定，只暴露接口；用户无法改坏其时序</text>
+  </g>
+  <text x="40" y="428" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" fill="#203035">越往下：可修改自由度越小，时序保证越强。</text>
+  <text x="40" y="460" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" fill="#566066">本图只表达交付形态与所处层级，不含具体资源或频率数字——它们依赖器件与厂商实现。</text>
+</svg>

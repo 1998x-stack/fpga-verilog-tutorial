@@ -168,6 +168,30 @@
       "claim": "Non-project Tcl supports read_verilog/read_xdc, synthesis, place, route, reporting and bitstream commands.",
       "source": "https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "17"
+      ],
+      "claim": "An MMCM/PLL output frequency is synthesized from device-dependent multiply/divide factors as Fout = Fin x M / (D x O); legal factor ranges and VCO limits are device specific.",
+      "source": "https://docs.amd.com/r/en-US/ug472_7Series_Clocking",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "17"
+      ],
+      "claim": "FIFO Generator offers both a Native interface and an AXI4-Stream interface, and its First-Word Fall-Through option changes when the first word appears on dout.",
+      "source": "https://docs.amd.com/r/en-US/pg057-fifo-generator",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "17"
+      ],
+      "claim": "Block Memory Generator selects Read-First, Write-First or No-Change behavior for a same-clock simultaneous read and write on one port.",
+      "source": "https://docs.amd.com/r/en-US/pg058-blk-mem-gen",
+      "status": "supported"
     }
   ],
   "limitations": [
