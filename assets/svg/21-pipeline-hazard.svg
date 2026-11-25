@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 500" role="img" aria-labelledby="h21t h21d">
+  <title id="h21t">五级流水线中一条 RAW 数据冒险与前推路径</title>
+  <desc id="h21d">时间轴上是相邻两条指令 add x1,x2,x3 与 sub x4,x1,x5。add 在第四拍处于 MEM 段时，sub 已在同一拍进入 EX 段需要使用 x1。前推路径把 EX/MEM 锁存器中的 add 结果直接送到 sub 的 EX 输入，使流水线无需停顿即可得到正确操作数。</desc>
+  <rect width="980" height="500" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="21" font-weight="750" fill="#203035">前推：结果早就在流水线寄存器里</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif">
+    <text x="330" y="88" font-size="13" text-anchor="middle" fill="#566066">拍 1</text>
+    <text x="460" y="88" font-size="13" text-anchor="middle" fill="#566066">拍 2</text>
+    <text x="590" y="88" font-size="13" text-anchor="middle" fill="#566066">拍 3</text>
+    <text x="720" y="88" font-size="13" text-anchor="middle" fill="#566066">拍 4</text>
+    <text x="850" y="88" font-size="13" text-anchor="middle" fill="#566066">拍 5</text>
+    <text x="930" y="88" font-size="12" text-anchor="middle" fill="#566066">拍 6</text>
+
+    <!-- ADD row -->
+    <text x="50" y="146" font-size="13" font-weight="750" fill="#203035">add</text>
+    <text x="50" y="166" font-size="11" fill="#566066">x1,x2,x3</text>
+    <g stroke="#147f80" stroke-width="1.5" fill="#e8f4ef" font-size="12" text-anchor="middle">
+      <rect x="270" y="120" width="120" height="40"/><rect x="400" y="120" width="120" height="40"/><rect x="530" y="120" width="120" height="40"/><rect x="660" y="120" width="120" height="40"/><rect x="790" y="120" width="120" height="40"/>
+    </g>
+    <g font-size="12" text-anchor="middle" fill="#203035"><text x="330" y="145">IF</text><text x="460" y="145">ID</text><text x="590" y="145">EX</text><text x="720" y="145">MEM</text><text x="850" y="145">WB</text></g>
+
+    <!-- SUB row -->
+    <text x="50" y="236" font-size="13" font-weight="750" fill="#203035">sub</text>
+    <text x="50" y="256" font-size="11" fill="#566066">x4,x1,x5</text>
+    <g stroke="#7564b8" stroke-width="1.5" fill="#f1edfa" font-size="12" text-anchor="middle">
+      <rect x="400" y="210" width="120" height="40"/><rect x="530" y="210" width="120" height="40"/><rect x="660" y="210" width="120" height="40"/><rect x="790" y="210" width="120" height="40"/><rect x="860" y="210" width="60" height="40"/>
+    </g>
+    <g font-size="12" text-anchor="middle" fill="#203035"><text x="460" y="235">IF</text><text x="590" y="235">ID</text><text x="720" y="235">EX</text><text x="850" y="235">MEM</text><text x="890" y="235">WB</text></g>
+
+    <!-- forward path -->
+    <path d="M660 170 C660 195, 660 195, 660 208" stroke="#c6674b" stroke-width="3" fill="none"/>
+    <path d="M660 208l-6-10h12z" fill="#c6674b"/>
+    <text x="690" y="196" font-size="12" fill="#c6674b">前推到 EX 输入</text>
+  </g>
+  <rect x="40" y="300" width="900" height="150" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="70" y="336" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14.5" font-weight="750" fill="#203035">判据：当前指令的 rs1/rs2 地址 == 上游流水级的 rd 地址</text>
+  <text x="70" y="366" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" fill="#203035">命中 EX/MEM：从 EX/MEM 的结果旁路 → 覆盖寄存器堆读出的旧值</text>
+  <text x="70" y="392" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" fill="#203035">命中 MEM/WB：从写回数据旁路</text>
+  <text x="70" y="420" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" fill="#566066">前推解决不了 load-use（数据在 MEM 末才回）：需要冻结一拍。</text>
+</svg>

@@ -216,6 +216,22 @@
       "claim": "Vitis builds a platform and BSP from the exported hardware description, providing base-address macros and peripheral drivers to the application.",
       "source": "https://docs.amd.com/r/en-US/ug1400-vitis-embedded",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "21"
+      ],
+      "claim": "RV32I base integer instructions are fixed 32-bit encodings using six formats (R/I/S/B/U/J) with the opcode in bits [6:0] and x0 hardwired to zero.",
+      "source": "https://github.com/riscv/riscv-isa-manual",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "21"
+      ],
+      "claim": "The riscv-gnu-toolchain project provides RISC-V gcc/binutils tooling, including objcopy, for producing memory images.",
+      "source": "https://github.com/riscv-collab/riscv-gnu-toolchain",
+      "status": "supported"
     }
   ],
   "limitations": [
