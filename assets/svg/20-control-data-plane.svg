@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" role="img" aria-labelledby="cd20t cd20d">
+  <title id="cd20t">控制平面与数据平面的分工</title>
+  <desc id="cd20d">处理器运行 C 代码构成控制平面，通过 AXI4-Lite 写加速器的控制寄存器；数据平面中数据源经 AXI4-Stream 流入 RTL 加速器再流向数据目标。处理器不逐字搬运数据，只配置参数；两者共享 AXI Interconnect 与地址空间。</desc>
+  <rect width="960" height="460" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="22" font-weight="750" fill="#203035">控制走 Lite，数据走 Stream</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif">
+    <rect x="60" y="80" width="230" height="90" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="175" y="118" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">控制平面</text>
+    <text x="175" y="143" font-size="13" text-anchor="middle" fill="#566066">CPU 上的 C 代码</text>
+
+    <rect x="365" y="80" width="230" height="90" rx="12" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="480" y="118" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">数据平面</text>
+    <text x="480" y="143" font-size="13" text-anchor="middle" fill="#566066">RTL 加速器</text>
+
+    <rect x="670" y="80" width="230" height="90" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="785" y="118" font-size="16" font-weight="750" text-anchor="middle" fill="#203035">内存 / 外设</text>
+    <text x="785" y="143" font-size="13" text-anchor="middle" fill="#566066">AXI 地址空间</text>
+
+    <path d="M290 112H361" stroke="#147f80" stroke-width="3" fill="none"/>
+    <path d="M361 112l-10-6v12z" fill="#147f80"/>
+    <text x="326" y="102" font-size="12" text-anchor="middle" fill="#147f80">AXI4-Lite</text>
+
+    <path d="M361 140H290" stroke="#7564b8" stroke-width="3" fill="none"/>
+    <path d="M290 140l10-6v12z" fill="#7564b8"/>
+    <text x="326" y="158" font-size="12" text-anchor="middle" fill="#7564b8">状态回读</text>
+
+    <path d="M595 112H666" stroke="#c6674b" stroke-width="3" fill="none"/>
+    <path d="M666 112l-10-6v12z" fill="#c6674b"/>
+    <text x="630" y="102" font-size="12" text-anchor="middle" fill="#c6674b">AXI4-Stream</text>
+  </g>
+  <rect x="60" y="230" width="840" height="150" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="86" y="268" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="15" font-weight="750" fill="#203035">判据：写代码更方便，而不是“慢的放 CPU，快的放 RTL”</text>
+  <text x="86" y="298" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13.5" fill="#203035">控制流多变、每秒调用少 → CPU（分支多，C 表达清晰）</text>
+  <text x="86" y="324" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13.5" fill="#203035">数据流规则、对吞吐/延时敏感 → RTL（每周期并行处理）</text>
+  <text x="86" y="352" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13.5" fill="#566066">让加速器直接从 Stream/内存取数，CPU 只发号施令，避免成为瓶颈。</text>
+</svg>

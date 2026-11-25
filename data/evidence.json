@@ -192,6 +192,30 @@
       "claim": "Block Memory Generator selects Read-First, Write-First or No-Change behavior for a same-clock simultaneous read and write on one port.",
       "source": "https://docs.amd.com/r/en-US/pg058-blk-mem-gen",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "MicroBlaze is a configurable soft processor with optional FPU, MMU and caches, and exposes AXI interfaces.",
+      "source": "https://docs.amd.com/r/en-US/ug984-vivado-microblaze-ref",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "Vivado IP Integrator Block Design with Block/Connection Automation instantiates the processor, interconnect, clock/reset and debug blocks, and Create HDL Wrapper emits a synthesizable top level.",
+      "source": "https://docs.amd.com/r/en-US/ug994-vivado-ip-subsystems",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "20"
+      ],
+      "claim": "Vitis builds a platform and BSP from the exported hardware description, providing base-address macros and peripheral drivers to the application.",
+      "source": "https://docs.amd.com/r/en-US/ug1400-vitis-embedded",
+      "status": "supported"
     }
   ],
   "limitations": [
