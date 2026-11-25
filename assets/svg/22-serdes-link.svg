@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 470" role="img" aria-labelledby="s22t s22d">
+  <title id="s22t">一条 SerDes 链路的组成</title>
+  <desc id="s22d">发送侧：并行数据先经编码（如 8b/10b）保持直流平衡与跳变密度，再串行化，并经发送均衡补偿通道高频损耗。差分通道上信号衰减。接收侧：先经连续时间均衡（CTLE）和判决反馈均衡（DFE）恢复信号，时钟数据恢复（CDR）从跳变提取采样时钟，再解串与解码还原并行数据。</desc>
+  <rect width="980" height="470" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="21" font-weight="750" fill="#203035">串行化不是为了“少几根线”，而是为了消掉歪斜</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="30" y="90" width="150" height="70" rx="10" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="105" y="120" font-size="14" font-weight="750" fill="#203035">并行数据</text>
+    <text x="105" y="142" font-size="12" fill="#566066">N 位 + 时钟</text>
+
+    <rect x="210" y="90" width="120" height="70" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="1.5"/>
+    <text x="270" y="118" font-size="13" font-weight="750" fill="#203035">编码</text>
+    <text x="270" y="140" font-size="11.5" fill="#566066">8b/10b 等</text>
+
+    <rect x="360" y="90" width="110" height="70" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="1.5"/>
+    <text x="415" y="118" font-size="13" font-weight="750" fill="#203035">串行化</text>
+    <text x="415" y="140" font-size="11.5" fill="#566066">SER</text>
+
+    <rect x="500" y="90" width="120" height="70" rx="10" fill="#fbf4dd" stroke="#9c742c" stroke-width="1.5"/>
+    <text x="560" y="118" font-size="13" font-weight="750" fill="#203035">发送均衡</text>
+    <text x="560" y="140" font-size="11.5" fill="#566066">预加重</text>
+
+    <rect x="650" y="90" width="130" height="70" rx="10" fill="#ffffff" stroke="#c6674b" stroke-width="2"/>
+    <text x="715" y="118" font-size="13" font-weight="750" fill="#203035">差分通道</text>
+    <text x="715" y="140" font-size="11.5" fill="#c6674b">高频衰减 / ISI</text>
+
+    <rect x="810" y="90" width="140" height="70" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="880" y="118" font-size="13" font-weight="750" fill="#203035">接收均衡</text>
+    <text x="880" y="140" font-size="11.5" fill="#566066">CTLE / DFE</text>
+
+    <path d="M180 125H206" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M330 125H356" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M470 125H496" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M620 125H646" stroke="#9c742c" stroke-width="2.5"/>
+    <path d="M780 125H806" stroke="#7564b8" stroke-width="2.5"/>
+  </g>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="30" y="210" width="150" height="70" rx="10" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="105" y="240" font-size="14" font-weight="750" fill="#203035">还原并行数据</text>
+    <text x="105" y="262" font-size="12" fill="#566066">N 位 + 恢复时钟</text>
+
+    <rect x="210" y="210" width="120" height="70" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="1.5"/>
+    <text x="270" y="238" font-size="13" font-weight="750" fill="#203035">解码</text>
+    <text x="270" y="260" font-size="11.5" fill="#566066">去 DC 偏置</text>
+
+    <rect x="360" y="210" width="110" height="70" rx="10" fill="#eef7f6" stroke="#147f80" stroke-width="1.5"/>
+    <text x="415" y="238" font-size="13" font-weight="750" fill="#203035">解串</text>
+    <text x="415" y="260" font-size="11.5" fill="#566066">DES</text>
+
+    <rect x="500" y="210" width="140" height="70" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="1.5"/>
+    <text x="570" y="238" font-size="13" font-weight="750" fill="#203035">CDR 时钟恢复</text>
+    <text x="570" y="260" font-size="11.5" fill="#566066">从跳变提取相位</text>
+
+    <rect x="670" y="210" width="130" height="70" rx="10" fill="#f1edfa" stroke="#7564b8" stroke-width="1.5"/>
+    <text x="735" y="238" font-size="13" font-weight="750" fill="#203035">采样判决</text>
+    <text x="735" y="260" font-size="11.5" fill="#566066">看眼图张开</text>
+
+    <rect x="830" y="210" width="120" height="70" rx="10" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+    <text x="890" y="238" font-size="13" font-weight="750" fill="#203035">BER 统计</text>
+    <text x="890" y="260" font-size="11.5" fill="#566066">可观测指标</text>
+
+    <path d="M180 245H206" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M330 245H356" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M470 245H496" stroke="#147f80" stroke-width="2.5"/>
+    <path d="M640 245H666" stroke="#7564b8" stroke-width="2.5"/>
+    <path d="M800 245H826" stroke="#7564b8" stroke-width="2.5"/>
+  </g>
+  <text x="490" y="330" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="13" text-anchor="middle" fill="#566066">在集成收发器里，编码、串行化、均衡与 CDR 都在硬核内；RTL 侧只见并行数据与控制信号。</text>
+  <rect x="40" y="356" width="900" height="86" rx="12" fill="#ffffff" stroke="#203035" stroke-width="1.5"/>
+  <text x="490" y="390" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="14" font-weight="750" text-anchor="middle" fill="#203035">链路达标的判据：眼图开启度与误码率，而不是“用了几代收发器”</text>
+  <text x="490" y="418" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="12.5" text-anchor="middle" fill="#566066">具体余量依赖板卡通道损耗、均衡设置与参考时钟质量，须用 IBERT 等工具实测。</text>
+</svg>

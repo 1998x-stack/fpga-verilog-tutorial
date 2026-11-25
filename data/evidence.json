@@ -232,6 +232,22 @@
       "claim": "The riscv-gnu-toolchain project provides RISC-V gcc/binutils tooling, including objcopy, for producing memory images.",
       "source": "https://github.com/riscv-collab/riscv-gnu-toolchain",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "PCI Express link rates are specified per generation as 2.5, 5.0, 8.0, 16.0 and 32.0 GT/s, with 8b/10b coding for Gen1/Gen2 and 128b/130b for Gen3 and later.",
+      "source": "https://pcisig.com/specifications",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "22"
+      ],
+      "claim": "Integrated FPGA transceivers provide the coding, serialization, transmit/receive equalization and clock-data recovery, and their supported line rates are documented per device family.",
+      "source": "https://docs.amd.com/r/en-US/ug476_7Series_Transceivers",
+      "status": "supported"
     }
   ],
   "limitations": [
