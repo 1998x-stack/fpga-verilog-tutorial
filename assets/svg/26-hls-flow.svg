@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" role="img" aria-labelledby="h26t h26d">
+  <title id="h26t">高层次综合的调度与绑定流程</title>
+  <desc id="h26d">C/C++ 行为描述作为输入，先经调度把操作排到时钟周期上，再经绑定把操作分配到 LUT、FF、DSP、BRAM 资源，最后生成 RTL。pragma 与目标时钟周期作为约束反馈影响调度与绑定；C 仿真验证算法功能，C/RTL 协同仿真比对 C 模型与生成 RTL 的输出一致性。</desc>
+  <rect width="960" height="500" fill="#fffdf9"/>
+  <text x="40" y="42" font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" font-size="21" font-weight="750" fill="#203035">HLS 分两步：先排时间，再分资源</text>
+  <g font-family="system-ui,'Noto Sans CJK SC','PingFang SC',sans-serif" text-anchor="middle">
+    <rect x="40" y="90" width="160" height="90" rx="12" fill="#e8f4ef" stroke="#147f80" stroke-width="2"/>
+    <text x="120" y="126" font-size="15" font-weight="750" fill="#203035">C / C++ 行为</text>
+    <text x="120" y="150" font-size="12" fill="#566066">算法 + 接口 pragma</text>
+
+    <rect x="250" y="90" width="180" height="90" rx="12" fill="#eef7f6" stroke="#147f80" stroke-width="2"/>
+    <text x="340" y="122" font-size="15" font-weight="750" fill="#203035">调度 Scheduling</text>
+    <text x="340" y="146" font-size="12" fill="#566066">每个操作落在哪一拍</text>
+    <text x="340" y="166" font-size="12" fill="#566066">决定 latency / II</text>
+
+    <rect x="480" y="90" width="180" height="90" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="2"/>
+    <text x="570" y="122" font-size="15" font-weight="750" fill="#203035">绑定 Binding</text>
+    <text x="570" y="146" font-size="12" fill="#566066">分配到 LUT/FF/DSP/BRAM</text>
+    <text x="570" y="166" font-size="12" fill="#566066">决定复用与并行</text>
+
+    <rect x="710" y="90" width="210" height="90" rx="12" fill="#fbf4dd" stroke="#9c742c" stroke-width="2"/>
+    <text x="815" y="126" font-size="15" font-weight="750" fill="#203035">RTL / IP</text>
+    <text x="815" y="150" font-size="12" fill="#566066">可集成到 Block Design</text>
+
+    <path d="M200 135H246" stroke="#147f80" stroke-width="3"/>
+    <path d="M246 135l-10-6v12z" fill="#147f80"/>
+    <path d="M430 135H476" stroke="#147f80" stroke-width="3"/>
+    <path d="M476 135l-10-6v12z" fill="#147f80"/>
+    <path d="M660 135H706" stroke="#7564b8" stroke-width="3"/>
+    <path d="M706 135l-10-6v12z" fill="#7564b8"/>
+
+    <rect x="250" y="230" width="410" height="56" rx="10" fill="#fff4ed" stroke="#c6674b" stroke-width="1.5"/>
+    <text x="455" y="256" font-size="13.5" font-weight="750" fill="#203035">约束：目标时钟周期 · pragma（PIPELINE/UNROLL/…）</text>
+    <text x="455" y="276" font-size="12" fill="#c6674b">约束改变调度与绑定，不保证结果</text>
+    <path d="M455 286V184" stroke="#c6674b" stroke-width="2" stroke-dasharray="5 4" fill="none"/>
+    <path d="M455 184l-6 10h12z" fill="#c6674b"/>
+
+    <rect x="40" y="330" width="420" height="110" rx="12" fill="#e8f4ef" stroke="#147f80" stroke-width="1.5"/>
+    <text x="250" y="362" font-size="14" font-weight="750" fill="#203035">C 仿真</text>
+    <text x="250" y="386" font-size="12.5" fill="#203035">验证算法功能（无时钟、无延时）</text>
+    <text x="250" y="412" font-size="12.5" fill="#566066">通过 ≠ 硬件行为一致</text>
+
+    <rect x="500" y="330" width="420" height="110" rx="12" fill="#f1edfa" stroke="#7564b8" stroke-width="1.5"/>
+    <text x="710" y="362" font-size="14" font-weight="750" fill="#203035">C/RTL 协同仿真</text>
+    <text x="710" y="386" font-size="12.5" fill="#203035">同一批向量跑 C 模型与生成的 RTL</text>
+    <text x="710" y="412" font-size="12.5" fill="#566066">比对输出，才算“硬件也对了”</text>
+  </g>
+</svg>

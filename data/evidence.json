@@ -248,6 +248,22 @@
       "claim": "Integrated FPGA transceivers provide the coding, serialization, transmit/receive equalization and clock-data recovery, and their supported line rates are documented per device family.",
       "source": "https://docs.amd.com/r/en-US/ug476_7Series_Transceivers",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "26"
+      ],
+      "claim": "High-level synthesis separates scheduling (which clock cycle each operation runs in) from binding (which hardware resource it uses), with pragmas such as PIPELINE, UNROLL and ARRAY_PARTITION guiding the microarchitecture.",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "26"
+      ],
+      "claim": "The Vitis HLS flow includes C simulation, C synthesis producing an RTL estimate, and C/RTL co-simulation that compares the C model against the generated RTL.",
+      "source": "https://docs.amd.com/r/en-US/ug1399-vitis-hls/High-Level-Synthesis-Flow",
+      "status": "supported"
     }
   ],
   "limitations": [
