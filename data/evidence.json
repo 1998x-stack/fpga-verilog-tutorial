@@ -320,6 +320,12 @@
     "No synthesis resource usage, power or Fmax benchmark is asserted.",
     "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP.",
     "Chapter 14 STA numbers are arithmetic examples, not measured or Vivado-reported slack.",
-    "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed."
+    "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed.",
+    "Chapter 17 IP resource, port-name and timing examples are illustrative; check vendor Product Guides and your own implementation report.",
+    "Chapters 20-21 soft-core and RISC-V figures (resources, frequency, DMIPS) are deliberately omitted; they depend on configuration, device and speed grade.",
+    "Chapter 22 transceiver line rates and link budgets are device/board specific and are not asserted; only PCIe per-generation rates are cited.",
+    "Chapter 26 HLS reports are tool estimates; post-implementation resources can differ and are not claimed here.",
+    "Chapter 27 makes no accuracy claims about any AI model or EDA integration tool.",
+    "Chapter 28 bandwidth arithmetic is ideal pixel throughput; achievable memory bandwidth and resource usage are not asserted."
   ]
 }
