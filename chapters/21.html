@@ -101,6 +101,7 @@ sub x4, x1, x5   # 紧接着使用 x1</code></pre>
 </section>
 <section id="verify" aria-labelledby="verify-h"><h2 id="verify-h">07 / 验证策略与边界</h2>
 <ul><li><strong>骨架不等于 CPU。</strong> 本章骨架缺控制译码全量、立即数拼接与冒险处理；在这些补全前，它不能保证任何 RV32I 程序的正确性。</li><li><strong>用定向测试覆盖冒险。</strong> 至少需要覆盖：连续 R-type 依赖、load-use 相邻依赖、分支/跳转后的控制冒险，以及在仿真里逐拍比对参考模型（如用 C 模拟器或指令集模拟器）。</li><li><strong>频率与面积受限最多路径。</strong> 取指、译码与访存路径通常很深；可达频率必须来自具体器件、速度等级与实现报告，不能从“五级流水线”这个结构推断（参见第 25 章）。</li><li><strong>本章不给出任何 IPC、DMIPS 或频率数字。</strong> 它们离开微架构配置、器件与测试程序就无比较意义。</li></ul>
+<details class="exercise"><summary>思考练习：一个缺少前推逻辑的流水线，为什么“跑几段随机程序”可能看上去是对的？</summary><p>因为编译器倾向于在相关指令之间插入可独立执行的指令，把 RAW 依赖“推”到前一条指令写回之后；这样大多数输入根本不会碰到冒险路径。要暴露缺失的前推，需要能控制指令顺序的定向测试：连续 R-type 依赖、load-use 相邻依赖、分支/跳转后的控制冒险。验证结论应基于这些定向用例，而不是随机程序的“跑通”。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">08 / 延伸阅读与资料来源</h2>
 <ol class="source-list">

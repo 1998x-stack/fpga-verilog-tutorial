@@ -54,6 +54,7 @@
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">07 / 边界与可验证条件</h2>
 <ul><li><strong>速率是器件与板卡的属性，不是协议的属性。</strong> 同一代 PCIe 在两块板卡上可能跑在不同世代；能否达标取决于参考时钟精度、通道插损、均衡设置与 PCB 设计。</li><li><strong>不要在 RTL 里重造已经硬化的东西。</strong> 集成收发器已包含编码与均衡；把精力放在链路配置、约束与调试验证上。</li><li><strong>“眼图张开”是可测的状态。</strong> 需要盯住的是可观测指标：IBERT 眼图、误码率、链路当前速率/宽度（参见 UG908），而不是“应该没问题”。</li><li><strong>本章不给出任何眼图余量、插损、误码率或晶振 ppm 的“典型值”。</strong> 这些必须来自具体板卡与仪器实测。</li></ul>
+<details class="exercise"><summary>思考练习：“同一代 PCIe 在两块板卡上跑在不同速率”为什么不矛盾？</summary><p>因为速率是器件与板卡的属性，不是协议的属性。协议规定的是链路能协商的速率/宽度集合；最终协商到哪一档，取决于参考时钟精度、通道插损、发送/接收均衡设置与 PCB 布局布线。所以两块板卡同属一个 PCIe 世代，却可能因参考时钟或信号完整性不足而回退到较低速率。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">08 / 延伸阅读与资料来源</h2>
 <ol class="source-list">
