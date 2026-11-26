@@ -71,6 +71,7 @@ int main(void) {
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">08 / 边界与可验证条件</h2>
 <ul><li><strong>资源与频率不能从核名推断。</strong> 同一个核在不同配置（FPU/缓存/MMU 开关）、不同器件与不同<strong>速度等级</strong>下，资源与可达到频率都不同；必须看具体实现报告。</li><li><strong>软核通常是关键路径之一。</strong> 处理器内部取指、译码、访存路径较深，往往是系统最高频率的制约点；换器件或换速度等级后必须重新做时序分析（见第 25 章）。</li><li><strong>工具与 IP 版本强相关。</strong> Block Automation 的行为、生成的地址映射与驱动 API 随版本变化，可复现性依赖记录工具版本与 .xsa 文件（见第 18 章）。</li><li><strong>本章不给出任何 DMIPS、LUT 数或频率数值</strong>，因为它们离开具体配置与器件就无意义。</li></ul>
+<details class="exercise"><summary>思考练习：为什么不能把一篇教程里“软核跑到某个频率”当作自己设计的结论？</summary><p>可达频率取决于具体器件、速度等级、处理器配置（是否带缓存/浮点）、连接的从设备数量与实现策略。软核的取指/译码/访存路径往往是系统中最深的关键路径，换器件或换配置后必须重新做布局布线后的时序分析（见第 25 章）。因此资源与频率必须来自你自己的实现报告，而不是别人报告里的数字。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">09 / 延伸阅读与资料来源</h2>
 <ol class="source-list">

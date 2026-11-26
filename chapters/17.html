@@ -90,6 +90,7 @@ endmodule</code></pre>
 <p>用 IP 核能省下大量 RTL，但它把一部分正确性责任转移给了配置与工具。以下几点是本章想强调的边界：</p>
 <ul><li><strong>IP 的“默认配置”不是为你设计的。</strong> FIFO 默认深度、默认接口、默认标志位都可能与实际需求不符——上一节的深度验算就是为了把“默认”换成“算出来”。</li><li><strong>硬件资源占用不能从 IP 名称推断。</strong> 同一个 IP 在不同器件、不同配置下资源差异很大；要得到可靠数字，只能看具体实现报告。</li><li><strong>跨时钟域由 IP 内部处理，不等于整个系统都安全。</strong> 如果自己把异步信号或多位总线绕开 FIFO 直接使用，仍然需要第 13 章手写的同步或握手方案。</li><li><strong>工具版本会影响结果。</strong> IP 版本不同，生成的 RTL、端口名、时序都可能变；要可复现，就得把 IP 配置文件（如 <code>.xci</code>）纳入版本控制，并记录工具版本（见第 18 章）。</li></ul>
 <div class="callout note">本章出现的频率关系、深度计算与代码均为<strong>教学示意</strong>；具体的系数范围、端口名、资源与时序，请以对应器件厂商文档和你的实现报告为准。</div>
+<details class="exercise"><summary>思考练习：为什么“CDC 已由 IP 内部处理”不能推出整个系统都没有跨时钟域风险？</summary><p>IP 只保证它自己内部的跨时钟域路径有定义。一旦你在 IP 之外把异步信号或多位总线绕开 FIFO 直接引入自己的逻辑，就产生了新的、IP 不会替你约束的跨域路径。判定标准是整条数据路径的起点与终点位于哪个时钟域，而不是“中间经过了一个 IP”。参见第 13 章：多 bit 总线不能靠逐位同步，需要握手或异步 FIFO。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">08 / 延伸阅读与资料来源</h2>
 <ol class="source-list">
