@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "scope": "first-fifteen-2026-11",
+  "scope": "chapters-01-28-2026-11",
   "checks": [
     {
       "chapters": [
@@ -312,6 +312,54 @@
       "claim": "External DDR memory interfaces on 7 series FPGAs are implemented with the Memory Interface Generator as documented in UG586.",
       "source": "https://docs.amd.com/r/en-US/ug586_7Series_MIS",
       "status": "supported"
+    },
+    {
+      "chapters": [
+        "16"
+      ],
+      "claim": "An incomplete combinational always block that does not assign its output on every path infers an unintended latch, as described in the Quartus design recommendations.",
+      "source": "https://docs.altera.com/r/docs/683323/18.1/quartus-prime-standard-edition-user-guide-design-recommendations/avoid-unintentional-latch-generation",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "18"
+      ],
+      "claim": "git-filter-repo is a tool for rewriting Git history to remove large or sensitive files from a repository.",
+      "source": "https://github.com/newren/git-filter-repo",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "19"
+      ],
+      "claim": "AMBA AXI4 defines independent address, data and response channels whose transfers complete only when VALID and READY are both asserted.",
+      "source": "https://developer.arm.com/documentation/ihi0022/latest/",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "23"
+      ],
+      "claim": "ILA/SignalTap debug probes require a sampling clock and consume LUT and Block RAM, so adding them can affect routing and timing.",
+      "source": "https://docs.amd.com/r/en-US/ug908-vivado-programming-debugging",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "24"
+      ],
+      "claim": "In the open-source flow, Yosys performs synthesis and nextpnr performs place-and-route for a specific device family.",
+      "source": "https://yosyshq.readthedocs.io/en/latest/",
+      "status": "supported"
+    },
+    {
+      "chapters": [
+        "25"
+      ],
+      "claim": "Vivado power analysis is based on tool reports and depends on device series, switching activity, temperature and voltage.",
+      "source": "https://docs.amd.com/r/en-US/ug907-vivado-power-analysis",
+      "status": "supported"
     }
   ],
   "limitations": [
@@ -321,6 +369,7 @@
     "UART, SPI and I2C examples are intentionally scoped teaching units, not production protocol IP.",
     "Chapter 14 STA numbers are arithmetic examples, not measured or Vivado-reported slack.",
     "Chapter 15 Tcl is a guarded demonstration; no vendor build or board programming is claimed.",
+    "Chapters 16, 18, 19, 23, 24 and 25 describe tool and protocol behavior from vendor or open-source documentation; no vendor build, timing report or board measurement is claimed.",
     "Chapter 17 IP resource, port-name and timing examples are illustrative; check vendor Product Guides and your own implementation report.",
     "Chapters 20-21 soft-core and RISC-V figures (resources, frequency, DMIPS) are deliberately omitted; they depend on configuration, device and speed grade.",
     "Chapter 22 transceiver line rates and link budgets are device/board specific and are not asserted; only PCIe per-generation rates are cited.",
