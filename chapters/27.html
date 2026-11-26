@@ -52,6 +52,7 @@ end</code></pre>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">07 / 边界与可验证条件</h2>
 <ul><li><strong>本文不给出任何 accuracy 或“xx% 的代码可用”的数字。</strong> 这类评测结论依赖模型版本、prompt 与任务集，很快过期，不能当作稳定事实引用。</li><li><strong>“自然语言 → 比特流”这类预测属于判断，不是数据。</strong> 可验证的是当下的工具能力（如 Tcl 可脚本化、MCP 是开放协议）；未来何时成熟没有可引用的依据。</li><li><strong>LLM 输出必须过完检查关才签收。</strong> 尤其 CDC、约束与验证覆盖率，必须由人负责（第 13、14、25 章）。</li><li><strong>本章不背书任何具体 AI 产品或厂商集成的准确率。</strong></li></ul>
+<details class="exercise"><summary>思考练习：为什么不能拿某个模型“xx% 的代码可直接使用”作为设计依据？</summary><p>这类结论强依赖模型版本、prompt 与任务集，会很快过期，不是稳定事实。可验证的是当下的工具能力（如 Tcl 可脚本化、MCP 是开放协议）。更重要的是，LLM 生成的 RTL、约束与验证代码必须过完人的检查关才能签收，尤其是 CDC、时序约束与覆盖率（第 13、14、25 章）。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">08 / 延伸阅读与资料来源</h2>
 <ol class="source-list">

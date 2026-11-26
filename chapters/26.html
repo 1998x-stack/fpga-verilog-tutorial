@@ -84,6 +84,7 @@ endmodule</code></pre>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">06 / 边界与可验证条件</h2>
 <ul><li><strong>C 仿真通过 ≠ 硬件行为一致。</strong> 必须跑 C/RTL 协同仿真，并在有具体接口时确认握手/延时符合预期。</li><li><strong>综合前的资源与延时是估算。</strong> 布局布线后的实际资源与频率可能明显不同；任何“省了多少资源”的结论都必须附实现报告。</li><li><strong>时序精确性差是 HLS 的固有特征。</strong> 需要精确周期行为的模块（DDR 控制器、协议状态机）仍应手写 RTL。</li><li><strong>本章不给出任何资源/性能百分比或吞吐率数字。</strong> 它们依赖工具版本、目标器件、时钟约束与代码风格。</li></ul>
+<details class="exercise"><summary>思考练习：为什么 C 仿真通过，不能直接推出 HLS 生成的硬件行为也一致？</summary><p>C 仿真是纯软件执行，不带时钟、握手和流水线时序。要把行为拉回到硬件，必须跑 C/RTL 协同仿真，并在有具体接口时确认握手与延时符合预期。同时，综合前的资源与延时只是估算；布局布线后的实际资源与频率可能明显不同，任何“省了多少”的结论都必须附实现报告。对上时序精确性要求高的模块（如 DDR 控制器、协议状态机）仍应手写 RTL。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">07 / 延伸阅读与资料来源</h2>
 <ol class="source-list">

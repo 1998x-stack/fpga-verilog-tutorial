@@ -91,6 +91,7 @@ endmodule</code></pre>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">08 / 边界与可验证条件</h2>
 <ul><li><strong>本文不给出模块的 LUT/FF/BRAM 用量或可达频率。</strong> 这些依赖器件、工具版本与实现，必须看你的实现报告。</li><li><strong>带宽是算术，能否达到是工程。</strong> 36.864 MB/s 只是像素流的理想值；真实带宽还依赖控制器效率、突发长度、刷新与访问冲突。</li><li><strong>传感器寄存器表不在本文给出。</strong> 必须查具体型号的数据手册或参考驱动；照抄其他型号的表会得到黑屏或噪声。</li><li><strong>阈值、灰度系数与显示参数都是可调量。</strong> 它们随传感器、光照与显示设备变化。</li></ul>
+<details class="exercise"><summary>思考练习：为什么“36.864 MB/s”不能当作系统一定能达到的带宽？</summary><p>因为该值只是像素流的理想算术：像素时钟与每像素位宽相乘得到的上限。真实带宽还取决于存储控制器效率、突发长度、DRAM 刷新开销与访问冲突，以及写入/读取能否重叠。要得到能达标的结论，必须给出器件、控制器配置与实测（或实现报告），而不是只靠除法。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">09 / 延伸阅读与资料来源</h2>
 <ol class="source-list">
