@@ -17,6 +17,7 @@
 <figure><div class="diagram-scroll"><img src="../assets/svg/18-project-layout.svg" alt="左侧是需要纳入 Git 的源文件、约束与 IP 配置；右侧是构建输出、IP 生成缓存、日志与比特流，应通过 .gitignore 排除；两者分离后同一份源码可在任意机器上重建。" width="960" height="500" loading="lazy"></div><figcaption>可版本控制的部分（左）与可重建的生成产物（右）：只有把两者分开，提交历史才能保持可审查，新成员也才能快速拉取并重建工程。</figcaption></figure></section>
 <section id="ignore" aria-labelledby="ignore-h"><h2 id="ignore-h">03 / .gitignore：什么不该进版本控制</h2>
 <p>把生成产物排除在外，靠的是 <code>.gitignore</code>。下面是一份覆盖 Vivado 与 Quartus 常见生成物的模板（具体工具版本会带来差异，应以实际产出的目录/后缀为准）：</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-project-tree.svg" alt="版本控制保留设计输入与生成配置，排除可再生的编译缓存与临时数据库。" width="960" height="520" loading="lazy"></div><figcaption>版本控制保留两类东西：设计输入（RTL、约束、IP 配置）与需要长期保存的生成配置；而编译缓存、临时数据库这类可再生内容应当排除。这条边界决定了提交历史是否可审查。</figcaption></figure>
 <pre><code># 构建输出（可重建）
 build/
 *.runs/
@@ -59,7 +60,8 @@ work/
 <p><code>.gitignore</code> 只影响<strong>以后</strong>的提交；它不会把已经写进历史的大文件删除。如果仓库因为误提交的比特流或 IP 缓存而变得臃肿，需要重写历史来清理。常用工具是 <code>git filter-repo</code>，也可用 BFG Repo-Cleaner。</p>
 <div class="callout warn">重写历史会改变已发布提交的哈希，对协作者影响很大：每个人都需要重新克隆或按维护者说明重置本地分支。清理前应先备份镜像、通知协作者，并避免对已发布的主分支直接操作。</div>
 <p>预防比清理便宜得多。一个实际可行的做法是：<strong>在初始化仓库时就把 .gitignore 写好</strong>，并在提交前用 <code>git status</code> 确认没有意外的二进制文件被加入。对于必须保存的大文件的发行产物（如发布的比特流），应放在发行版或对象存储里，而不是普通仓库中。</p>
-<p>除了大文件，另一个需要版本控制思路的地方是“构建的可追踪性”：把顶层源文件、约束、工具版本，以及关键报告（时序总结、利用率）一并记录。这样出问题时可以回到某个具体提交重建，而不是靠记忆。</p></section>
+<p>除了大文件，另一个需要版本控制思路的地方是“构建的可追踪性”：把顶层源文件、约束、工具版本，以及关键报告（时序总结、利用率）一并记录。这样出问题时可以回到某个具体提交重建，而不是靠记忆。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-reproducible-build.svg" alt="源代码、器件、工具版本、约束、IP 配置与实现种子共同决定一次构建。" width="960" height="520" loading="lazy"></div><figcaption>一次构建由多个坐标共同决定：源代码、器件、工具版本、约束、IP 配置与实现种子。只记录其中一部分，就无法判定两次构建差异来自哪里。</figcaption></figure></section>
 <section id="style" aria-labelledby="style-h"><h2 id="style-h">05 / 命名与协作约定</h2>
 <p>命名不是审美问题，而是让代码可被快速理解的前提。下面是一套常见且不自相矛盾的约定，团队内部保持一致比“选哪一套”更重要：</p>
 <div class="table-wrap"><table><caption>命名约定的常见做法</caption><thead><tr><th>对象</th><th>约定</th><th>示例</th></tr></thead><tbody>
@@ -75,5 +77,6 @@ work/
 <p>把本章落到可执行的动作上，一个工程至少要满足：</p>
 <ol><li>源文件、约束、IP 配置均在版本控制中，且可从零构建。</li><li>构建产物、生成缓存与比特流不在版本控制中（且有 <code>.gitignore</code> 防护）。</li><li>构建所需的工具版本与命令在仓库内可查（如 README 或脚本）。</li><li>顶层源文件、器件 part 与约束文件名固定，不依赖开发者本地路径。</li><li>关键报告（时序总结、利用率）可随提交保存。</li></ol>
 <p>满足这五条，另一个人拿到仓库后才能重建同一份设计。缺任何一条，“我这里能跑”就无法变成可复核的结论。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-release-gates.svg" alt="合并请求先通过静态检查、仿真与工具构建，再发布带有器件与工具信息的版本。" width="960" height="520" loading="lazy"></div><figcaption>从开发分支到交付的证据门禁：静态检查、仿真、工具构建逐级通过后，才发布带有器件与工具版本信息的版本。这里的“构建”指工具链可复现地跑通，而不是断言已经生成或下载了比特流。</figcaption></figure>
 <details class="exercise"><summary>思考练习：为什么“把整个工程目录压缩后传给同事”不算可复现？</summary><p>因为它没有记录“哪些文件是源头、哪个工具版本、用了什么命令”。接收方得到的是结果快照，而不是能从源文件重建的流程；一旦需要修改或排查，仍然无法确定哪些变动会影响综合与实现。</p></details></section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">延伸阅读与资料来源</h2><ol class="source-list"><li><a href="https://git-scm.com/book/zh/v2" target="_blank" rel="noopener noreferrer">Pro Git（中文版）：版本控制基础</a></li><li><a href="https://github.com/newren/git-filter-repo" target="_blank" rel="noopener noreferrer">git-filter-repo：重写历史以移除大文件</a></li><li><a href="https://docs.amd.com/r/en-US/ug892-vivado-design-flows-overview/Using-Non-Project-Mode-Tcl-Commands" target="_blank" rel="noopener noreferrer">AMD UG892：非工程模式 Tcl 命令</a></li><li><a href="https://verilator.org/guide/latest/exe_verilator.html" target="_blank" rel="noopener noreferrer">Verilator：verilator 命令与 --lint-only</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="17.html">← 上一章</a><a href="../index.html">课程首页</a><a href="19.html">下一章 →</a></nav></article></main></div></body></html>

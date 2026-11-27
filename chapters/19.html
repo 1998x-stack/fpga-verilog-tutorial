@@ -19,6 +19,7 @@
 <p>AXI4 的每条通道都用同一套两点握手：发送方拉高 <code>VALID</code> 表示“数据已就绪”，接收方拉高 <code>READY</code> 表示“可以接收”，两者在同一时钟上升沿同时为高时完成一次传输。四条规则构成全部机制：</p>
 <ol><li><strong>VALID 只能由发送方内部状态决定。</strong> 发送方不得等对方 READY 拉高后才拉高 VALID。</li><li>VALID 一旦拉高，在握手完成之前不得拉低。</li><li>READY 可以由接收方自行决定何时拉高，也可以先于 VALID 出现。</li><li>只有 VALID 与 READY 同时为高，才完成一次传输。</li></ol>
 <p>第 1 条是整个协议不会死锁的关键。假设双方都“等对方先举手”：Master 等 Slave 的 READY 才拉 VALID，Slave 又等 Master 的 VALID 才拉 READY。两者的下一步都依赖于对方的输出，而这个依赖环路里没有任何一个可以独立成立的起点，第一个传输就永远不会发生。规范把 VALID 的所有权强制归给发送方，就切断了这个环路。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/19-valid-ready.svg" alt="VALID 拉高后保持；payload 维持稳定，直到 READY 与 VALID 在采样沿同时为高时完成传输。" width="960" height="520" loading="lazy"></div><figcaption>握手时序：VALID 一旦拉高，在握手完成前不得拉低，其间 payload 必须保持稳定；READY 可以晚于 VALID 出现，也可以先于 VALID 拉高。</figcaption></figure>
 <div class="callout warn">注意对称性的差异：<strong>READY 可以等待 VALID，但 VALID 不可以等待 READY。</strong> 只要记住这一条，就避开了最常见的一类死锁。反过来的方向则是合法的——Slave 完全可以先把 READY 拉高，等着接收。</div>
 <p>握手还有三种典型时序：VALID 先到、READY 后到；READY 先就绪、VALID 后到；两者同时拉高（零等待）。一个健壮的 Slave 应对三者都正确，而不是只处理自己写 testbench 时恰好遇到的那一种。</p>
 <p>需要区分的是：握手规则保证<strong>单条通道</strong>上的传输不会卡死，但一个完整事务（如“先收 AW 再收 W 再回 B”）的顺序与依赖由 Slave 的状态机负责。协议规定了通道间的先后约束，Slave 仍可能因为自己的圆环依赖而卡住，这是设计问题，不是协议缺陷。</p></section>
@@ -61,6 +62,7 @@
     input  wire              RREADY
 );</code></pre>
 <p>握手策略选择最简单的一种：<strong>AWREADY 与 WREADY 恒为高</strong>，表示从设备总在准备好接收地址与数据。写入在 AW 与 W 同拍同时有效时发生。这并不是唯一正确做法，但能让第一版逻辑保持可读；真实设计往往在内部忙时拉低 READY。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/19-axi-lite-write.svg" alt="写地址与写数据分别缓存：AW 与 W 各自握手后，两者都到齐才执行寄存器写入，再通过 B 通道返回响应。" width="960" height="520" loading="lazy"></div><figcaption>AW 与 W 不同时到达时的处理：把先到的那个缓存下来，等两者都握手后再提交写入，最后用 B 通道返回响应。仓库中的 <code>examples/rtl/axi4lite_regs.v</code> 就是按这个结构写的。</figcaption></figure>
 <pre><code>    reg [DATA_W-1:0] ctrl, status, data_in, data_out;
 
     // 始终可以接收地址与数据
@@ -115,7 +117,8 @@
         end
     end
 endmodule</code></pre>
-<p>三段逻辑各自只关心一件事：<strong>写数据落存</strong>、<strong>写响应状态机</strong>、<strong>读数据寄存与 RVALID</strong>。它们共用同一个时钟与复位，每个输出都是寄存器或完全赋值的组合输出。</p></section>
+<p>三段逻辑各自只关心一件事：<strong>写数据落存</strong>、<strong>写响应状态机</strong>、<strong>读数据寄存与 RVALID</strong>。它们共用同一个时钟与复位，每个输出都是寄存器或完全赋值的组合输出。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/19-register-map.svg" alt="四个 32 位寄存器位于偏移 0x00、0x04、0x08、0x0C：CTRL 与 SCRATCH 可读写，STATUS 与 ID 只读。" width="960" height="540" loading="lazy"></div><figcaption>仓库中经 Icarus 仿真验证的示例 <code>examples/rtl/axi4lite_regs.v</code> 采用的寄存器映射：CTRL、STATUS、SCRATCH、ID 位于 0x00–0x0C，读写权限不同。本节的简化代码使用另一组偏移，两者都只用于教学。</figcaption></figure></section>
 <section id="check" aria-labelledby="check-h"><h2 id="check-h">06 / 自检、边界与常见错误</h2>
 <p>这个从设备规模很小，但已经足够体现验证 AXI 接口时应该问的问题。不管用哪种仿真器，至少检查以下场景：</p>
 <div class="table-wrap"><table><caption>AXI4-Lite 从设备的最小自检清单</caption><thead><tr><th>场景</th><th>预期现象</th></tr></thead><tbody>
@@ -125,7 +128,7 @@ endmodule</code></pre>
 <tr><td>读地址握手后 RVALID 未取走</td><td>ARREADY 拉低，不再接受新读地址</td></tr>
 <tr><td>复位中途拉低</td><td>所有输出回到确定初值</td></tr>
 </tbody></table></div>
-<div class="callout warn">本章的 RTL 是为了说明握手与通道结构而写的<strong>教学示例</strong>，未在本仓 CI 中逐项仿真验证。它省略了地址合法范围检查、非对齐访问、写选通 WSTRB、错误响应（SLVERR/DECERR）以及多笔未决事务处理。将这些假设直接用作真实外设之前，必须自行编写断言或 testbench 逐条覆盖。</div>
+<div class="callout warn">上面的 RTL 是为了说明握手与通道结构而写的<strong>教学简化版</strong>，与本仓经仿真验证的 <code>examples/rtl/axi4lite_regs.v</code> 不是同一份代码，且本章不对它逐项仿真。它省略了地址合法范围检查、非对齐访问、写选通 WSTRB、错误响应（SLVERR/DECERR）以及多笔未决事务处理。仓库中的示例则缓存了独立的 AW 与 W、支持 WSTRB 字节使能与 B/R 反压，并由 <code>examples/tb/tb_axi4lite_regs.sv</code> 在 Icarus 下回归；即使如此，它仍只是 32 位、单 outstanding 的子集，不等于完整 AXI4 或已验证的 IP。将这些假设用于真实外设前，必须自行编写断言或 testbench 逐条覆盖。</div>
 <p>最后回到两个最容易出错的点。第一，<strong>VALID 不能等 READY</strong>——一旦养成“先看对方 READY 再决定自己 VALID”的习惯，接口就会在某个未预料到的时序组合下卡死。第二，<strong>别把两家协议的信号名混为一谈</strong>：Verilog 里连接 AXI 用的是普通信号与握手逻辑，参考 AXI-Stream 的 <code>TREADY</code> 与 AXI4 的 <code>READY</code> 是同一思想但不同命名，交叉连线前先核对通道归属。</p>
 <details class="exercise"><summary>思考练习：为什么“AWREADY 恒为 1”会让实现变简单，却不一定最忧？</summary><p>恒为高意味着 Slave 承诺随时能收地址，就不必为地址做反压与缓存。但如果写入逻辑会在时钟周期上冲突（例如寄存器阵列只有一组写端口），恒为高就会要求内部总是能立即消化——否则就需要额外的地址 FIFO，反而更复杂。真实从设备通常根据内部饱满度动态驱动 READY。</p></details></section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">延伸阅读与资料来源</h2><ol class="source-list"><li><a href="https://developer.arm.com/documentation/ihi0022/latest/" target="_blank" rel="noopener noreferrer">ARM AMBA AXI 协议规范（IHI0022）</a></li><li><a href="https://docs.amd.com/r/en-US/ug1037-vivado-axi-reference-guide" target="_blank" rel="noopener noreferrer">AMD AXI Reference Guide (UG1037)</a></li><li><a href="https://docs.amd.com/r/en-US/ug908-vivado-programming-debugging" target="_blank" rel="noopener noreferrer">AMD UG908：Vivado 硬件管理器与调试</a></li></ol></section><nav class="endnav" aria-label="章节导航"><a href="18.html">← 上一章</a><a href="../index.html">课程首页</a><a href="20.html">下一章 →</a></nav></article></main></div></body></html>
