@@ -8,6 +8,7 @@
 <tr><td>跨时钟域未做正确处理</td><td>路径跨越不相关的时钟，需要同步或约束例外</td></tr>
 </tbody></table></div>
 <p>注意最后一行的两种可能性：真正的 CDC 需要同步器或握手，而工具报告“违例”只是因为两个时钟本就不该被比较，应用约束例外告知工具。这两种情况不能混为一谈——前者是设计问题，后者是约束问题。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/25-setup-path.svg" alt="建立预算：launch 寄存器经组合逻辑到 capture 寄存器；setup slack 包含时钟周期、capture 减 launch 的 skew、uncertainty、setup 时间与数据延迟。" width="960" height="540" loading="lazy"></div><figcaption>建立余量的构成：一个周期 T 内，数据要在捕获沿前稳定；可用余量同时被时钟偏斜、uncertainty、setup 时间与数据路径延迟消耗。看懂这条式子，才能把报告里的“净延迟/逻辑延迟”对应到具体环节。</figcaption></figure>
 <figure><div class="diagram-scroll"><img src="../assets/svg/25-closure-steps.svg" alt="时序收敛的推进顺序：先确认约束，再读报告按 WNS/TNS 排序；先在 RTL 层修复（插流水级、降扇出、重构），不够再用物理优化、Pblock 与手动 LOC；每次修改后重新实现并对比结果。" width="960" height="520" loading="lazy"></div><figcaption>从约束检查到 RTL 修改再到物理约束：每一步都应以实现报告中的 WNS/TNS 与资源占用作为验证依据，而不是凭感觉。图中不含真实时序值，因为真实值取决于器件、工具版本与约束。</figcaption></figure></section>
 <section id="report" aria-labelledby="report-h"><h2 id="report-h">02 / 从报告定位：WNS、TNS 与路径明细</h2>
 <p>时序收敛的起点是一份可信的报告。Vivado 中常用 <code>report_timing_summary</code> 与 <code>report_timing -max_paths N</code>；先确认约束是否被正确接受，再谈优化。</p>
@@ -42,6 +43,7 @@ assign result = stage2;</code></pre>
 <tr><td>I/O 功耗</td><td>外部接口驱动与端接</td><td>I/O 标准、驱动强度、翻转率</td></tr>
 </tbody></table></div>
 <div class="callout warn"><strong>不要背“动态占多少百分比”这类数字。</strong> 动态与静态功耗的比例强烈依赖器件系列、开关活动率、温度与电压。除非给出具体 part、工具版本、活动率假设和报告，否则任何“典型占比”都不能当作可验证的结论。</div>
+<figure><div class="diagram-scroll"><img src="../assets/svg/25-power-model.svg" alt="动态功耗取决于翻转活动、有效电容、电压平方与频率；静态漏电、时钟、I/O 与收发器功耗也必须一并考虑。" width="960" height="540" loading="lazy"></div><figcaption>功耗的分解：动态功耗与翻转活动、有效电容、电压平方和频率相关；此外还有静态漏电、时钟树、I/O 与收发器功耗。各项比例依赖器件与工况，必须以工具报告为准。</figcaption></figure>
 <p>能确定性改善功耗的动作，通常是降低翻转率与减少无意义活动：让不工作的模块停止计数、避免无必要的高频信号扇出、选择合适的 I/O 标准与驱动强度。这些动作都会在 <code>report_power</code> 的细分里体现，可以被逐项验证。</p></section>
 <section id="clock" aria-labelledby="clock-h"><h2 id="clock-h">05 / 时钟使能优于门控时钟</h2>
 <p>在 FPGA 中降低动态功耗的常见误区是“手动门控时钟”。用组合逻辑（如 AND）去开关一个时钟，会在时钟路径上引入毛刺与偏移（skew），可靠性差。FPGA 器件通常提供带使能的时钟缓冲原语，或在全局时钟资源上提供等价能力；但在大多数 RTL 设计中，更推荐的做法是<strong>用时钟使能（CE）而不是门控时钟</strong>。</p>

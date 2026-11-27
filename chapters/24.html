@@ -45,6 +45,7 @@ set_io led     <pin></code></pre>
 <tr><td>GOWIN</td><td>Apicula、nextpnr-gowin</td><td>由社区项目提供器件数据与位流工具</td></tr>
 <tr><td>AMD 7 系列等</td><td>nextpnr-xilinx / F4PGA</td><td>可用但与商业实现相比能力与成熟度有差异</td></tr>
 </tbody></table></div>
+<figure><div class="diagram-scroll"><img src="../assets/svg/24-backend-map.svg" alt="nextpnr README 列出的后端：iCE40、ECP5、Nexus、Gowin、NanoXplore NG-Ultra 与 GateMate；其中 Nexus、Cyclone V、MachXO2 与 Xilinx 7-Series 属实验性，NG-Ultra 的位流生成依赖专有 Impulse。" width="960" height="560" loading="lazy"></div><figcaption>nextpnr 后端支持现状：上游 README 列出的后端中，Nexus、Cyclone V、MachXO2 与 Xilinx 7-Series 标记为实验性（alpha/experimental），NanoXplore NG-Ultra 的布局布线到位流还需要专有 Impulse 工具。“有后端”不等于“生产可用”，具体以项目 README 当天内容为准。</figcaption></figure>
 <p>因此“开源工具链能不能用”这个问题，正确的问法是两个：<strong>我的目标器件在不在支持列表里？</strong> 以及 <strong>我的设计对时序分析的需求有多深？</strong> 前者决定综合与布局布线能不能跑完，后者决定结果能不能被信任。</p>
 <div class="callout warn">不要用开源实现产出的位流代替官方时序签核。开源静态时序分析的能力通常限于部分 SDC 子集，而商业工具会结合器件特性与工艺角落做更完整的分析。对需要严格建立/保持余量的设计，最终签核应回到厂商工具与官方报告。</div></section>
 <section id="verilator" aria-labelledby="verilator-h"><h2 id="verilator-h">05 / Verilator：把 RTL 编译成 C++ 模型</h2>
