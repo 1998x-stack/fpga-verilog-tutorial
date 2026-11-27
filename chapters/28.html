@@ -12,6 +12,7 @@
 </tbody></table></div>
 <figure><div class="diagram-scroll"><img src="../assets/svg/28-vision-pipeline.svg" alt="视觉流水线：摄像头经 DVP 送出像素到采集模块，写入 DDR 帧缓存；处理模块从帧缓存读出像素，经灰度与 Sobel 输出边缘图；显示模块按扫描时序从帧缓存读出并输出到屏幕。跨越不同时钟域的边界用异步 FIFO 或握手连接。" width="980" height="500" loading="lazy"></div><figcaption>枢纽是“帧缓存”：采集与显示使用不同的时钟与扫描方式，必须通过带乒乓切换的帧缓存解耦。图中标注了需要显式 CDC 的边界。</figcaption></figure>
 <p>这里出现了一个关键选择：<strong>要不要用外部 DDR</strong>。若不处理整帧，可以在片内 Block RAM 中做一行/几行的行缓存，省下内存控制器（但这意味着分辨率/帧率受限）。若需要整帧缓存或高分辨率，就需要 DDR 控制器 IP（如 AMD 的 MIG，见 UG586）。两条路线的差异不在 RTL，而在系统带宽与成本。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-video-system.svg" alt="完整系统包括摄像头或物理接收端、像素域缓冲、视频处理、AXI 帧写入、DDR、AXI 帧读出与显示时序，并带 CDC 与帧所有权控制。" width="960" height="540" loading="lazy"></div><figcaption>带 DDR 的完整链条：摄像头 → 像素域缓冲 → 处理 → AXI 帧写入 → DDR → AXI 帧读出 → 显示时序。其中多个跨域边界（采集/内存/显示）需要显式 CDC，帧的读写还要靠所有权标志协调。</figcaption></figure>
 </section>
 <section id="capture" aria-labelledby="capture-h"><h2 id="capture-h">03 / 采集：DVP 与 SCCB</h2>
 <p>很多摄像头模块提供 <strong>DVP</strong> 并行接口和一条类似 I²C 的配置总线（常称 SCCB）。DVP 的时序很直接：</p>
@@ -23,6 +24,7 @@
 <p>处理分两步：先把颜色转成灰度，再用 3×3 卷积做边缘检测。灰度常用 ITU-R BT.601 的亮度权重（约 0.299R + 0.587G + 0.114B），为了避免浮点，用定点近似：</p>
 <div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="定点灰度公式"><code>Gray = (77*R + 150*G + 29*B) >> 8</code></div>
 <p>系数 77/150/29 是把 0.299/0.587/0.114 乘以 256 后取整的结果（参见 ITU-R BT.601）。截断误差与后续阈值都需要根据实际图像调，而不是当成通用最小值。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-pixel-threshold.svg" alt="24 位 RGB 输入分别乘以 77、150、29，加 128 后右移 8 位得到 grad8，再与 8 位阈值比较输出 0 或 255，同时保留 SOF/EOL 标记。" width="960" height="540" loading="lazy"></div><figcaption>RGB → 加权灰度 → 二值化的定点流水线：77/150/29 是 0.299/0.587/0.114 乘 256 取整的结果，加 128 做四舍五入再右移 8 位，最后与阈值比较。帧首/行尾标记随像素一起传递，不能被丢掉。</figcaption></figure>
 <p>Sobel 需要一个滑动 3×3 窗口。它由<strong>两个行缓存 + 一条移位寄存器链</strong>构成：每个新像素到来时，窗口向右滑动一列，到达行尾时整体下移一行。这正是第 12 章“流水线/行缓存”在二维图像上的应用。</p>
 <figure><div class="diagram-scroll"><img src="../assets/svg/28-sobel-window.svg" alt="Sobel 3×3 窗口：由两行行缓存与一条移位寄存器链组成滑动窗口；Gx 用左右两列加权差，Gy 用上下两行加权差；梯度幅值用 |Gx|+|Gy| 近似。" width="960" height="460" loading="lazy"></div><figcaption>3×3 窗口不是三个数组，而是“上一行 / 当前行 / 移位链”拼接出的组合。连续流式处理时每拍都能产生一个新窗口。</figcaption></figure>
 <p>下面的卷积核心是简化版，只展示 Gx/Gy 的加权与幅值近似：</p>
@@ -51,9 +53,11 @@ end</code></pre>
 <section id="buffer" aria-labelledby="buffer-h"><h2 id="buffer-h">05 / 帧缓存与乒乓缓冲</h2>
 <p>采集与显示使用<strong>不同的时钟、不同的扫描方式</strong>，中间必须用帧缓存解耦。如果采与显共用一块内存且不同步，就会出现“写一半读”的画面撕裂。做法是在内存中开两块帧缓冲，写指向 A 时读指向 B，一帧结束后交换——这就是<strong>乒乓缓冲</strong>。</p>
 <p>指针切换发生在帧边界（如 VSYNC），但读写可能在各自时钟域。因此切换信号（或整块缓冲的所属标志）必须用同步器/握手跨域——不能把同一个多比特地址在两个域里各取一次。这是第 13 章 CDC 规则在系统层的直接应用。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-frame-ownership.svg" alt="写方填充非活跃缓冲，读方显示上一块完整缓冲；只有一帧结束且读方到达安全边界时才交换。" width="960" height="540" loading="lazy"></div><figcaption>双缓冲的所有权：写方始终填“非活跃”缓冲，读方始终读“完整”缓冲；交换只在一帧完整且读方到达安全边界时发生。这里的切换标志是跨域信号，必须用同步器/握手跨越。</figcaption></figure>
 <p>带宽是否够？可以用一个确定性算术先卡一道（以下数字为<strong>教学示意</strong>）：640×480 分辨率、每像素 RGB565 占 2 字节、60 帧/秒时，</p>
 <div class="math-scroll" data-math-scroll tabindex="0" role="region" aria-label="像素带宽计算"><code>640 × 480 × 2 B × 60 = 36.864 MB/s</code></div>
 <p>内存控制器需要同时承载“写入一帧”与“读出一帧”，所以有效需求约为这个数字的数倍（再加上行缓存与突发开销）。具体能不能达到，取决于内存类型、数据宽度、控制器效率与访问模式，必须看实现报告与仿真，不能只靠乘法。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/28-bandwidth.svg" alt="1920×1080 RGB888 一帧为 6220800 字节，两块缓冲需 12441600 字节，60 帧/秒下持续的写加读至少传输 746496000 有效像素字节/秒。" width="960" height="540" loading="lazy"></div><figcaption>换成 1080p、RGB888 的另一组常见配置时，同样的裸像素预算公式：一帧 6220800 字节，两块缓冲 12441600 字节，60 fps 下读写合计至少 746496000 像素字节/秒。它与正文的 640×480 RGB565 例子是不同配置，均应注明像素格式与帧率。</figcaption></figure>
 </section>
 <section id="display" aria-labelledby="display-h"><h2 id="display-h">06 / 显示时序：640×480@60</h2>
 <p>显示模块要做的只是“数点、数行、在每个区间置电平”。以业界沿用的 640×480@60 时序为例：像素时钟约 25.175 MHz，一行共 800 个像素周期（640 可见 + 16 前肩 + 96 同步 + 48 后肩），一帧共 525 行（480 可见 + 10 + 2 + 33）。这些参数属于显示时序规范（参见 VESA），不同分辨率/帧率需换表。</p>
