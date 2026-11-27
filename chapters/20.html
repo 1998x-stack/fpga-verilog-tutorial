@@ -19,6 +19,7 @@
 <p>厂商工具把搭建软核系统做成了一条向导链。以 Vivado 的 IP Integrator（UG994）为例，典型步骤是：</p>
 <ol><li><strong>创建 Block Design</strong>：新建一个 .bd 画布，而不是从空顶层开始写 RTL。</li><li><strong>加入 MicroBlaze IP</strong>：从 IP Catalog 把处理器拖入画布。</li><li><strong>Run Block Automation</strong>：向导会根据你的选择自动补上内存控制器（如 MIG）、AXI Interconnect、调试模块（MDM）、时钟（Clocking Wizard）与复位（Proc Sys Reset）等。</li><li><strong>加入外设</strong>：拖入 AXI GPIO、AXI UART Lite、AXI Timer 等，再用 <strong>Run Connection Automation</strong> 自动连线。</li><li><strong>Validate Design</strong>：检查地址映射是否重叠、接口是否全部连接。</li><li><strong>Create HDL Wrapper</strong>：工具生成一个顶层 Verilog/VHDL，把 .bd 里的 IP 与连线例化成可综合代码。</li></ol>
 <p>向导帮你做的事，本质上就是第 17、第 19 章的手工工作：例化 IP、用 AXI 总线把主从接口连起来、分配地址、接好时钟与复位。理解这一点后，你会知道“自动”只省了连线的力气，并没有替你决定<strong>地址映射、时钟域与中断优先级</strong>——这些仍需你判断。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/20-address-map.svg" alt="处理器发出地址，互连按地址窗口选择一个外设；每个窗口的范围必须不重叠。" width="960" height="520" loading="lazy"></div><figcaption>地址映射把软件指针变成硬件事务：处理器只发地址，由互连根据预定义的地址窗口选中一个外设；若两个窗口范围重叠，同一地址就会命中多个从设备。Block Design 的 Validate Design 正是在检查这一类冲突。</figcaption></figure>
 <div class="callout note">具体选项名称与默认器件映射随工具版本变化；本文不固化任何版本 UI 细节，只描述流程骨架（参见 UG994）。</div>
 </section>
 <section id="sw" aria-labelledby="sw-h"><h2 id="sw-h">04 / 软件侧：Vitis 平台、应用与 BSP</h2>

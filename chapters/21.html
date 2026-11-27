@@ -52,6 +52,7 @@
     //   下文只展开 ALU 与冒险两部分）
 endmodule</code></pre>
 <p>真正的完整实现还需要：控制译码（各类指令产生 <code>reg_wr</code>/<code>mem_we</code>/<code>alu_src</code> 等信号）、立即数拼接（六种格式各自的拼法）以及冒险处理。前两者是纯组合逻辑，难在写全；后者是流水线正确性的核心，下一节展开。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/21-pipeline.svg" alt="指令依次流经 IF、ID、EX、MEM、WB 五段，四组流水线寄存器把它们隔开；前推路径把更新的结果绕过寄存器堆直接送回 EX 操作数。" width="960" height="540" loading="lazy"></div><figcaption>五级流水线的结构：相邻两段之间是流水线寄存器，指令在各段并行推进；前推路径让尚未写回的结果直接回到 EX 段操作数。</figcaption></figure>
 </section>
 <section id="alu" aria-labelledby="alu-h"><h2 id="alu-h">04 / ALU：EX 段的核心</h2>
 <p>EX 段把两个操作数和操作码送给 ALU。RV32I 的整数运算可以用一个组合 ALU 完成：</p>
@@ -92,6 +93,7 @@ endmodule</code></pre>
 <pre><code>add x1, x2, x3   # 结果到 EX/MEM 阶段结束时可用
 sub x4, x1, x5   # 紧接着使用 x1</code></pre>
 <p>在 <code>sub</code> 进入 EX 的那一拍，<code>x1</code> 尚未写回（WB 在后面）。但 <code>add</code> 的结果已经在 EX/MEM 锁存。因此在 EX 前插入一个旁路多路选择器：若 <code>sub</code> 的 <code>rs1</code> 地址等于 <code>add</code> 的 <code>rd</code> 地址，就用 EX/MEM 里的值替代寄存器堆读出的值。这样连续相关的两条 R-type 指令不用停顿也能算对。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/21-hazards.svg" alt="前推优先级：EX/MEM 优先于 MEM/WB，并排除 rd=x0；load-use 依赖使流水线前端停顿一拍并插入气泡。" width="960" height="540" loading="lazy"></div><figcaption>两种依赖的处理判据：EX/MEM 的结果比 MEM/WB 更新，因此优先级更高，且 rd=x0 不参与前推；而 load-use 因为结果到 MEM 段末才可用，必须停顿一拍并插入气泡。</figcaption></figure>
 <p>这也是为什么流水线 CPU 的验证不能只“跑几个程序就交差”：编译器往往在相关指令之间插入其他指令，把依赖“撞”没了，使一个缺少前推的实现<strong>在大多数输入下都看上去正确</strong>。要发现它，需要能穷举 RAW 依赖组合的定向测试。</p>
 </section>
 <section id="run" aria-labelledby="run-h"><h2 id="run-h">06 / 在 FPGA 上运行 C 程序</h2>
