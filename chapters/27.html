@@ -18,6 +18,9 @@
 <ol><li><strong>lint / 语法与可综合性：</strong>先用工具扫除不可综合构造、位宽不匹配、未驱动的信号。</li><li><strong>单元仿真：</strong>用定向 testbench 验证接口契约与关键场景（第 8 章）。</li><li><strong>CDC 审查：</strong>凡跨时钟的路径，逐条追问“这里用了几级同步器？是不是多比特需要握手/格雷码？”（第 13 章）。</li><li><strong>时序与约束：</strong>在目标器件上综合实现，看报告中的 WNS/TNS 与扇出（第 25 章）。</li><li><strong>形式/等价检查（可选）：</strong>对控制逻辑可用形式验证或与参考实现做等价比较。</li></ol>
 <figure><div class="diagram-scroll"><img src="../assets/svg/27-ai-review.svg" alt="LLM 生成的 RTL 依次经过 lint、单元仿真、CDC 审查、综合实现与时序报告、可选形式检查，全部通过后才进入签收。任一关失败都退回修改，人工负责最终签收。" width="980" height="470" loading="lazy"></div><figcaption>把“AI 生成”当成一个普通代码来源：它必须和手写代码一样过完所有检查关。检查关的顺序是先便宜后昂贵：语法/仿真先于完整实现。</figcaption></figure>
 <div class="callout warn"><strong>最容易漏的一关是仿真：</strong>LLM 代码在功能仿真里“过了”，只能说明它在你给的激励下算对了。它没有告诉你<strong>没测到的情形</strong>——而那往往是上层接口或 CDC 出错的地方。</div>
+<p>生成 ready/valid 接口时，光看“功能对了”还不够：还要验证背压下 payload 是否保持稳定，以及弹性缓存在同时入队/出队时的行为。仓库中的 <code>examples/rtl/ready_valid_slice.v</code>（16 位、单 entry、单时钟、低有效同步复位）就是这类可回归的小模块，对应的 <code>examples/tb/tb_ready_valid_slice.v</code> 用定向与随机顺序覆盖了这些场景。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/27-backpressure.svg" alt="连续多拍 TVALID=1 而 TREADY=0 时，payload A 保持不变；在握手那一拍 A 被传输，之后的 payload B 才替换它。" width="960" height="540" loading="lazy"></div><figcaption>背压时序：VALID 拉高而 READY 为低期间，payload 必须保持稳定；直到 VALID 与 READY 同一沿为高的握手拍，数据才被取走，下一笔 payload 才能在随后替换它。</figcaption></figure>
+<figure><div class="diagram-scroll"><img src="../assets/svg/27-elastic-state.svg" alt="单 entry 弹性缓存：空时接受输入；满且下游停顿时保持 payload 与 valid；同时出队与入队时替换当前 payload。" width="960" height="540" loading="lazy"></div><figcaption>单 entry 弹性缓存的状态：空时接受输入，满时在管存；当出队与入队同一拍发生时替换当前 payload。它无组合数据旁路，因此有一拍寄存延迟，且 m_ready 到 s_ready 存在组合依赖。</figcaption></figure>
 </section>
 <section id="facts" aria-labelledby="facts-h"><h2 id="facts-h">04 / 可验证的工具事实：Tcl 与 MCP</h2>
 <p>在讨论“AI 工具链”时，先把可验证的事实与预测分开。两个确定的事实：</p>
@@ -52,6 +55,7 @@ end</code></pre>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">07 / 边界与可验证条件</h2>
 <ul><li><strong>本文不给出任何 accuracy 或“xx% 的代码可用”的数字。</strong> 这类评测结论依赖模型版本、prompt 与任务集，很快过期，不能当作稳定事实引用。</li><li><strong>“自然语言 → 比特流”这类预测属于判断，不是数据。</strong> 可验证的是当下的工具能力（如 Tcl 可脚本化、MCP 是开放协议）；未来何时成熟没有可引用的依据。</li><li><strong>LLM 输出必须过完检查关才签收。</strong> 尤其 CDC、约束与验证覆盖率，必须由人负责（第 13、14、25 章）。</li><li><strong>本章不背书任何具体 AI 产品或厂商集成的准确率。</strong></li></ul>
+<figure><div class="diagram-scroll"><img src="../assets/svg/27-quality-matrix.svg" alt="五层证据：语法/lint、定向与随机功能仿真、协议与 CDC 检查、综合 PPA、物理/器件签核。" width="960" height="540" loading="lazy"></div><figcaption>签收一段生成的 RTL，需要多层证据共同支撑：语法/lint、定向与随机功能仿真、协议与 CDC 检查、综合 PPA、物理/器件签核。模型 benchmark 的通过率不等于工程正确率——它是另一个层面的证据。</figcaption></figure>
 <details class="exercise"><summary>思考练习：为什么不能拿某个模型“xx% 的代码可直接使用”作为设计依据？</summary><p>这类结论强依赖模型版本、prompt 与任务集，会很快过期，不是稳定事实。可验证的是当下的工具能力（如 Tcl 可脚本化、MCP 是开放协议）。更重要的是，LLM 生成的 RTL、约束与验证代码必须过完人的检查关才能签收，尤其是 CDC、时序约束与覆盖率（第 13、14、25 章）。</p></details>
 </section>
 <section id="references" aria-labelledby="references-h"><h2 id="references-h">08 / 延伸阅读与资料来源</h2>
