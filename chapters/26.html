@@ -2,6 +2,7 @@
 <p class="intro">高层次综合（High-Level Synthesis，HLS）让你用 C/C++ 或 SystemC 写一个算法函数，由工具生成 RTL。但它的核心不是“语法翻译”，而是两个显式的硬件步骤：</p>
 <ul><li><strong>调度（Scheduling）：</strong>分析运算之间的数据依赖，决定每个操作落在哪个时钟周期。同一段 C 在“不流水”与“II=1 流水”下，调度结果完全不同。</li><li><strong>绑定（Binding）：</strong>把已调度的操作分配到具体资源（LUT、FF、DSP、BRAM）并决定复用关系。乘法很多时是多个 DSP 并行，还是一个 DSP 分时复用，由绑定与约束决定。</li></ul>
 <p>这两步是 HLS 与“写 C 跑 CPU”的根本区别：在 CPU 上，时间由指令序列决定；在 HLS 里，时间由<strong>调度</strong>决定，而调度受 pragma 与资源约束影响。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/26-memory-ports.svg" alt="双端口存储器每拍无法直接支撑四次独立读取；数组 banking 或 partition 可以用面积换取更多端口。" width="960" height="540" loading="lazy"></div><figcaption>绑定阶段常碰到的瓶颈：一块双端口 BRAM 每拍只能支持有限次独立读取。要每拍读更多元素，就得用数组 banking / partition 把它拆成多块，代价是更多 BRAM 与布线。这也解释了为何 <code>UNROLL</code> 后需要搭配 <code>ARRAY_PARTITION</code>。</figcaption></figure>
 <figure><div class="diagram-scroll"><img src="../assets/svg/26-hls-flow.svg" alt="HLS 流程：C/C++ 行为描述先经调度排到时钟周期，再经绑定分配到 LUT/FF/DSP/BRAM，最终生成 RTL。pragma 与目标时钟周期作为约束影响调度与绑定。C 仿真验证功能，C/RTL 协同仿真验证一致性。" width="960" height="500" loading="lazy"></div><figcaption>HLS 把“行为”与“微架构”分开：C 只描述行为，微架构由调度/绑定与 pragma 共同决定。因此同一份 C 可以有多种硬件结果。</figcaption></figure>
 <div class="callout warn"><strong>一个常见的误解：</strong>“会写 C 就会写 HLS”。调度与绑定阶段对<strong>组合逻辑延迟、存储带宽、资源数量</strong>敏感；不了解数字电路的 C 程序员，很容易综合出庞大而低效的硬件。</div>
 </section>
@@ -19,6 +20,7 @@
 <tr><td><code>DATAFLOW</code></td><td>任务级流水：不同阶段可重叠执行，上游未全部完成时下游即可开始</td><td>需要 FIFO 缓冲；对正确性前提要求高</td></tr>
 </tbody></table></div>
 <p>关键认识：<strong>pragma 不是“开关”，而是微架构约束</strong>。它们不保证结果，只是告诉工具你想要什么。综合后必须看报告中的 latency/II 与资源占用，再看协同仿真是否一致——这三者要一起看。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/26-ii-timeline.svg" alt="四段流水线每拍启动一个新样本，延迟为四拍、启动间隔（II）为一拍（假设无停顿）；这两个是不同度量。" width="960" height="540" loading="lazy"></div><figcaption>延迟（latency）与启动间隔（II）是两个不同的度量：前者是单个样本从进入到完成的拍数，后者是每隔多少拍能启动一个新样本。<code>PIPELINE II=1</code> 只是目标，能否达到取决于数据依赖与资源冲突。</figcaption></figure>
 </section>
 <section id="fit" aria-labelledby="fit-h"><h2 id="fit-h">04 / HLS 与手写 RTL 的适用边界</h2>
 <p>两者不是替代关系，而是分工。一个可操作的判断：</p>
@@ -88,6 +90,7 @@ module fir_filter #(parameter W=16, TAPS=16)(
     // 乘法 + 流水线加法树：需要手写寄存器级与系数常量（从略）
 endmodule</code></pre>
 <p>一个确定性的小验算（<strong>教学示意</strong>）帮助理解 FIR 本身：系数全为 1 时，<code>y[n] = x[n] + x[n-1] + x[n-2]</code>。若输入依次为 <code>1, 2, 3, 4</code>，则第三拍的输出 <code>y = 1+2+3 = 6</code>，第四拍 <code>y = 2+3+4 = 9</code>。HLS 与 RTL 都要算出同样的这个结果；区别只在两者的代码量、可读性与约束方式。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/26-fir-datapath.svg" alt="输入样本与三个延值按 1、2、2、1 加权，在 32 位中累加后除以 6；reset 清空历史，不一定是已证实存在的硬件复位引脚。" width="960" height="540" loading="lazy"></div><figcaption>四抽头 FIR 的数据通路：当前样本与三个延值按 1、2、2、1 加权，在 32 位累加器中求和后除以 6。图中的 reset 清空历史状态，但 C 函数里的一次调用并不等于已证明的硬件复位引脚，这一点在协同仿真里需要分开确认。</figcaption></figure>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">06 / 边界与可验证条件</h2>
 <ul><li><strong>C 仿真通过 ≠ 硬件行为一致。</strong> 必须跑 C/RTL 协同仿真，并在有具体接口时确认握手/延时符合预期。</li><li><strong>综合前的资源与延时是估算。</strong> 布局布线后的实际资源与频率可能明显不同；任何“省了多少资源”的结论都必须附实现报告。</li><li><strong>时序精确性差是 HLS 的固有特征。</strong> 需要精确周期行为的模块（DDR 控制器、协议状态机）仍应手写 RTL。</li><li><strong>本章不给出任何资源/性能百分比或吞吐率数字。</strong> 它们依赖工具版本、目标器件、时钟约束与代码风格。</li></ul>
