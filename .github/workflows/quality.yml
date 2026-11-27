@@ -14,12 +14,18 @@ jobs:
         run: python3 scripts/check_site.py
       - name: Install Icarus Verilog
         run: sudo apt-get update && sudo apt-get install -y iverilog
-      - name: Self-checking Verilog regression (12 testbenches)
+      - name: Self-checking Verilog regression (17 testbenches)
         run: bash scripts/run_rtl_tests.sh
-      - name: Model-only STA budget arithmetic
-        run: python3 -m unittest discover -s tests -p 'test_sta_budget.py' -v
+      - name: Python unit tests (STA, SerDes, frame budget and manifests)
+        run: python3 -m unittest discover -s tests -v
+      - name: Portable FIR4 C++ reference (not HLS synthesis)
+        run: make -C examples/hls/fir4 test
+      - name: Quartus project template contract (no Quartus installed)
+        run: python3 scripts/check_quartus_example.py
       - name: Vivado Tcl source contract (no Vivado installed)
         run: python3 scripts/check_vivado_example.py
+      - name: Open-source iCEstick flow contract (no FPGA tools installed)
+        run: python3 scripts/check_open_source_example.py
   browser:
     runs-on: ubuntu-latest
     steps:

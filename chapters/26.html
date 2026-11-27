@@ -56,7 +56,14 @@ void fir_filter(hls::stream&lt;data_t&gt; &amp;in, hls::stream&lt;data_t&gt; &am
     acc_t acc = 0;
     for (int j = 0; j &lt; N; j++) {
 #pragma HLS PIPELINE II=1
-        acc += shift_reg[j] * coeffs[j];
+    static std::int16_t z1 = 0, z2 = 0, z3 = 0;
+    if (reset) {
+        z1 = z2 = z3 = 0;
+        *result = 0;
+    } else {
+        const std::int32_t sum = sample + 2 * z1 + 2 * z2 + z3;
+        *result = static_cast&lt;std::int16_t&gt;(sum / 6);
+        z3 = z2; z2 = z1; z1 = sample;
     }
     out.write(acc &gt;&gt; 15);   // 截位输出（教学示意）
 }</code></pre>

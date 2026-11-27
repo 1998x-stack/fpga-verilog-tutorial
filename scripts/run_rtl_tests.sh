@@ -21,4 +21,9 @@ run tb_ram_sp_read_first examples/rtl/ram_sp_read_first.v examples/tb/tb_ram_sp_
 run tb_sync_fifo examples/rtl/sync_fifo.v examples/tb/tb_sync_fifo.v
 run tb_pipe3_calc examples/rtl/pipe3_calc.v examples/tb/tb_pipe3_calc.v
 run tb_cdc_toggle_event examples/rtl/cdc_toggle_event.v examples/tb/tb_cdc_toggle_event.v
-echo "PASS: twelve RTL testbenches"
+run tb_axi4lite_regs examples/rtl/axi4lite_regs.v examples/tb/tb_axi4lite_regs.sv
+run tb_rv32i_frontend_units examples/rtl/rv32i_frontend_units.v examples/tb/tb_rv32i_frontend_units.v
+run tb_debug_event_counter examples/rtl/debug_event_counter.v examples/tb/tb_debug_event_counter.v
+run tb_ready_valid_slice examples/rtl/ready_valid_slice.v examples/tb/tb_ready_valid_slice.v
+run tb_rgb_threshold_stream examples/rtl/rgb_threshold_stream.v examples/tb/tb_rgb_threshold_stream.v
+echo "PASS: seventeen RTL testbenches"

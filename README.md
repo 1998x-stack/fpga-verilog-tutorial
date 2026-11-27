@@ -24,7 +24,17 @@ assets/svg/                   # 独立 SVG
 assets/js/                    # 渐进增强的导航搜索
 data/                         # 课程数据、技术资料/证据
 examples/rtl/ examples/tb/    # 可运行逻辑和 testbench
+sim/questa/                    # Questa-Altera 本地仿真脚本
+examples/quartus/              # Quartus 工程与 SDC 示例
+examples/softcore/             # MicroBlaze V SoC 与 MMIO 固件示例
+examples/project-template/     # 工程结构与版本清单模板
+examples/open-source/ice40/    # iCEstick Yosys/nextpnr/icepack 示例
+examples/hls/fir4/           # FIR4 C++ reference 与 C-sim
+examples/video/              # AXI4-Stream Video 教学边界
 scripts/check_site.py         # HTML/链接/SVG 静态检查
+scripts/serdes_budget.py      # NRZ 线编码链路预算上界
+scripts/timing_power_budget.py # 教学版 Setup / 动态功耗算术
+scripts/build_manifest.py      # 源输入 SHA-256 清单
 .github/workflows/            # CI 与 Pages
 AGENTS.md                     # 内容与工程规范
 ```
@@ -57,11 +67,54 @@ iverilog -g2012 -Wall -s tb_alu4 -o /tmp/alu4.vvp examples/rtl/alu4.v examples/t
 - **15 Vivado：** `examples/vivado/build.tcl` 和 `blink_top.v`，必须自行提供真实 `FPGA_PART` 和 `BOARD_XDC`。未安装 Vivado/缺少板卡时仅运行静态 Tcl 契约检查，不能宣称生成 bitstream。
 
 ```bash
-bash scripts/run_rtl_tests.sh                  # 12 组 Icarus Verilog 自检
+bash scripts/run_rtl_tests.sh                  # 17 组 Icarus Verilog 自检
 python3 scripts/check_site.py                  # 全站链接与 SVG
-python3 -m unittest discover -s tests -p 'test_sta_budget.py' -v
-python3 scripts/check_vivado_example.py        # 仅检查脚本契约
+python3 -m unittest discover -s tests -v        # STA + Build Manifest 单元测试
+python3 scripts/check_quartus_example.py       # 仅检查 Quartus 工程模板
+python3 scripts/check_vivado_example.py        # 仅检查 Vivado Tcl 契约
+python3 scripts/check_open_source_example.py    # 仅检查 iCEstick 工具链契约
+make -C examples/hls/fir4 test                    # 可移植 FIR4 C++ 数值测试
+python3 scripts/frame_budget.py --width 1920 --height 1080 --bytes-per-pixel 3 --fps 60
 python3 scripts/browser_check.py               # 需要 Playwright + Chromium
 ```
 
 [AMD Vivado 2026.1+ 许可层级](https://www.amd.com/en/products/software/adaptive-socs-and-fpgas/vivado/vivado-licensing-options.html)：免费 BASIC 同时列有 Windows/Linux 支持，设备/功能和续期条件以最新官方表格为准。不能沿用“Linux 完全取消免费授权”的原文断言。
+
+## 第四批（16—20）：Quartus、Questa、IP、AXI 与软核 SoC
+
+- **16 Quartus / TimeQuest：** `examples/quartus/` 提供通用计数器 RTL、50 MHz 教学 SDC 和 Tcl 项目生成脚本。必须传入真实 `FPGA_FAMILY` / `FPGA_DEVICE`；示例没有板卡 pin map，不可直接下载。
+- **17 Questa：** `sim/questa/run.do` 编译并仿真第 19 章 AXI4-Lite 外设。当前 Altera 模拟器为 Questa-Altera FPGA Edition；Starter Edition 免费，但仿真需要 no-cost license。公共 CI 使用 Icarus，不声称运行了 Questa。
+- **18 IP Core / Platform Designer：** 解释 Avalon、AXI、AXI-Lite、AXI-Stream 接口契约，IP Packager 的 VLNV、clock/reset、地址块和版本依赖；同时给出工程目录、Git 忽略边界与 `scripts/build_manifest.py` SHA-256 输入清单。
+- **19 AXI4-Lite：** `axi4lite_regs.v` 是 32-bit、单 outstanding 的教学 subordinate；AW/W 独立握手，支持 WSTRB、B/R 背压、只读寄存器与 SLVERR；自检覆盖不同通道到达顺序。
+- **20 MicroBlaze V：** 以 2026.1 文档中的 RISC-V MicroBlaze V 为主线，提供 SoC 集成契约与 MMIO C 示例。IP Integrator、XSA、Vitis 和真实地址映射需要在目标板工具环境完成。
+
+本批的 RTL 仿真通过不等于 Quartus/Questa/Vivado 工具构建，也不等于 FPGA 上板验证。真实器件、管脚、时钟、IP 许可与软件 BSP 必须由使用者按具体板卡配置。
+
+
+## 第五批（21—25）：RISC-V、SerDes、调试、开源工具与时序功耗
+
+- **21 RV32I：** `examples/rtl/rv32i_frontend_units.v` 提供 I/S/B/U/J 立即数生成器、EX/MEM 优先的 Forwarding 和 load-use stall；`tb_rv32i_frontend_units.v` 对编码与冒险规则做定向自检。它不是完整 CPU。
+- **22 SerDes：** `scripts/serdes_budget.py` 计算 NRZ 线编码后的单向吞吐上界；正文区分 PCIe Gen1/2 8b/10b、Gen3–5 128b/130b NRZ 和 Gen6 PAM4/FLIT/FEC。
+- **23 调试：** `debug_event_counter.v` 提供同域饱和事件计数器；正文覆盖 ILA、SignalTap、VIO、JTAG-to-AXI、采样时钟和 probe 成本。
+- **24 开源工具：** `examples/open-source/ice40/` 给出 iCEstick + iCE40-HX1K-TQ144 的 Yosys / nextpnr / icepack Makefile；nextpnr 的 Nexus 后端为 alpha，NG-Ultra bitstream 还依赖专有 Impulse。CI 只检查命令和引脚契约，不声称生成 bitstream 或完成板级测试。
+- **25 时序与功耗：** `scripts/timing_power_budget.py` 提供简化 setup slack 和动态功耗公式；不替代 Vivado/TimeQuest STA 或器件功耗分析。
+
+本批新增 15 幅 SVG、2 组 RTL 自检、2 个 Python 计算工具和一个 iCEstick 构建入口。15 组 Icarus 回归、Python 单元测试、静态 HTML/SVG 检查与 Playwright 浏览器检查只对各自覆盖范围负责；真实 CPU、SerDes、ILA、bitstream、时序和功耗测量仍需目标器件及厂商工具/硬件。
+
+
+## 第六批（26—28）：HLS、AI 代码验证与图像系统综合项目
+
+- **26 HLS：** 以 4-tap FIR 说明 C/C++ 行为、定点位宽、循环调度、II / latency、DATAFLOW、UNROLL 和 ARRAY_PARTITION 的资源与端口瓶颈；新增可移植 `examples/hls/fir4/` 测试。未运行 Vitis HLS，不报告实际 II、latency、Fmax 或资源。
+- **27 AI 开发：** 从 RTL 规格合同入手，对照 VerilogEval / RTLLM 的任务范围区分模型 benchmark 与真实硬件；新增 `ready_valid_slice.v` 及随机背压顺序 scoreboard 自测。该电路不是全寄存 READY、异步 FIFO 或形式证明。
+- **28 图像系统：** 用从 Camera 到 DDR Frame Buffer 再到 Display 的系统架构解释 SOF/EOL、CDC、VGA timing、DDR 所有权及带宽；新增 `rgb_threshold_stream.v`（RGB888 → Gray8 → Binary8，TUSER/TLAST 对齐）及三帧视频回归；新增 `scripts/frame_budget.py`。
+- 新增 **13 张章节 SVG**、2 组 RTL testbench、一套 FIR4 C++ reference 与 Python frame budget 单元测试。页面可在 360/390/768/1440px 验收并覆盖原生自测折叠框。
+- **完整系统未实现**：真实摄像头 PHY、去马赛克 / Sobel、DDR DMA、跨时钟 FIFO、VGA/HDMI PHY、板级时序签核和 FPGA bitstream 均需要真实目标板与工具配置。
+
+### 验收命令
+```bash
+bash scripts/run_rtl_tests.sh
+python3 -m unittest discover -s tests -v
+make -C examples/hls/fir4 test
+python3 scripts/check_site.py
+python3 scripts/browser_check.py   # Playwright + Chromium
+```
