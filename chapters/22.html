@@ -14,6 +14,7 @@
 <tr><td>CDR（时钟数据恢复）</td><td>从数据跳变中提取采样时钟，不依赖单独时钟线</td></tr>
 </tbody></table></div>
 <p>这里需要分清“谁在做”：在集成收发器的 FPGA 上，编码、串行化、均衡与 CDR 大多由<strong>硬核收发器</strong>完成，你在 RTL 侧看到的是并行数据 + 时钟 + 控制信号。自己实现编码器的场景通常是用普通 I/O 做较低速率的“软”串行（例如用 SelectIO 做源同步接口），或使用不带硬核的低成本器件。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-serdes-path.svg" alt="发送侧并行字先编码再串行化为差分信号；接收侧先均衡、恢复时钟与数据，再解串与解码。" width="960" height="540" loading="lazy"></div><figcaption>一条链路内部的分工：发送侧把并行字编码后串行化到差分通道，接收侧做均衡、时钟数据恢复、解串与解码。使用集成收发器时，这些环节大多已在硬核内完成，RTL 侧只面对并行数据、时钟与控制信号。</figcaption></figure>
 <div class="callout note">链路能否跑到目标速率，衡量的是一次性指标：<strong>眼图开启度与误码率（BER）</strong>。这两者依赖具体板卡、通道损耗、均衡设置与参考时钟质量，不能从“用了哪代收发器”推断。</div>
 </section>
 <section id="coding" aria-labelledby="coding-h"><h2 id="coding-h">03 / 8b/10b：解决直流平衡与跳变密度</h2>
@@ -21,6 +22,7 @@
 <ul><li><strong>直流平衡。</strong> 每个码字的 0/1 数量差不超过 1，并用一个“不平衡度（Running Disparity）”状态来选择码字，长期统计下 0 和 1 数量相等。</li><li><strong>跳变密度。</strong> 编码保证不会出现过长的无跳变序列，给 CDR 提供足够的相位信息。</li><li><strong>控制字符。</strong> 保留一些不对应数据的码字（如 K 码），用作帧定界与对齐。</li></ul>
 <p>8b/10b 由 IBM 的 Widmer 与 Franaszek 于 1983 年提出，后来被 PCIe Gen1/Gen2、SATA、USB 3.0、千兆以太网等大量采用。它的结构是固定的：低 5 位走 5b/6b 表，高 3 位走 3b/4b 表，再根据当前不平衡度选择正/负码字。完整的表很长，也很容易抄错；<strong>在集成收发器里它已经是硬核，你在向导里勾选即可，不需要在 RTL 里重新实现</strong>。</p>
 <div class="callout note">本节只描述编码的<strong>目的与结构</strong>，不列出完整码表：码表必须逐项对照标准，本文不声称自己提供了一份可用的实现。</div>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-link-budget.svg" alt="线速率乘以通道数与线编码效率，再减去协议开销，得到每方向的有效吞吐上界。" width="960" height="540" loading="lazy"></div><figcaption>链路吞吐的预算式：把单通道线速率乘以通道数与线编码效率，再减去协议开销，得到的是每方向的有效吞吐上界，而不是实测吞吐。这里的每一项都必须在具体器件与协议规范下取值。</figcaption></figure>
 </section>
 <section id="families" aria-labelledby="families-h"><h2 id="families-h">04 / 收发器家族与选型边界</h2>
 <p>AMD 在不同器件系列里提供不同档次的收发器，名字大致按能力递增：7 系列的 <strong>GTP / GTX / GTH</strong>，UltraScale/UltraScale+ 的 <strong>GTH / GTY</strong>。Intel 对应的是 GX/TX 系列，Lattice 等厂商也有各自的中低速收发器。名字本身不代表速率——<strong>具体每通道最高线速率、支持哪些编码与均衡、可用通道数，必须查该器件的收发器用户指南</strong>（参见 UG476 等）。</p>
@@ -43,6 +45,7 @@
 <tr><td>Gen4</td><td>16.0 GT/s</td><td>128b/130b</td></tr>
 <tr><td>Gen5</td><td>32.0 GT/s</td><td>128b/130b</td></tr>
 </tbody></table></div>
+<figure><div class="diagram-scroll"><img src="../assets/svg/22-pcie-generations.svg" alt="PCIe Gen1 与 Gen2 使用 8b/10b；Gen3 到 Gen5 使用 128b/130b 的 NRZ；Gen6 引入 PAM4、FLIT 模式、FEC 与 CRC。" width="960" height="540" loading="lazy"></div><figcaption>各代 PCIe 的编码与调制差异：Gen1/Gen2 为 8b/10b，Gen3–Gen5 为 128b/130b 的 NRZ，Gen6 改用 PAM4 并引入 FLIT 模式与 FEC。表中速率与编码以 PCI-SIG 规范为准。</figcaption></figure>
 <p>在 FPGA 上实现 PCIe 通常不需要自己写 TLP 解析器：厂商提供集成 IP（如 AMD 的 DMA/Bridge Subsystem for PCI Express，PG195），把 PCIe 事务层抽象成 AXI 接口并提供 DMA 引擎，让主机通过 DMA 直接读写 FPGA 内存。这样你只需面对 AXI（参见第 19 章）。</p>
 <p>链路实际跑在哪一代，由<strong>链路训练</strong>决定：双方在 LTSSM 中协商速率与宽度，任何一环（参考时钟精度、通道损耗、均衡）不满足，就可能降级到较低世代。因此“卡标称 Gen3”不等于“运行时一定 Gen3”，必须用工具（如 IBERT 眼图、系统侧链路状态）实测确认。</p>
 </section>
