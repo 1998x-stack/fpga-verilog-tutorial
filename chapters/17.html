@@ -85,10 +85,12 @@ module top (
     assign data_out = fifo_dout;
 endmodule</code></pre>
 <p>两个易错点：一是<strong>端口名必须与生成报告一致</strong>（不同版本或不同配置下可能不同），照抄旧代码很容易编译不过；二是<strong>复位要用 IP 要求的同步释放</strong>，直接把按键复位接到异步 FIFO 的 <code>rst</code> 上，可能在内部初始化未完成时就收发数据。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-platform-designer.svg" alt="以处理器为主机的存储映射系统：主机经互连与协议适配器连接到存储器与外设，时钟与复位域被显式连接。" width="960" height="520" loading="lazy"></div><figcaption>Block Design / IP Integrator 方式把主机、互连、协议适配器与外设按存储映射连接起来，并要求显式声明时钟与复位域。它省去手写例化，但地址窗口、时钟域和复位释放仍然需要你逐项确认。</figcaption></figure>
 </section>
 <section id="limits" aria-labelledby="limits-h"><h2 id="limits-h">07 / 使用 IP 的边界与可验证条件</h2>
 <p>用 IP 核能省下大量 RTL，但它把一部分正确性责任转移给了配置与工具。以下几点是本章想强调的边界：</p>
 <ul><li><strong>IP 的“默认配置”不是为你设计的。</strong> FIFO 默认深度、默认接口、默认标志位都可能与实际需求不符——上一节的深度验算就是为了把“默认”换成“算出来”。</li><li><strong>硬件资源占用不能从 IP 名称推断。</strong> 同一个 IP 在不同器件、不同配置下资源差异很大；要得到可靠数字，只能看具体实现报告。</li><li><strong>跨时钟域由 IP 内部处理，不等于整个系统都安全。</strong> 如果自己把异步信号或多位总线绕开 FIFO 直接使用，仍然需要第 13 章手写的同步或握手方案。</li><li><strong>工具版本会影响结果。</strong> IP 版本不同，生成的 RTL、端口名、时序都可能变；要可复现，就得把 IP 配置文件（如 <code>.xci</code>）纳入版本控制，并记录工具版本（见第 18 章）。</li></ul>
+<figure><div class="diagram-scroll"><img src="../assets/svg/18-ip-package.svg" alt="可复用 IP 组件包含 RTL、接口元数据、参数、约束与示例测试，被封装为带版本的组件并发布到可复用目录。" width="960" height="520" loading="lazy"></div><figcaption>一个可复用的 IP 组件不只是 RTL：接口定义、参数、约束与示例测试共同构成契约。把这些输入连同版本一起纳入版本控制，别人才能重建出同一个组件，而不是只拿到一份“以前编译通过”的源码。</figcaption></figure>
 <div class="callout note">本章出现的频率关系、深度计算与代码均为<strong>教学示意</strong>；具体的系数范围、端口名、资源与时序，请以对应器件厂商文档和你的实现报告为准。</div>
 <details class="exercise"><summary>思考练习：为什么“CDC 已由 IP 内部处理”不能推出整个系统都没有跨时钟域风险？</summary><p>IP 只保证它自己内部的跨时钟域路径有定义。一旦你在 IP 之外把异步信号或多位总线绕开 FIFO 直接引入自己的逻辑，就产生了新的、IP 不会替你约束的跨域路径。判定标准是整条数据路径的起点与终点位于哪个时钟域，而不是“中间经过了一个 IP”。参见第 13 章：多 bit 总线不能靠逐位同步，需要握手或异步 FIFO。</p></details>
 </section>

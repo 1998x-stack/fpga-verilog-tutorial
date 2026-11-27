@@ -34,6 +34,7 @@
 <p>和图里对应的是：<strong>Analysis &amp; Synthesis</strong> 只做逻辑推断与映射，<strong>Fitter</strong> 才决定真实连线与路径延迟，<strong>Assembler</strong> 输出配置数据，<strong>Programmer</strong> 写入器件。任何一个阶段失败，后面的“成功”都没有意义。</p></section>
 <section id="constraints" aria-labelledby="constraints-h"><h2 id="constraints-h">04 / QSF 与 SDC：器件、管脚和时序约束</h2>
 <p>Quartus 把约束分成两层。<strong>QSF</strong> 是键值对形式的工程设置，管器件型号、顶层名、管脚位置和 I/O 标准；<strong>SDC</strong> 是 Tcl 形式的时序约束，管时钟周期、输入/输出延迟、假路径和多周期路径。两者解决的问题不同，不能互相替代。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/16-qsf-sdc.svg" alt="QSF 侧列出器件、顶层、源文件与管脚，SDC 侧列出 create_clock、I/O delay 与 generated clock；两类输入分别作为工程输入与时序输入进入编译器与 TimeQuest。" width="960" height="520" loading="lazy"></div><figcaption>QSF 描述工程事实（器件、顶层、管脚、I/O 标准），SDC 描述时间模型（时钟、输入/输出延迟、时序例外）；两者共同进入编译与时序分析，管脚位置不能替代时钟周期，时钟周期也不能替代板级 I/O 延迟。</figcaption></figure>
 <p>QSF 中与管脚相关的行本来就应该由开发板手册推导，而不是手写猜测。下面只是格式示意：</p>
 <pre><code># 以下为 QSF 格式示意，管脚号必须改成自己的开发板手册上的真实值
 set_global_assignment -name FAMILY "Cyclone V"
@@ -49,7 +50,8 @@ set_input_delay  -clock sys_clk -min 1.000 [get_ports data_in]
 set_output_delay -clock sys_clk -max 4.000 [get_ports data_out]
 set_output_delay -clock sys_clk -min 1.000 [get_ports data_out]</code></pre>
 <div class="callout warn">上面的 <code>20.000</code>/<code>6.000</code> 等数字是为了说明<strong>写法</strong>的教学示意，不是任何开发板的实测值。把外部时钟写成比实际低的周期，能让时序报告“看起来通过”，却与真实硬件不符——这是在伪造验收，而不是完成约束。</div>
-<p>与 Vivado 的 XDC 一样，SDC 写在错误的端口名上不会报语法错，而是静默地不生效。因此约束后要回到<strong>时钟报告</strong>和<strong>时序总结</strong>里确认：工具真的看到了你期望的时钟与频率。</p></section>
+<p>与 Vivado 的 XDC 一样，SDC 写在错误的端口名上不会报语法错，而是静默地不生效。因此约束后要回到<strong>时钟报告</strong>和<strong>时序总结</strong>里确认：工具真的看到了你期望的时钟与频率。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/16-timequest-path.svg" alt="一条寄存器到寄存器路径：Launch FF 经组合逻辑到达 Capture FF；一个时钟周期 T 覆盖 Tcq 与组合延迟，Setup 检查最晚到达，Hold 检查最早穿过。" width="960" height="520" loading="lazy"></div><figcaption>寄存器到寄存器路径的时序预算：Setup 要求最晚到达的数据在捕获沿前稳定，Hold 要求最早到达的数据不早于保持窗口；真实报告还包含时钟偏斜、uncertainty、工艺角与 I/O 约束。</figcaption></figure></section>
 <section id="signtap" aria-labelledby="signtap-h"><h2 id="signtap-h">05 / SignalTap II：在实现后的网表上加探针</h2>
 <p>调试数字设计需要看到内部信号在真实时钟下随时间的变化。SignalTap II 把采样逻辑嵌进设计：它用一个采样时钟存下若干探针信号，当触发条件满足时把这段波形捕捉到片上 RAM，再经下载器读回。</p>
 <p>它和 Vivado 的 ILA 在概念上对应，但挂点不同：ILA 通常在 RTL 中例化 IP 核并连接探针；SignalTap II 在实现后的网表上选择节点。这带来一个重要后果——挂在网表上的探针<strong>看不见已被综合优化掉的中间信号</strong>。当你确信某个信号必须在波形里出现时，需要让综合器保留它（例如使用对应的综合属性，阻止优化将它合并或删除）。</p>
@@ -75,6 +77,7 @@ add wave -hex /tb_top/u_dut/*
 run 100 us
 quit -sim</code></pre>
 <p>把这段脚本和 testbench 一起放进版本控制，“怎么跑仿真”就不再依赖某台机器上的鼠标操作。与 Vivado Simulator 相比，ModelSim 家族在脚本控制和 VHDL 支持上常被提及；但选仿真器时应以自己团队的实际许可、库编译流程和回归脚本为定。</p>
+<figure><div class="diagram-scroll"><img src="../assets/svg/17-simulation-flow.svg" alt="仿真分为三个阶段：源文件先编译，再展开设计层次，最后推进事件仿真时间并检查输出。" width="960" height="520" loading="lazy"></div><figcaption>功能仿真的三个阶段：编译源文件、展开设计层次、推进仿真时间并检查输出。把这三个阶段写进脚本，才能让“跑过仿真”这件事脱离某台机器上的鼠标操作而可复现。</figcaption></figure>
 <p>如果手边没有商业仿真器，<a href="https://steveicarus.github.io/iverilog/" target="_blank" rel="noopener noreferrer">Icarus Verilog</a> 是开源的替代方案：<code>iverilog</code> 编译、<code>vvp</code> 运行，适合小规模确定性 testbench。本仓的 RTL 自检就采用这一流程，而不是 ModelSim，因此在提交里不声称跑过商业仿真。</p>
 <div class="callout warn">仿真通过 <strong>不等于</strong> 能上板。仿真不包含真实的建立/保持、亚稳态、电源完整性和外部器件电气行为；它只回答“在给定激励与抽象模型下，逻辑行为是否符合预期”。</div></section>
 <section id="map" aria-labelledby="map-h"><h2 id="map-h">07 / 从 Vivado 切到 Quartus：一张概念检查表</h2>
